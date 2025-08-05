@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="ECARE_CLIENTELE_DBSS_INSEQUENCE_NEW_V1" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+	<property name="MI_API_NAME" value="JAZZRED-MSISDN-INFO" scope="default" type="STRING"/>
+	<property name="MSISDN" expression="get-property('uri.var.msisdn')" scope="default" type="STRING"/>
+	<property name="MI_TIME" expression="fn:get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" scope="default"/>
+	<property expression="fn:substring-after(get-property('MessageID'),'urn:uuid:')" name="TRANSACTION_ID" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property name="REQUEST_ID" expression="$ctx:TRANSACTION_ID" scope="default" type="STRING"/>
+	<sequence key="MIinFlow"/>
+	<property expression="$trp:ApplicationName" name="ApplicationName" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="get-property('uri.var.msisdn')" name="msisdn" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="fn:substring($ctx:msisdn,3)" name="NORMALIZED_MSISDN_FOR_IN" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:ApplicationName" name="APP_NAME" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property value="JAZZRED-MSISDN-INFO" name="API_NAME_LOG" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="fn:concat('JAZZRED-MSISDN-INFO | ',get-property('ApplicationName'))" name="API_NAME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property name="INTERFACE_NAME" scope="default" type="STRING" value="REQUEST"/>
+	<property name="REQUEST" scope="default" type="STRING" expression="$ctx:msisdn"/>
+	<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:uri.var.msisdn" name="MSISDN" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="fn:concat($trp:X-Forwarded-For,get-property('To'))" name="RESOURCE_URI" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<sequence key="ECARE_LOG_REQUEST"/>
+	<sequence key="DBSS_GETCUSTOMERANDSUBCLIENT_CALL"/>
+	<property expression="json-eval($.included[1].attributes.business-model-type)" name="subscriberType" scope="default" type="STRING"/>
+	<filter regex="24Hour" source="$ctx:ServiceCode" xmlns:ns="http://org.apache.synapse/xsd">
+		<then>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="GETSUBSCRIPTIONID"/>
+			<property name="REQUEST" scope="default" type="STRING" expression="$ctx:msisdn"/>
+			<property expression="fn:concat('https://bssapi.bss.jazz.com.pk/api/v1/subscriptions/', get-property('msisdn'), '?identifier-type=msisdn')" name="RESOURCE_URI" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING"/>
+			<property expression="$ctx:uri.var.msisdn" name="MSISDN" scope="default" type="STRING"/>
+			<sequence key="ECARE_LOG_REQUEST"/>
+			<call>
+				<endpoint key="GETSUBSCRIPTIONID"/>
+			</call>
+			<property expression="json-eval($.data.id)" name="uri.var.id" scope="default" type="STRING"/>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="GETSUBSCRIPTIONID"/>
+			<property name="JSON_RESPONSE" expression="$ctx:uri.var.id" scope="default" type="STRING"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+			<property expression="$ctx:uri.var.msisdn" name="MSISDN" scope="default" type="STRING"/>
+			<property name="LOG_RESPONSE_STATUS" value="OK"/>
+			<property name="LOG_RESPONSE_ENDED" scope="default" type="STRING" value="*****"/>
+			<sequence key="ECARE_LOG_RESPONSE"/>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="SMS_INCENTIVES"/>
+			<property name="REQUEST" scope="default" type="STRING" expression="$ctx:uri.var.id"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING"/>
+			<property expression="fn:concat('https://bssapi.bss.jazz.com.pk/api/v1/subscriptions/', get-property('uri.var.id'), '/balances')" name="RESOURCE_URI" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property expression="$ctx:uri.var.msisdn" name="MSISDN" scope="default" type="STRING"/>
+			<property name="LOG_REQUEST_ENDED" scope="default" type="STRING" value="*****"/>
+			<sequence key="ECARE_LOG_REQUEST"/>
+			<call>
+				<endpoint key="SMS_INCENTIVES"/>
+			</call>
+			<property expression="json-eval($.data[*].attributes.gsm-service-type)" name="SMS_INCENTIVES_DETAIL" scope="default" type="STRING"/>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="SMS_INCENTIVES"/>
+			<property name="JSON_RESPONSE" expression="$ctx:SMS_INCENTIVES_DETAIL" scope="default" type="STRING"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+			<property expression="$ctx:uri.var.msisdn" name="MSISDN" scope="default" type="STRING"/>
+			<property name="LOG_RESPONSE_STATUS" value="OK"/>
+			<property name="LOG_RESPONSE_ENDED" scope="default" type="STRING" value="*****"/>
+			<sequence key="ECARE_LOG_RESPONSE"/>
+			<filter xpath="fn:contains($ctx:SMS_INCENTIVES_DETAIL, 'sms')">
+				<then>
+					<property name="ServiceCode" scope="default" type="STRING" value="ROX"/>
+				</then>
+				<else>
+					<property name="ServiceCode" scope="default" type="STRING" value="ROX-NA"/>
+				</else>
+			</filter>
+			<property expression="$ctx:ServiceCode" name="ServiceCode" scope="default" type="STRING"/>
+		</then>
+		<else>
+			<property name="ServiceCode" scope="default" type="STRING" value="Jazz"/>
+		</else>
+	</filter>
+	<filter xmlns:ns="http://org.apache.synapse/xsd" xpath="$ctx:status != 'terminated'">
+		<then>
+			<filter regex="true" source="boolean($ctx:Brand)">
+				<then>
+					<filter regex="Jazz" source="$ctx:Brand">
+						<then>
+							<filter regex="prepaid" source="$ctx:subscriberType">
+								<then>
+									<payloadFactory media-type="json">
+										<format>{"operator":"jazz","type":"prepaid","code":"$1"}</format>
+										<args>
+											<arg evaluator="xml" expression="$ctx:ServiceCode"/>
+										</args>
+									</payloadFactory>
+									<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+									<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+									<property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING"/>
+									<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+									<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+									<property name="LOG_RESPONSE_ENDED" scope="default" type="STRING" value="*****"/>
+									<sequence key="ECARE_LOG_RESPONSE"/>
+								</then>
+								<else>
+									<payloadFactory media-type="json">
+										<format>{"operator":"jazz","type":"postpaid","code":"$1"}</format>
+										<args>
+											<arg evaluator="xml" expression="$ctx:ServiceCode"/>
+										</args>
+									</payloadFactory>
+									<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+									<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+									<property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING"/>
+									<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+									<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+									<property name="LOG_RESPONSE_ENDED" scope="default" type="STRING" value="*****"/>
+									<sequence key="ECARE_LOG_RESPONSE"/>
+								</else>
+							</filter>
+						</then>
+						<else/>
+					</filter>
+				</then>
+				<else>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+					<payloadFactory media-type="json">
+						<format>{"operator":"unknown","type":"unknown","code":"unknown"}</format>
+						<args/>
+					</payloadFactory>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+					<property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+					<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_ENDED" scope="default" type="STRING" value="*****"/>
+					<sequence key="ECARE_LOG_RESPONSE"/>
+				</else>
+			</filter>
+		</then>
+		<else>
+			<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+			<payloadFactory media-type="json">
+				<format>{"operator":"unknown","type":"unknown","code":"unknown"}</format>
+				<args/>
+			</payloadFactory>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+			<property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING"/>
+			<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+			<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+			<property name="LOG_RESPONSE_ENDED" scope="default" type="STRING" value="*****"/>
+			<sequence key="ECARE_LOG_RESPONSE"/>
+		</else>
+	</filter>
+	<respond/>
+</sequence>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?><artifacts>
+    <artifact name="Jazzapi_Jazzwallet" groupId="com.jazz.bundlesubjazzcashwallet.api" version="1.0.0" type="synapse/api" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/api/Jazzapi_Jazzwallet.xml</file>
+    </artifact>
+    <artifact name="Jazzapi_Jazzwallet_swagger" groupId="com.jazz.bundlesubjazzcashwallet.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/Jazzapi_Jazzwallet_swagger.yaml</file>
+    </artifact>
+    <artifact name="Jazzapi_Jazzwallet_metadata" groupId="com.jazz.bundlesubjazzcashwallet.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/Jazzapi_Jazzwallet_metadata.yaml</file>
+    </artifact>
+    <artifact name="Ecare_Topup_Ep" groupId="com.jazz.bundlesubjazzcashwallet.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/Ecare_Topup_Ep.xml</file>
+    </artifact>
+    <artifact name="JCWallet_APC_AIR_EP" groupId="com.jazz.bundlesubjazzcashwallet.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/JCWallet_APC_AIR_EP.xml</file>
+    </artifact>
+    <artifact name="JCWallet_CHANNEL_API_ACTIVATION_EP" groupId="com.jazz.bundlesubjazzcashwallet.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/JCWallet_CHANNEL_API_ACTIVATION_EP.xml</file>
+    </artifact>
+    <artifact name="JCWallet_CHANNEL_API_MEMO_STATUS_EP" groupId="com.jazz.bundlesubjazzcashwallet.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/JCWallet_CHANNEL_API_MEMO_STATUS_EP.xml</file>
+    </artifact>
+	<artifact name="JcWallet_Get_BundlePrice_EP" groupId="com.jazz.bundlesubjazzcashwallet.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/JcWallet_Get_BundlePrice_EP.xml</file>
+    </artifact>
+    <artifact name="jcwallet_clientele" groupId="com.jazz.bundlesubjazzcashwallet.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/jcwallet_clientele.xml</file>
+    </artifact>
+    <artifact name="JCWallet_renablebundleprovisioningendpoint" groupId="com.jazz.bundlesubjazzcashwallet.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/JCWallet_renablebundleprovisioningendpoint.xml</file>
+    </artifact>
+    <artifact name="APC_JazzCash_DB_STATUS_SEQUENCE" groupId="com.jazz.bundlesubjazzcashwallet.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/APC_JazzCash_DB_STATUS_SEQUENCE.xml</file>
+    </artifact>
+    <artifact name="FAULTSEQUENCE_JAZZCASHWALLET_SUBSCRIPTION" groupId="com.jazz.bundlesubjazzcashwallet.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/FAULTSEQUENCE_JAZZCASHWALLET_SUBSCRIPTION.xml</file>
+    </artifact>
+    <artifact name="JAZZCASHWALLET_LOG_ERROR" groupId="com.jazz.bundlesubjazzcashwallet.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/JAZZCASHWALLET_LOG_ERROR.xml</file>
+    </artifact>
+    <artifact name="JAZZCASHWALLET_LOG_REQUEST" groupId="com.jazz.bundlesubjazzcashwallet.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/JAZZCASHWALLET_LOG_REQUEST.xml</file>
+    </artifact>
+    <artifact name="JAZZCASHWALLET_LOG_RESPONSE" groupId="com.jazz.bundlesubjazzcashwallet.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/JAZZCASHWALLET_LOG_RESPONSE.xml</file>
+    </artifact>
+</artifacts>

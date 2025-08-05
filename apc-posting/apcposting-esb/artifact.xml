@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?><artifacts>
+    <artifact name="ApcPaymentAPI" groupId="com.jazz.apcposting.apcposting.api" version="1.0.0" type="synapse/api" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/api/ApcPaymentAPI.xml</file>
+    </artifact>
+    <artifact name="ApcPaymentAPI_swagger" groupId="com.jazz.apcposting.apcposting.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/ApcPaymentAPI_swagger.yaml</file>
+    </artifact>
+    <artifact name="ApcPaymentAPI_metadata" groupId="com.jazz.apcposting.apcposting.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/ApcPaymentAPI_metadata.yaml</file>
+    </artifact>
+    <artifact name="APCPOSTING_DB_ERROR_SEQUENCE" groupId="com.jazz.apcposting.apcposting.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/APCPOSTING_DB_ERROR_SEQUENCE.xml</file>
+    </artifact>
+    <artifact name="APCPOSTING_DB_REQUEST_SEQUENCE" groupId="com.jazz.apcposting.apcposting.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/APCPOSTING_DB_REQUEST_SEQUENCE.xml</file>
+    </artifact>
+    <artifact name="APCPOSTING_DB_RESPONSE_SEQUENCE" groupId="com.jazz.apcposting.apcposting.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/APCPOSTING_DB_RESPONSE_SEQUENCE.xml</file>
+    </artifact>
+    <artifact name="APCPOSTING_LOG_ERROR" groupId="com.jazz.apcposting.apcposting.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/APCPOSTING_LOG_ERROR.xml</file>
+    </artifact>
+    <artifact name="APCPOSTING_LOG_REQUEST" groupId="com.jazz.apcposting.apcposting.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/APCPOSTING_LOG_REQUEST.xml</file>
+    </artifact>
+    <artifact name="APCPOSTING_LOG_RESPONSE" groupId="com.jazz.apcposting.apcposting.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/APCPOSTING_LOG_RESPONSE.xml</file>
+    </artifact>
+    <artifact name="FAULT_SEQUENCE_APC_POSTING" groupId="com.jazz.apcposting.apcposting.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/FAULT_SEQUENCE_APC_POSTING.xml</file>
+    </artifact>
+    <artifact name="INSEQUENCE_APC_POSTING_v1" groupId="com.jazz.apcposting.apcposting.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/INSEQUENCE_APC_POSTING_v1.xml</file>
+    </artifact>
+</artifacts>

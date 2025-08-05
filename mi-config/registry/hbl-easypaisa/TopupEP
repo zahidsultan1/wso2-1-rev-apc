@@ -1,0 +1,15 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/">
+	<soapenv:Header/>
+	<soapenv:Body>
+		<tem:TopUpPayment>
+			<tem:input><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<ACTIVITY xmlns="">
+    <TransactionId>$1</TransactionId>
+    <ServiceUser>EPBundleAPC</ServiceUser>
+    <ServicePassword>EP@BundLe@@!u219</ServicePassword>
+    <MSISDN>$2</MSISDN>
+    <Amount>$3</Amount>
+</ACTIVITY>]]></tem:input>
+		</tem:TopUpPayment>
+	</soapenv:Body>
+</soapenv:Envelope>

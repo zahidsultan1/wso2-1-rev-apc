@@ -1,0 +1,21 @@
+openapi: 3.0.1
+info:
+  title: APCBalance
+  description: API Definition of APCBalance
+  version: 1.0.0
+servers:
+- url: http://localhost:8290/apcBalance
+paths:
+  /check/{msisdn}:
+    get:
+      parameters:
+      - name: msisdn
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        default:
+          description: Default response

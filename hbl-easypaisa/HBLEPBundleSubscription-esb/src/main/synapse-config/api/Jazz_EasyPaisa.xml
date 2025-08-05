@@ -1,0 +1,432 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/jazz_EP" name="Jazz_EasyPaisa" xmlns="http://ws.apache.org/ns/synapse">
+	<resource faultSequence="FAULTSEQUENCE_BUNDLE_SUBSCRIPTION" methods="POST" uri-template="/bundleSubsciption">
+		<inSequence>
+			<property expression="$trp:ApplicationName" name="ApplicationName" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property expression="json-eval($.msisdn)" name="msisdn" scope="default" type="STRING"/>
+			<property expression="json-eval($.msisdn)" name="MSISDN" scope="default" type="STRING"/>
+			<property expression="json-eval($.serviceCode)" name="PRODUCT_ID" scope="default" type="STRING"/>
+			<property expression="json-eval($.serviceGroup)" name="SERVICE_GROUP" scope="default" type="STRING"/>
+			<property expression="json-eval($.price)" name="PRICE" scope="default" type="STRING"/>
+			<property expression="json-eval($.transaction_id)" name="TRANSACTION_ID" scope="default" type="STRING"/>
+			<property expression="$ctx:msisdn" name="uri.var.msisdn" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property expression="$ctx:ApplicationName" name="APP_NAME" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property name="API_NAME" scope="default" type="STRING" value="JAZZ_EASYPAISA"/>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="REQUEST"/>
+			<property expression="fn:concat('msisdn:',$ctx:msisdn,' | serviceCode:',$ctx:PRODUCT_ID,' | serviceGroup : ',$ctx:SERVICE_GROUP,' | price : ',$ctx:PRICE,' | transaction_id : ',$ctx:TRANSACTION_ID)" name="REQUEST" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property expression="$ctx:msisdn" name="MSISDN" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property expression="fn:concat($trp:X-Forwarded-For,get-property('To'))" name="RESOURCE_URI" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property name="LOG_REQUEST_ENDED" scope="default" type="STRING" value="*****"/>
+			<sequence key="BUNDLE_LOG_REQUEST"/>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="ClIENTEL"/>
+			<property expression="$ctx:msisdn" name="uri.var.msisdn" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property expression="$ctx:TRANSACTION_ID" name="uri.var.transactionId" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property expression="$ctx:msisdn" name="REQUEST" scope="default" type="STRING"/>
+			<property expression="fn:concat('https://bssapi.bss.jazz.com.pk/api/v1/subscriptions/',$ctx:uri.var.msisdn,'?identifier-type=msisdn&amp;include=subscription-type,owner-customer')" name="RESOURCE_URI" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property name="LOG_REQUEST_ENDED" scope="default" type="STRING" value="*****"/>
+			<sequence key="BUNDLE_LOG_REQUEST"/>
+			<call>
+				<endpoint key="GENERIC_BSSAPI_CLIENTTEL"/>
+			</call>
+			<property expression="json-eval($.included[1].attributes.business-model-type)" name="subscriberType"/>
+			<property expression="json-eval($.included[1].attributes.brand)" name="Brand"/>
+			<property expression="$ctx:subscriberType" name="type" scope="default" type="STRING"/>
+			<property expression="$ctx:Brand" name="network" scope="default" type="STRING"/>
+			<property expression="$ctx:type" name="TYPE" scope="default" type="STRING"/>
+			<property expression="$ctx:network" name="OPERATOR" scope="default" type="STRING"/>
+			<property expression="$ctx:type" name="uri.var.type" scope="default" type="STRING"/>
+			<property expression="$ctx:network" name="uri.var.operator" scope="default" type="STRING"/>
+			<filter xpath="fn:boolean(fn:string-length($ctx:network) = 0 or $ctx:network = 'unknown') or fn:boolean(fn:string-length($ctx:type) = 0 or $ctx:type = 'unknown')">
+				<then>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="CLIENTELE"/>
+					<property expression="fn:concat('OPERATOR: ',$ctx:network,' | Type: ',$ctx:type)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+					<sequence key="BUNDLE_LOG_RESPONSE"/>
+					<payloadFactory media-type="json">
+						<format>{ "error": { "errorCode": "$1", "description": "$2", "message": "", "transaction": { "transactionId": "$3" }, "STATUS": "$4" } }</format>
+						<args>
+							<arg value="403"/>
+							<arg value="UNKNOWN NETWORK"/>
+							<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+							<arg value="KO"/>
+						</args>
+					</payloadFactory>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+					<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+					<property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_ENDED" scope="default" type="STRING" value="*****"/>
+					<sequence key="BUNDLE_LOG_RESPONSE"/>
+					<property action="remove" name="X-AspNet-Version" scope="transport"/>
+					<property action="remove" name="X-Powered-By" scope="transport"/>
+					<property action="remove" name="WWW-Authenticate" scope="transport"/>
+					<property action="remove" name="Server" scope="transport"/>
+					<property action="remove" name="Access-Control-Allow-Origin" scope="transport"/>
+					<property action="remove" name="TRANSPORT_HEADERS" scope="axis2"/>
+					<property action="remove" name="EXCESS_TRANSPORT_HEADERS" scope="axis2"/>
+					<respond/>
+				</then>
+				<else>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="CLIENTELE"/>
+					<property expression="fn:concat('OPERATOR: ',$ctx:network,' | Type: ',$ctx:type)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+					<property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_ENDED" scope="default" type="STRING" value="*****"/>
+					<sequence key="BUNDLE_LOG_RESPONSE"/>
+				</else>
+			</filter>
+			<filter regex="POSTPAID" source="fn:upper-case($ctx:type)">
+				<then>
+					<payloadFactory media-type="json">
+						<format>{ "error": { "errorCode": "$1", "description": "$2", "message": "", "transaction": { "transactionId": "$3" }, "STATUS": "$4" } }</format>
+						<args>
+							<arg value="405"/>
+							<arg value="POSTPAID NETWORK"/>
+							<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+							<arg value="KO"/>
+						</args>
+					</payloadFactory>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+					<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+					<property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+					<property name="LOG_RESPONSE_ENDED" scope="default" type="STRING" value="*****"/>
+					<sequence key="BUNDLE_LOG_RESPONSE"/>
+					<property action="remove" name="X-AspNet-Version" scope="transport"/>
+					<property action="remove" name="X-Powered-By" scope="transport"/>
+					<property action="remove" name="WWW-Authenticate" scope="transport"/>
+					<property action="remove" name="Server" scope="transport"/>
+					<property action="remove" name="Access-Control-Allow-Origin" scope="transport"/>
+					<property action="remove" name="TRANSPORT_HEADERS" scope="axis2"/>
+					<property action="remove" name="EXCESS_TRANSPORT_HEADERS" scope="axis2"/>
+					<respond/>
+				</then>
+				<else/>
+			</filter>
+			<header name="User-Agent" scope="transport" value="Apache-HttpClient/4.1.1 (java 1.5)"/>
+			<property action="remove" name="Accept-Encoding" scope="transport"/>
+			<property action="remove" name="Content-Encoding" scope="transport"/>
+			<property expression="$ctx:msisdn" name="uri.var.msisdn" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="DONGLE"/>
+			<property expression="$ctx:msisdn" name="MSISDN" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property expression="$ctx:msisdn" name="REQUEST" scope="default" type="STRING"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property expression="fn:concat('https://bssapi.bss.jazz.com.pk/api/v1/subscriptions/',$ctx:uri.var.msisdn,'?identifier-type=msisdn&amp;include=combined-usage-reports')" name="RESOURCE_URI" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property name="LOG_REQUEST_ENDED" scope="default" type="STRING" value="*****"/>
+			<sequence key="BUNDLE_LOG_REQUEST"/>
+			<call>
+				<endpoint key="HBL_IN_GETEP"/>
+			</call>
+			<property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+			<property expression="json-eval($.included[*].attributes.code)" name="Data" scope="default" type="STRING"/>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="DONGLE"/>
+			<property name="JSON_RESPONSE" scope="default" type="STRING" expression="$ctx:Data"/>
+			<property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+			<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+			<property name="LOG_RESPONSE_ENDED" scope="default" type="STRING" value="*****"/>
+			<sequence key="BUNDLE_LOG_RESPONSE"/>
+			<filter xmlns:ns="http://org.apache.synapse/xsd" xpath="fn:contains($ctx:Data,'DONGLE')">
+				<then>
+					<payloadFactory media-type="json">
+						<format>{ "error": { "errorCode": "$1", "description": "$2", "message": "", "transaction": { "transactionId": "$3" }, "STATUS": "$4" } }</format>
+						<args>
+							<arg value="404"/>
+							<arg value="DONGLE NETWORK"/>
+							<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+							<arg value="KO"/>
+						</args>
+					</payloadFactory>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+					<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+					<property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+					<property name="LOG_RESPONSE_ENDED" scope="default" type="STRING" value="*****"/>
+					<sequence key="BUNDLE_LOG_RESPONSE"/>
+					<property action="remove" name="X-AspNet-Version" scope="transport"/>
+					<property action="remove" name="X-Powered-By" scope="transport"/>
+					<property action="remove" name="WWW-Authenticate" scope="transport"/>
+					<property action="remove" name="Server" scope="transport"/>
+					<property action="remove" name="Access-Control-Allow-Origin" scope="transport"/>
+					<property action="remove" name="TRANSPORT_HEADERS" scope="axis2"/>
+					<property action="remove" name="EXCESS_TRANSPORT_HEADERS" scope="axis2"/>
+					<respond/>
+				</then>
+				<else/>
+			</filter>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="lOAN"/>
+			<property expression="$ctx:msisdn" name="MSISDN" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property expression="$ctx:msisdn" name="REQUEST" scope="default" type="STRING"/>
+			<property expression="$ctx:msisdn" name="uri.var.msisdn" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<sequence key="LOAN_CHECK"/>
+			<property expression="$ctx:loan" name="loan" scope="default" type="STRING"/>
+			<filter xmlns:ns="http://org.apache.synapse/xsd" xpath="$ctx:loan = '' or $ctx:loan = ' ' ">
+				<then>
+					<payloadFactory media-type="json">
+						<format>{ "error": { "errorCode": "$1", "description": "$2", "message": "", "transaction": { "transactionId": "$3" }, "STATUS": "$4" } }</format>
+						<args>
+							<arg value="406"/>
+							<arg value="LOAN ERROR"/>
+							<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+							<arg value="KO"/>
+						</args>
+					</payloadFactory>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+					<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+					<property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+					<property name="LOG_RESPONSE_ENDED" scope="default" type="STRING" value="*****"/>
+					<sequence key="BUNDLE_LOG_RESPONSE"/>
+					<property action="remove" name="X-AspNet-Version" scope="transport"/>
+					<property action="remove" name="X-Powered-By" scope="transport"/>
+					<property action="remove" name="WWW-Authenticate" scope="transport"/>
+					<property action="remove" name="Server" scope="transport"/>
+					<property action="remove" name="Access-Control-Allow-Origin" scope="transport"/>
+					<property action="remove" name="TRANSPORT_HEADERS" scope="axis2"/>
+					<property action="remove" name="EXCESS_TRANSPORT_HEADERS" scope="axis2"/>
+					<respond/>
+				</then>
+				<else/>
+			</filter>
+			<filter regex="yes" source="$ctx:loan">
+				<then>
+					<payloadFactory media-type="json">
+						<format>{ "error": { "errorCode": "$1", "description": "$2", "message": "", "transaction": { "transactionId": "$3" }, "STATUS": "$4" } }</format>
+						<args>
+							<arg value="407"/>
+							<arg value="ALREADY AVAILED JAZZ ADVANCE"/>
+							<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+							<arg value="KO"/>
+						</args>
+					</payloadFactory>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+					<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+					<property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+					<property name="LOG_RESPONSE_ENDED" scope="default" type="STRING" value="*****"/>
+					<sequence key="BUNDLE_LOG_RESPONSE"/>
+					<property action="remove" name="X-AspNet-Version" scope="transport"/>
+					<property action="remove" name="X-Powered-By" scope="transport"/>
+					<property action="remove" name="WWW-Authenticate" scope="transport"/>
+					<property action="remove" name="Server" scope="transport"/>
+					<property action="remove" name="Access-Control-Allow-Origin" scope="transport"/>
+					<property action="remove" name="TRANSPORT_HEADERS" scope="axis2"/>
+					<property action="remove" name="EXCESS_TRANSPORT_HEADERS" scope="axis2"/>
+					<respond/>
+				</then>
+				<else>
+					<filter xpath="fn:starts-with($ctx:MSISDN,'92')">
+						<then>
+							<property expression="fn:substring-after($ctx:MSISDN,'92')" name="MSISDN" scope="default" type="STRING"/>
+							<property expression="fn:concat('0',$ctx:MSISDN)" name="MSISDN" scope="default" type="STRING"/>
+						</then>
+						<else/>
+					</filter>
+					<payloadFactory media-type="xml">
+						<format key="conf:/custom/hbl-easypaisa/TopupEP"/>
+						<args>
+							<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+							<arg evaluator="xml" expression="$ctx:MSISDN"/>
+							<arg evaluator="xml" expression="$ctx:PRICE"/>
+						</args>
+					</payloadFactory>
+					<enrich>
+						<source clone="true" type="envelope"/>
+						<target property="Log_Request" type="property"/>
+					</enrich>
+					<property expression="$ctx:Log_Request" name="Log_Request" scope="default" type="STRING"/>
+					<property expression="//tem:input" name="CDATAPAYLOAD" scope="default" type="OM" xmlns:tem="http://tempuri.org/"/>
+					<property expression="get-property('CDATAPAYLOAD')//*[local-name()='ServicePassword']" name="ServicePassword" scope="default" type="STRING"/>
+					<property expression="$ctx:Log_Request" name="Log_Request" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+					<property expression="fn:replace($ctx:Log_Request,$ctx:ServicePassword,'xxxxxxx')" name="Log_Request" scope="default" type="STRING" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:ns="http://org.apache.synapse/xsd"/>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="EFICS_EP"/>
+					<property expression="$ctx:msisdn" name="MSISDN" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+					<property expression="$ctx:msisdn" name="REQUEST" scope="default" type="STRING"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+					<property expression="fn:concat('https://efics.jazz.com.pk:501/Service.asmx',$ctx:msisdn)" name="RESOURCE_URI" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+					<property name="LOG_REQUEST_ENDED" scope="default" type="STRING" value="*****"/>
+					<sequence key="BUNDLE_LOG_REQUEST"/>
+					<header name="SOAPAction" scope="transport" value="http://tempuri.org/TopUpPayment"/>
+					<header name="Action" scope="transport" value="http://tempuri.org/TopUpPayment"/>
+					<property name="messageType" scope="axis2" type="STRING" value="application/soap+xml"/>
+					<property name="DISABLE_CHUNKING" scope="axis2" type="STRING" value="true"/>
+					<call>
+						<endpoint key="APCEndpoint"/>
+					</call>
+					<property expression="$body//gen:TopUpPaymentResponse/gen:TopUpPaymentResult" name="BodyParams" scope="default" type="OM" xmlns:gen="http://tempuri.org/"/>
+					<payloadFactory media-type="xml">
+						<format>
+							<soapenv:Envelope xmlns:ns0="http://tempuri.org/" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+								<soapenv:Body>$1</soapenv:Body>
+							</soapenv:Envelope>
+						</format>
+						<args>
+							<arg evaluator="xml" expression="$ctx:BodyParams"/>
+						</args>
+					</payloadFactory>
+					<property expression="$body//ACTIVITY/Status" name="status" scope="default" type="STRING"/>
+					<property expression="$body//ACTIVITY/Message" name="Message" scope="default" type="STRING"/>
+					<enrich>
+						<source clone="true" type="envelope"/>
+						<target property="Log_Response" type="property"/>
+					</enrich>
+					<property expression="$ctx:Log_Response" name="Log_Response" scope="default" type="STRING"/>
+					<filter xpath="fn:starts-with($ctx:MSISDN,'0')">
+						<then>
+							<property expression="fn:substring-after($ctx:MSISDN,'0')" name="MSISDN" scope="default" type="STRING"/>
+							<property expression="fn:concat('92',$ctx:MSISDN)" name="MSISDN" scope="default" type="STRING"/>
+						</then>
+						<else/>
+					</filter>
+					<filter xpath="$ctx:status='S'">
+						<then>
+							<property name="INTERFACE_NAME" scope="default" type="STRING" value="EFICS_EP"/>
+							<property expression="$ctx:status" name="JSON_RESPONSE" scope="default" type="STRING"/>
+							<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+							<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+							<sequence key="BUNDLE_LOG_RESPONSE"/>
+							<property action="remove" name="TRANSPORT_HEADERS" scope="axis2"/>
+							<payloadFactory media-type="json">
+								<format>{"data": {"type":"products","id":"$1","meta": {"services":{},"channel":"Easypaisa"}}}</format>
+								<args>
+									<arg evaluator="xml" expression="$ctx:PRODUCT_ID" xmlns:ns="http://org.apache.synapse/xsd"/>
+								</args>
+							</payloadFactory>
+							<property name="ContentType" scope="axis2" type="STRING" value="application/vnd.api+json"/>
+							<property name="INTERFACE_NAME" scope="default" type="STRING" value="BSSAPI_ACTIVATION"/>
+							<property expression="json-eval($)" name="REQUEST" scope="default" type="STRING"/>
+							<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING"/>
+							<property expression="fn:concat('https://bssapi.bss.jazz.com.pk/api/v1/subscriptions/',$ctx:uri.var.msisdn,'/relationships/products?identifier=msisdn')" name="RESOURCE_URI" scope="default" type="STRING" xmlns:ns3="http://org.apache.synapse/xsd"/>
+							<sequence key="BUNDLE_LOG_REQUEST"/>
+							<call>
+								<endpoint key="EasypaisaHBL_OFFER_ACTIVATION_DBSS_EP"/>
+							</call>
+							<script language="js"><![CDATA[java.lang.Thread.sleep(0500);]]></script>
+							<property expression="json-eval($.data.[0].attributes.href)" name="Account" scope="default" type="STRING"/>
+							<property expression="json-eval($.data.[0].attributes.href)" name="Response_URL" scope="default" type="STRING"/>
+							<property name="ERROR_detail" expression="json-eval($.errors.[0].detail)" scope="default" type="STRING"/>
+							<property expression="fn:substring-after($ctx:Account,'/api/v1/requests/')" name="Response_URL" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+							<filter regex="true" source="boolean(get-property('Response_URL'))" xmlns:ns="http://org.apache.synapse/xsd">
+								<then>
+									<property name="INTERFACE_NAME" scope="default" type="STRING" value="BSSAPI_ACTIVATION"/>
+									<property expression="$ctx:Response_URL" name="JSON_RESPONSE" scope="default" type="STRING"/>
+									<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+									<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+									<sequence key="BUNDLE_LOG_RESPONSE"/>
+									<property name="INTERFACE_NAME" scope="default" type="STRING" value="BSSAPIMEMOSTATUS"/>
+									<property expression="fn:concat('https://preprod-bssapi.bss.jazz.com.pk/api/v1/requests/',$ctx:Response_URL)" name="RESOURCE_URI" scope="default" type="STRING"/>
+									<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING"/>
+									<property expression="$ctx:Response_URL" name="REQUEST" scope="default" type="STRING"/>
+									<sequence key="BUNDLE_LOG_REQUEST"/>
+									<property expression="$ctx:Response_URL" name="uri.var.Response_URL" scope="default" type="STRING"/>
+									<call>
+										<endpoint key="EasypaisaHBL_OFFER_ACTIVATION_DBSS_GET_EP"/>
+									</call>
+									<property expression="json-eval($.data.attributes.status)" name="Response_STATUS" scope="default" type="STRING"/>
+									<property name="INTERFACE_NAME" scope="default" type="STRING" value="BSSAPIMEMOSTATUS"/>
+									<property expression="$ctx:Response_STATUS" name="JSON_RESPONSE" scope="default" type="STRING"/>
+									<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+									<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+									<sequence key="BUNDLE_LOG_RESPONSE"/>
+									<filter xpath="$ctx:Response_STATUS = 'done' or  $ctx:Response_STATUS = 'requested'">
+										<then>
+											<payloadFactory media-type="json">
+												<format>{"transactionId":"$1"}</format>
+												<args>
+													<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+												</args>
+											</payloadFactory>
+											<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+											<property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+											<property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+											<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+											<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+											<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+											<sequence key="BUNDLE_LOG_RESPONSE"/>
+											<respond/>
+										</then>
+										<else>
+											<payloadFactory media-type="json">
+												<format>{"transactionId":"$1"}</format>
+												<args>
+													<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+												</args>
+											</payloadFactory>
+											<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+											<property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+											<property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+											<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+											<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+											<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+											<sequence key="BUNDLE_LOG_RESPONSE"/>
+											<respond/>
+										</else>
+									</filter>
+								</then>
+								<else>
+									<property name="INTERFACE_NAME" scope="default" type="STRING" value="BSSAPI_ACTIVATION"/>
+									<property expression="$ctx:ERROR_detail" name="JSON_RESPONSE" scope="default" type="STRING"/>
+									<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+									<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+									<sequence key="BUNDLE_LOG_RESPONSE"/>
+									<payloadFactory media-type="json">
+										<format>{"transactionId":"$1"}</format>
+										<args>
+											<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+										</args>
+									</payloadFactory>
+									<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+									<property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+									<property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+									<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+									<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+									<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+									<sequence key="BUNDLE_LOG_RESPONSE"/>
+									<respond/>
+								</else>
+							</filter>
+						</then>
+						<else>
+							<property name="INTERFACE_NAME" scope="default" type="STRING" value="EFICS_EP"/>
+							<property expression="$ctx:status" name="JSON_RESPONSE" scope="default" type="STRING"/>
+							<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+							<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+							<sequence key="BUNDLE_LOG_RESPONSE"/>
+							<payloadFactory media-type="json">
+								<format>{ "error": { "errorCode": "$1", "description": "$2", "message": "", "transaction": { "transactionId": "$3" }, "STATUS": "$4" } }</format>
+								<args>
+									<arg value="408"/>
+									<arg evaluator="xml" expression="$ctx:Message"/>
+									<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+									<arg value="KO"/>
+								</args>
+							</payloadFactory>
+							<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+							<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+							<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+							<property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+							<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+							<sequence key="BUNDLE_LOG_RESPONSE"/>
+							<property action="remove" name="X-AspNet-Version" scope="transport"/>
+							<property action="remove" name="X-Powered-By" scope="transport"/>
+							<property action="remove" name="WWW-Authenticate" scope="transport"/>
+							<property action="remove" name="Server" scope="transport"/>
+							<property action="remove" name="Access-Control-Allow-Origin" scope="transport"/>
+							<property action="remove" name="TRANSPORT_HEADERS" scope="axis2"/>
+							<property action="remove" name="EXCESS_TRANSPORT_HEADERS" scope="axis2"/>
+							<respond/>
+						</else>
+					</filter>
+				</else>
+			</filter>
+		</inSequence>
+		<outSequence/>
+	</resource>
+</api>

@@ -1,0 +1,714 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="APC_RECHARGE_INSEQUENCE_MSA_v1" onError="APC_RECHARGE_FAULT_SEQUENCE_MSA" xmlns="http://ws.apache.org/ns/synapse">
+	<property name="MI_API_NAME" value="APC_Recharge" scope="default" type="STRING"/>
+	<property expression="json-eval($.Request.MSISDN)" name="MSISDN" scope="default" type="STRING"/>
+	<property name="MI_TIME" expression="fn:get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" scope="default"/>
+	<property expression="json-eval($.Request.TransactionId)" name="TRANSACTION_ID" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property name="REQUEST_ID" expression="$ctx:TRANSACTION_ID" scope="default" type="STRING"/>
+	<sequence key="MIinFlow"/>
+	<property expression="$trp:Loan_Check" name="Loan_Check" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$trp:Type_Check" name="Type_Check" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$trp:ApplicationName" name="ApplicationName" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="fn:concat($trp:X-Forwarded-For,get-property('To'))" name="RESOURCE_URI" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property action="remove" name="TRANSPORT_HEADERS" scope="axis2"/>
+	<property action="remove" name="EXCESS_TRANSPORT_HEADERS" scope="axis2"/>
+	<sequence key="GenericRemoveHeaders"/>
+	<property expression="fn:concat('RN',synapse:get-property('SYSTEM_TIME'))" name="RECEIPT_NUMBER" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="json-eval($.Request.TransactionId)" name="TransactionId" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="json-eval($.Request.ServiceUser)" name="ServiceUser" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="json-eval($.Request.ServicePassword)" name="ServicePassword" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="json-eval($.Request.MSISDN)" name="MSISDN" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="json-eval($.Request.Amount)" name="Amount" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="json-eval($.Request.RetailerNumber)" name="RETAILER_NO" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="json-eval($.Request.Model)" name="Model" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="json-eval($)" name="FullRequest" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:RECEIPT_NUMBER" name="ID" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="fn:substring-before($ctx:ServiceUser,'WSO2')" name="CHANNEL_NAME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:TransactionId" name="TRANSACTION_ID" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="fn:concat($ctx:ID,'|',$ctx:TRANSACTION_ID)" name="ID" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:Amount" name="AMOUNT" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:MSISDN" name="CUSOMERMSISDN" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:RECEIPT_NUMBER" name="RECEIPT_NO" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="TIME_IN" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property name="REQUEST_TIME" expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" scope="default" type="STRING"/>
+	<property name="API_NAME" scope="default" type="STRING" value="APC_Recharge"/>
+	<property name="APP_NAME" scope="default" type="STRING" expression="$ctx:ApplicationName"/>
+	<property name="INTERFACE_NAME" scope="default" type="STRING" value="REQUEST"/>
+	<property expression="fn:concat('TRANSACTION_ID:',$ctx:TransactionId,' | CHANNEL:',$ctx:ServiceUser,' |APPNAME:',$ctx:ApplicationName, ' | AMOUNT:',$ctx:Amount,' | RETAILER_ID:',$ctx:RETAILER_NO)" name="REQUEST" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<sequence key="APC_MSA_LOG_REQUEST"/>
+	<filter xmlns:ns="http://org.apache.synapse/xsd" xpath="fn:boolean(fn:string-length($ctx:ApplicationName) = 0)">
+		<then>
+			<payloadFactory media-type="json">
+				<format>{"Response": {"TransactionId": "$1", "StatusCode": "1001", "Status": "F", "Message": "Request has been failed due to unauthorized Channel. ", "MSISDN": "$2", "AcknowledgedID": "$3", "PartnerBalance": "NaN"}}</format>
+				<args>
+					<arg evaluator="xml" expression="$ctx:TRANSACTION_ID" literal="false"/>
+					<arg evaluator="xml" expression="$ctx:MSISDN" literal="false"/>
+					<arg evaluator="xml" expression="$ctx:RECEIPT_NUMBER" literal="false"/>
+				</args>
+			</payloadFactory>
+			<property name="DBStatus" scope="default" type="STRING" value="Failed"/>
+			<property name="Description" scope="default" type="STRING" value="Request has been failed due to AppName required"/>
+			<property name="STATUSCODE" scope="default" type="STRING" value="1001"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="TIME_OUT" scope="default" type="STRING"/>
+			<sequence key="APC_MSA_HUB_TRANSACTION_STATUS"/>
+			<property name="HTTP_SC" scope="axis2" type="STRING" value="401"/>
+			<property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+			<property name="ContentType" scope="axis2" type="STRING" value="application/json"/>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+			<property name="STATUS" scope="default" type="STRING" value="KO"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss')" name="RESPONSE_TIME" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property expression="json-eval($)" name="RESPONSE" scope="default" type="STRING"/>
+			<sequence key="APC_MSA_LOG_RESPONSE"/>
+			<respond/>
+		</then>
+		<else>
+			<property expression="fn:concat($ctx:Amount,'00')" name="Amount_Paisa" scope="default" type="STRING"/>
+			<property name="PREPAIDLIMIT_CHECK" scope="default" type="STRING" value="0"/>
+			<property name="POSTPAIDLIMIT_CHECK" scope="default" type="STRING" value="0"/>
+			<property name="GETBALANCE_FAULT" scope="default" type="STRING" value="0"/>
+			<property name="GETBALANCE_RESPONSE" scope="default" type="STRING" value="0"/>
+			<property name="UPDATEBALANCE_FAULT" scope="default" type="STRING" value="0"/>
+			<property name="UPDATEBALANCE_RESPONSE" scope="default" type="STRING" value="0"/>
+			<property name="REFILL_CHECK" scope="default" type="STRING" value="0"/>
+			<property name="RBS_CHECK" scope="default" type="STRING" value="0"/>
+			<property name="LOAN" scope="default" type="STRING" value="no"/>
+			<property name="DA_CHECK" scope="default" type="STRING" value="Null"/>
+			<property name="WITH_DA_CHECK" scope="default" type="STRING" value="0"/>
+			<property name="WITHOUT_DA_CHECK" scope="default" type="STRING" value="0"/>
+			<property name="COMISSION_FACTOR" scope="default" type="STRING" value="1.15"/>
+		</else>
+	</filter>
+	<filter regex="^\d{1,20}$" source="$ctx:TransactionId" xmlns:ns="http://org.apache.synapse/xsd">
+		<then/>
+		<else>
+			<payloadFactory media-type="json">
+				<format>{"Response": {"TransactionId": "$1", "StatusCode": "1004", "Status": "F", "Message": "Request has been failed due to Invalid Transaction ID. ", "MSISDN": "$2", "AcknowledgedID": "$3", "PartnerBalance": "NaN"}}</format>
+				<args>
+					<arg evaluator="xml" expression="$ctx:TRANSACTION_ID" literal="false"/>
+					<arg evaluator="xml" expression="$ctx:MSISDN" literal="false"/>
+					<arg evaluator="xml" expression="$ctx:RECEIPT_NUMBER" literal="false"/>
+				</args>
+			</payloadFactory>
+			<property name="DBStatus" scope="default" type="STRING" value="Failed"/>
+			<property name="Description" scope="default" type="STRING" value="Request has been failed due to invalid TRANSACTIONID"/>
+			<property name="STATUSCODE" scope="default" type="STRING" value="1004"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="TIME_OUT" scope="default" type="STRING"/>
+			<sequence key="APC_MSA_HUB_TRANSACTION_STATUS"/>
+			<property name="HTTP_SC" scope="axis2" type="STRING" value="400"/>
+			<property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+			<property name="ContentType" scope="axis2" type="STRING" value="application/json"/>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+			<property name="STATUS" scope="default" type="STRING" value="KO"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss')" name="RESPONSE_TIME" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property expression="json-eval($)" name="RESPONSE" scope="default" type="STRING"/>
+			<sequence key="APC_MSA_LOG_RESPONSE"/>
+			<respond/>
+		</else>
+	</filter>
+	<filter regex="^923\d{9}$" source="$ctx:MSISDN" xmlns:ns="http://org.apache.synapse/xsd">
+		<then/>
+		<else>
+			<payloadFactory media-type="json">
+				<format>{"Response": {"TransactionId": "$1", "StatusCode": "1002", "Status": "F", "Message": "Request has been failed due to Invalid MSISDN. ", "MSISDN": "$2", "AcknowledgedID": "$3", "PartnerBalance": "NaN"}}</format>
+				<args>
+					<arg evaluator="xml" expression="$ctx:TRANSACTION_ID" literal="false"/>
+					<arg evaluator="xml" expression="$ctx:MSISDN" literal="false"/>
+					<arg evaluator="xml" expression="$ctx:RECEIPT_NUMBER" literal="false"/>
+				</args>
+			</payloadFactory>
+			<property name="DBStatus" scope="default" type="STRING" value="Failed"/>
+			<property name="Description" scope="default" type="STRING" value="Request has been failed due to invalid MSISDN"/>
+			<property name="STATUSCODE" scope="default" type="STRING" value="1002"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="TIME_OUT" scope="default" type="STRING"/>
+			<sequence key="APC_MSA_HUB_TRANSACTION_STATUS"/>
+			<property name="HTTP_SC" scope="axis2" type="STRING" value="400"/>
+			<property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+			<property name="ContentType" scope="axis2" type="STRING" value="application/json"/>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+			<property name="STATUS" scope="default" type="STRING" value="KO"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss')" name="RESPONSE_TIME" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property expression="json-eval($)" name="RESPONSE" scope="default" type="STRING"/>
+			<sequence key="APC_MSA_LOG_RESPONSE"/>
+			<respond/>
+		</else>
+	</filter>
+	<filter regex="^[1-9]\d{0,4}$" source="$ctx:Amount" xmlns:ns="http://org.apache.synapse/xsd">
+		<then/>
+		<else>
+			<payloadFactory media-type="json">
+				<format>{"Response": {"TransactionId": "$1", "StatusCode": "1003", "Status": "F", "Message": "Request has been failed due to Invalid Amount. ", "MSISDN": "$2", "AcknowledgedID": "$3", "PartnerBalance": "NaN"}}</format>
+				<args>
+					<arg evaluator="xml" expression="$ctx:TRANSACTION_ID" literal="false"/>
+					<arg evaluator="xml" expression="$ctx:MSISDN" literal="false"/>
+					<arg evaluator="xml" expression="$ctx:RECEIPT_NUMBER" literal="false"/>
+				</args>
+			</payloadFactory>
+			<property name="DBStatus" scope="default" type="STRING" value="Failed"/>
+			<property name="Description" scope="default" type="STRING" value="Request has been failed due to invalid AMOUNT"/>
+			<property name="STATUSCODE" scope="default" type="STRING" value="1003"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="TIME_OUT" scope="default" type="STRING"/>
+			<sequence key="APC_MSA_HUB_TRANSACTION_STATUS"/>
+			<property name="HTTP_SC" scope="axis2" type="STRING" value="400"/>
+			<property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+			<property name="ContentType" scope="axis2" type="STRING" value="application/json"/>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+			<property name="STATUS" scope="default" type="STRING" value="KO"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss')" name="RESPONSE_TIME" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property expression="json-eval($)" name="RESPONSE" scope="default" type="STRING"/>
+			<sequence key="APC_MSA_LOG_RESPONSE"/>
+			<respond/>
+		</else>
+	</filter>
+	<filter regex="^(JB-)?[A-Za-z]{1,15}WSO2$" source="$ctx:ServiceUser" xmlns:ns="http://org.apache.synapse/xsd">
+		<then/>
+		<else>
+			<payloadFactory media-type="json">
+				<format>{"Response": {"TransactionId": "$1", "StatusCode": "1005", "Status": "F", "Message": "Request has been failed due to Invalid Service User. ", "MSISDN": "$2", "AcknowledgedID": "$3", "PartnerBalance": "NaN"}}</format>
+				<args>
+					<arg evaluator="xml" expression="$ctx:TRANSACTION_ID" literal="false"/>
+					<arg evaluator="xml" expression="$ctx:MSISDN" literal="false"/>
+					<arg evaluator="xml" expression="$ctx:RECEIPT_NUMBER" literal="false"/>
+				</args>
+			</payloadFactory>
+			<property name="DBStatus" scope="default" type="STRING" value="Failed"/>
+			<property name="Description" scope="default" type="STRING" value="Request has been failed due to invalid SERVICEUSER"/>
+			<property name="STATUSCODE" scope="default" type="STRING" value="1005"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="TIME_OUT" scope="default" type="STRING"/>
+			<sequence key="APC_MSA_HUB_TRANSACTION_STATUS"/>
+			<property name="HTTP_SC" scope="axis2" type="STRING" value="400"/>
+			<property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+			<property name="ContentType" scope="axis2" type="STRING" value="application/json"/>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+			<property name="STATUS" scope="default" type="STRING" value="KO"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss')" name="RESPONSE_TIME" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property expression="json-eval($)" name="RESPONSE" scope="default" type="STRING"/>
+			<sequence key="APC_MSA_LOG_RESPONSE"/>
+			<respond/>
+		</else>
+	</filter>
+	<property expression="get-property('registry',fn:concat('conf:/custom/apc-generic-v3/', get-property('ApplicationName')))" name="RegDetails" scope="default" type="OM" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:RegDetails//*[local-name()='ServiceUser']" name="RegUser" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:RegDetails//*[local-name()='ServicePassword']" name="RegPassword" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:RegDetails//*[local-name()='PartnerMsisdn']" name="RegMsisdn" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:RegDetails//*[local-name()='PartnerDAID']" name="RegDAID" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:RegDetails//*[local-name()='PostFix']" name="RegPostFix" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:RegDetails//*[local-name()='PreMinLimit']" name="RegPreMinLimit" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:RegDetails//*[local-name()='PreMaxLimit']" name="RegPreMaxLimit" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:RegDetails//*[local-name()='PostMinLimit']" name="RegPostMinLimit" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:RegDetails//*[local-name()='PostMaxLimit']" name="RegPostMaxLimit" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:RegDetails//*[local-name()='PaymentCode']" name="RegPaymentCode" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:RegDetails//*[local-name()='PostCode']" name="RegPostCode" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:RegDetails//*[local-name()='WalletCheck']" name="RegWalletCheck" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:RegDetails//*[local-name()='ExParam1']" name="RegExParam1" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:RegDetails//*[local-name()='ExParam2']" name="RegExParam2" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:RegMsisdn" name="PARTNER_MSISDN" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:RegDAID" name="PARTNER_DAID" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:RegPreMinLimit" name="PREPAID_MINLIMIT" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:RegPreMaxLimit" name="PREPAID_MAXLIMIT" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:RegPostMinLimit" name="POSTPAID_MINLIMIT" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:RegPostMaxLimit" name="POSTPAID_MAXLIMIT" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:Loan_Check" name="Loan_Check" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:Type_Check" name="Type_Check" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<filter xmlns:ns="http://org.apache.synapse/xsd" xpath="($ctx:Loan_Check ='false') and ($ctx:Type_Check ='prepaid' or $ctx:Type_Check = 'postpaid')">
+		<then>
+			<property expression="base64Decode(get-property('RegPassword'))" name="DecryptedServicePassword" scope="default" type="STRING"/>
+			<property expression="base64Decode(get-property('RegPostCode'))" name="DecryptedModelValue" scope="default" type="STRING"/>
+			<property expression="base64Decode(get-property('ServicePassword'))" name="ServicePassword" scope="default" type="STRING"/>
+			<property expression="base64Decode(get-property('Model'))" name="Model" scope="default" type="STRING"/>
+			<property name="CHANNEL" scope="default" type="STRING" value="BUNDLE_API"/>
+			<property expression="$ctx:Type_Check" name="TYPE" scope="default" type="STRING"/>
+			<property name="OPERATOR" scope="default" type="STRING" value="Jazz"/>
+		</then>
+		<else>
+			<property expression="base64Decode(get-property('RegPassword'))" name="DecryptedServicePassword" scope="default" type="STRING"/>
+			<property expression="base64Decode(get-property('RegPostCode'))" name="DecryptedModelValue" scope="default" type="STRING"/>
+			<property name="CHANNEL" scope="default" type="STRING" value="RECHAGRE_API"/>
+		</else>
+	</filter>
+	<filter xmlns:ns="http://org.apache.synapse/xsd" xpath="not($ctx:ServiceUser = $ctx:RegUser) or not($ctx:ServicePassword = $ctx:DecryptedServicePassword)">
+		<then>
+			<payloadFactory media-type="json">
+				<format>{"Response": {"TransactionId": "$1", "StatusCode": "1006", "Status": "F", "Message": "Request has been failed due to Invalid Credentials. ", "MSISDN": "$2", "AcknowledgedID": "$3", "PartnerBalance": "NaN"}}</format>
+				<args>
+					<arg evaluator="xml" expression="$ctx:TRANSACTION_ID" literal="false"/>
+					<arg evaluator="xml" expression="$ctx:MSISDN" literal="false"/>
+					<arg evaluator="xml" expression="$ctx:RECEIPT_NUMBER" literal="false"/>
+				</args>
+			</payloadFactory>
+			<property name="DBStatus" scope="default" type="STRING" value="Failed"/>
+			<property name="Description" scope="default" type="STRING" value="Request has been failed due to invalid Credentials"/>
+			<property name="STATUSCODE" scope="default" type="STRING" value="1006"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="TIME_OUT" scope="default" type="STRING"/>
+			<sequence key="APC_MSA_HUB_TRANSACTION_STATUS"/>
+			<property name="HTTP_SC" scope="axis2" type="STRING" value="401"/>
+			<property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+			<property name="ContentType" scope="axis2" type="STRING" value="application/json"/>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+			<property name="STATUS" scope="default" type="STRING" value="KO"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss')" name="RESPONSE_TIME" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property expression="json-eval($)" name="RESPONSE" scope="default" type="STRING"/>
+			<sequence key="APC_MSA_LOG_RESPONSE"/>
+			<respond/>
+		</then>
+		<else/>
+	</filter>
+	<filter regex="RECHAGRE_API" source="$ctx:CHANNEL" xmlns:ns="http://org.apache.synapse/xsd">
+		<then>
+			<property expression="$ctx:CUSOMERMSISDN" name="uri.var.msisdn" scope="default" type="STRING"/>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="BSS-CLIENTELE"/>
+			<property name="RESOURCE_URI" scope="default" type="STRING" value="https://bssapi.bss.jazz.com.pk/api/v1/subscriptions/msisdn?identifier-type=msisdn&amp;include=subscription-type,owner-customer"/>
+			<property expression="$ctx:uri.var.msisdn" name="REQUEST" scope="default" type="STRING"/>
+			<property name="REQUEST_TIME" expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" scope="default" type="STRING"/>
+			<sequence key="APC_MSA_LOG_REQUEST"/>
+			<call>
+				<endpoint key="apc_clientele_preprod"/>
+			</call>
+			<property expression="json-eval($.included[1].attributes.business-model-type)" name="TYPE" scope="default" type="STRING"/>
+			<property expression="json-eval($.included[1].attributes.brand)" name="OPERATOR" scope="default" type="STRING"/>
+			<filter xpath="fn:boolean(fn:string-length($ctx:OPERATOR) = 0 or $ctx:OPERATOR = 'unknown') or fn:boolean(fn:string-length($ctx:TYPE) = 0 or $ctx:TYPE = 'unknown')">
+				<then>
+					<property expression="fn:concat('OPERATOR:',$ctx:OPERATOR,' | TYPE:',$ctx:TYPE)" name="RESPONSE" scope="default" type="STRING"/>
+					<property name="STATUS" scope="default" type="STRING" value="KO"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss')" name="RESPONSE_TIME" xmlns:ns="http://org.apache.synapse/xsd"/>
+					<sequence key="APC_MSA_LOG_RESPONSE"/>
+					<payloadFactory media-type="json">
+						<format>{"Response": {"TransactionId": "$1", "StatusCode": "1007", "Status": "F", "Message": "Your request has been failed due to Other Network Number.", "MSISDN": "$2", "AcknowledgedID": "$3", "PartnerBalance": "NaN"}}</format>
+						<args>
+							<arg evaluator="xml" expression="$ctx:TRANSACTION_ID" literal="false"/>
+							<arg evaluator="xml" expression="$ctx:MSISDN" literal="false"/>
+							<arg evaluator="xml" expression="$ctx:RECEIPT_NUMBER" literal="false"/>
+						</args>
+					</payloadFactory>
+					<property name="DBStatus" scope="default" type="STRING" value="Failed"/>
+					<property name="Description" scope="default" type="STRING" value="Request has been failed due to Unknown Operator"/>
+					<property name="STATUSCODE" scope="default" type="STRING" value="1007"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="TIME_OUT" scope="default" type="STRING"/>
+					<sequence key="APC_MSA_HUB_TRANSACTION_STATUS"/>
+					<property name="HTTP_SC" scope="axis2" type="STRING" value="201"/>
+					<property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+					<property name="ContentType" scope="axis2" type="STRING" value="application/json"/>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+					<property name="STATUS" scope="default" type="STRING" value="KO"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss')" name="RESPONSE_TIME" xmlns:ns="http://org.apache.synapse/xsd"/>
+					<property expression="json-eval($)" name="RESPONSE" scope="default" type="STRING"/>
+					<sequence key="APC_MSA_LOG_RESPONSE"/>
+					<respond/>
+				</then>
+				<else>
+					<property expression="fn:concat('OPERATOR:',$ctx:OPERATOR,' | TYPE:',$ctx:TYPE)" name="RESPONSE" scope="default" type="STRING"/>
+					<property name="STATUS" scope="default" type="STRING" value="OK"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss')" name="RESPONSE_TIME" xmlns:ns="http://org.apache.synapse/xsd"/>
+					<sequence key="APC_MSA_LOG_RESPONSE"/>
+				</else>
+			</filter>
+		</then>
+		<else/>
+	</filter>
+	<filter regex="prepaid" source="$ctx:TYPE" xmlns:ns="http://org.apache.synapse/xsd">
+		<then>
+			<filter regex="false" source="get-property('Amount') > get-property('PREPAID_MINLIMIT') and get-property('PREPAID_MAXLIMIT') > get-property('Amount')">
+				<then>
+					<property name="PREPAIDLIMIT_CHECK" scope="default" type="STRING" value="1"/>
+				</then>
+				<else/>
+			</filter>
+		</then>
+		<else>
+			<filter regex="false" source="get-property('Amount') > get-property('POSTPAID_MINLIMIT') and get-property('POSTPAID_MAXLIMIT') > get-property('Amount')">
+				<then>
+					<property name="POSTPAIDLIMIT_CHECK" scope="default" type="STRING" value="1"/>
+				</then>
+				<else/>
+			</filter>
+		</else>
+	</filter>
+	<filter regex="true" source="get-property('PREPAIDLIMIT_CHECK')='1' or get-property('POSTPAIDLIMIT_CHECK')='1'" xmlns:ns="http://org.apache.synapse/xsd">
+		<then>
+			<payloadFactory media-type="json">
+				<format>{"Response": {"TransactionId": "$1", "StatusCode": "1008", "Status": "F", "Message": "Your request has been failed due to Amount not in Limit Range. ", "MSISDN": "$2", "AcknowledgedID": "$3", "PartnerBalance": "NaN"}}</format>
+				<args>
+					<arg evaluator="xml" expression="$ctx:TRANSACTION_ID" literal="false"/>
+					<arg evaluator="xml" expression="$ctx:MSISDN" literal="false"/>
+					<arg evaluator="xml" expression="$ctx:RECEIPT_NUMBER" literal="false"/>
+				</args>
+			</payloadFactory>
+			<property name="DBStatus" scope="default" type="STRING" value="Failed"/>
+			<property name="Description" scope="default" type="STRING" value="Request has been failed due to Amount Range"/>
+			<property name="STATUSCODE" scope="default" type="STRING" value="1008"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="TIME_OUT" scope="default" type="STRING"/>
+			<sequence key="APC_MSA_HUB_TRANSACTION_STATUS"/>
+			<property name="HTTP_SC" scope="axis2" type="STRING" value="201"/>
+			<property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+			<property name="ContentType" scope="axis2" type="STRING" value="application/json"/>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+			<property name="STATUS" scope="default" type="STRING" value="KO"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss')" name="RESPONSE_TIME" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property expression="json-eval($)" name="RESPONSE" scope="default" type="STRING"/>
+			<sequence key="APC_MSA_LOG_RESPONSE"/>
+			<respond/>
+		</then>
+		<else/>
+	</filter>
+	<filter regex="RECHAGRE_API" source="$ctx:CHANNEL" xmlns:ns="http://org.apache.synapse/xsd">
+		<then>
+			<property expression="fn:substring(get-property('CUSOMERMSISDN'),3)" name="NORMALIZED_MSISDN_FOR_IN" scope="default" type="STRING"/>
+			<sequence key="APC_RECHARGE_GET_AND_BALANCE_SEQUENCE"/>
+			<filter regex="0" source="$ctx:GETBALANCE_RESPONSE">
+				<then>
+					<property expression="boolean($ctx:IN_DA_ACCOUNT_ID ='16' and $ctx:IN_DA_ACCOUNT_VALUE > '0')" name="P2" scope="default" type="STRING"/>
+					<filter regex="true" source="boolean($ctx:IN_DA_ACCOUNT_ID ='16' and $ctx:IN_DA_ACCOUNT_VALUE > '0')">
+						<then>
+							<filter xpath="fn:boolean(fn:string-length($ctx:IN_DA_ACCOUNT_VALUE_N) = 0)">
+								<then>
+									<property name="IN_DA_ACCOUNT_VALUE_N" scope="default" type="INTEGER" value="0"/>
+								</then>
+								<else/>
+							</filter>
+							<property expression="$ctx:COMISSION_FACTOR" name="R_Amount" scope="default" type="STRING"/>
+							<script language="js"><![CDATA[var log = mc.getServiceLog();     var DA_ID16=parseInt(mc.getProperty("IN_DA_ACCOUNT_VALUE"));          var DA_ID17=parseInt(mc.getProperty("IN_DA_ACCOUNT_VALUE_N"));      var r_amount=parseFloat(mc.getProperty("R_Amount"));     log.info(parseFloat(mc.getProperty("R_Amount")));     var add = DA_ID16 + DA_ID17;        var result1 = add/100;         var result2 = result1 * r_amount;        mc.setProperty("Result1",result1);        mc.setProperty("Result2",result2);]]></script>
+							<property expression="fn:ceiling($ctx:Result2)" name="RechargeAmount" scope="default" type="STRING"/>
+							<property expression="$ctx:RechargeAmount" name="RechargeAmount" scope="default" type="STRING"/>
+							<property name="Loan" scope="default" type="STRING" value="yes"/>
+							<filter regex="true" source="get-property('Amount') &lt; get-property('RechargeAmount') ">
+								<then>
+									<payloadFactory media-type="json">
+										<format>{"Response": {"TransactionId": "$1", "StatusCode": "1009", "Status": "F", "Message": "Your request has been failed due to Availed Loan. Please recharge minimum LoanBalance field amount", "MSISDN": "$2", "AcknowledgedID": "$3", "LoanBalance": "$4"}}</format>
+										<args>
+											<arg evaluator="xml" expression="$ctx:TRANSACTION_ID" literal="false"/>
+											<arg evaluator="xml" expression="$ctx:MSISDN" literal="false"/>
+											<arg evaluator="xml" expression="$ctx:RECEIPT_NUMBER" literal="false"/>
+											<arg evaluator="xml" expression="$ctx:RechargeAmount" literal="false"/>
+										</args>
+									</payloadFactory>
+									<property name="DBStatus" scope="default" type="STRING" value="Failed"/>
+									<property name="Description" scope="default" type="STRING" value="Request has been failed due to Availed Loan"/>
+									<property name="STATUSCODE" scope="default" type="STRING" value="1009"/>
+									<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="TIME_OUT" scope="default" type="STRING"/>
+									<sequence key="APC_MSA_HUB_TRANSACTION_STATUS"/>
+									<property name="HTTP_SC" scope="axis2" type="STRING" value="201"/>
+									<property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+									<property name="ContentType" scope="axis2" type="STRING" value="application/json"/>
+									<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+									<property name="STATUS" scope="default" type="STRING" value="KO"/>
+									<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss')" name="RESPONSE_TIME" xmlns:ns="http://org.apache.synapse/xsd"/>
+									<property expression="json-eval($)" name="RESPONSE" scope="default" type="STRING"/>
+									<sequence key="APC_MSA_LOG_RESPONSE"/>
+									<respond/>
+								</then>
+								<else/>
+							</filter>
+						</then>
+						<else/>
+					</filter>
+				</then>
+				<else>
+					<payloadFactory media-type="json">
+						<format>{"Response": {"TransactionId": "$1", "StatusCode": "1010", "Status": "F", "Message": "Your request has been failed due to some technical issue. ", "MSISDN": "$2", "AcknowledgedID": "$3", "PartnerBalance": "NaN"}}</format>
+						<args>
+							<arg evaluator="xml" expression="$ctx:TRANSACTION_ID" literal="false"/>
+							<arg evaluator="xml" expression="$ctx:MSISDN" literal="false"/>
+							<arg evaluator="xml" expression="$ctx:RECEIPT_NUMBER" literal="false"/>
+						</args>
+					</payloadFactory>
+					<property name="DBStatus" scope="default" type="STRING" value="Failed"/>
+					<property name="Description" scope="default" type="STRING" value="Request has been failed due to GetBalanceAndDate Failure"/>
+					<property name="STATUSCODE" scope="default" type="STRING" value="1010"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="TIME_OUT" scope="default" type="STRING"/>
+					<sequence key="APC_MSA_HUB_TRANSACTION_STATUS"/>
+					<property name="HTTP_SC" scope="axis2" type="STRING" value="201"/>
+					<property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+					<property name="ContentType" scope="axis2" type="STRING" value="application/json"/>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+					<property name="STATUS" scope="default" type="STRING" value="KO"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss')" name="RESPONSE_TIME" xmlns:ns="http://org.apache.synapse/xsd"/>
+					<property expression="json-eval($)" name="RESPONSE" scope="default" type="STRING"/>
+					<sequence key="APC_MSA_LOG_RESPONSE"/>
+					<respond/>
+				</else>
+			</filter>
+		</then>
+		<else/>
+	</filter>
+	<filter xmlns:ns="http://org.apache.synapse/xsd" xpath="($ctx:DecryptedModelValue = $ctx:Model) and ($ctx:RegWalletCheck = '0')">
+		<then>
+			<filter regex="PL" source="$ctx:Model">
+				<then>
+					<property name="WITHOUT_DA_CHECK" scope="default" type="STRING" value="1"/>
+					<property name="PARTNER_BALANCE" scope="default" type="STRING" value="NaN"/>
+					<property name="DA_CHECK" scope="default" type="STRING" value="False"/>
+				</then>
+				<else>
+					<payloadFactory media-type="json">
+						<format>{"Response": {"TransactionId": "$1", "StatusCode": "1011", "Status": "F", "Message": "Your request has been failed due to Invalid Model value, It should be PL. ", "MSISDN": "$2", "AcknowledgedID": "$3", "PartnerBalance": "NaN"}}</format>
+						<args>
+							<arg evaluator="xml" expression="$ctx:TRANSACTION_ID" literal="false"/>
+							<arg evaluator="xml" expression="$ctx:MSISDN" literal="false"/>
+							<arg evaluator="xml" expression="$ctx:RECEIPT_NUMBER" literal="false"/>
+						</args>
+					</payloadFactory>
+					<property name="DBStatus" scope="default" type="STRING" value="Failed"/>
+					<property name="Description" scope="default" type="STRING" value="Request has been failed due to Invalid Model"/>
+					<property name="STATUSCODE" scope="default" type="STRING" value="1011"/>
+					<property name="DA_CHECK" scope="default" type="STRING" value="False"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="TIME_OUT" scope="default" type="STRING"/>
+					<sequence key="APC_MSA_HUB_TRANSACTION_STATUS"/>
+					<property name="HTTP_SC" scope="axis2" type="STRING" value="201"/>
+					<property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+					<property name="ContentType" scope="axis2" type="STRING" value="application/json"/>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+					<property name="STATUS" scope="default" type="STRING" value="KO"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss')" name="RESPONSE_TIME" xmlns:ns="http://org.apache.synapse/xsd"/>
+					<property expression="json-eval($)" name="RESPONSE" scope="default" type="STRING"/>
+					<sequence key="APC_MSA_LOG_RESPONSE"/>
+					<respond/>
+				</else>
+			</filter>
+		</then>
+		<else>
+			<filter regex="Null" source="$ctx:RegMsisdn">
+				<then>
+					<payloadFactory media-type="json">
+						<format>{"Response": {"TransactionId": "$1", "StatusCode": "1012", "Status": "F", "Message": "Your request has been failed due to Wallet does not Exist. ", "MSISDN": "$2", "AcknowledgedID": "$3", "PartnerBalance": "NaN"}}</format>
+						<args>
+							<arg evaluator="xml" expression="$ctx:TRANSACTION_ID" literal="false"/>
+							<arg evaluator="xml" expression="$ctx:MSISDN" literal="false"/>
+							<arg evaluator="xml" expression="$ctx:RECEIPT_NUMBER" literal="false"/>
+						</args>
+					</payloadFactory>
+					<property name="DBStatus" scope="default" type="STRING" value="Failed"/>
+					<property name="Description" scope="default" type="STRING" value="Request has been failed due to Invalid Wallet"/>
+					<property name="STATUSCODE" scope="default" type="STRING" value="1012"/>
+					<property name="DA_CHECK" scope="default" type="STRING" value="True"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="TIME_OUT" scope="default" type="STRING"/>
+					<sequence key="APC_MSA_HUB_TRANSACTION_STATUS"/>
+					<property name="HTTP_SC" scope="axis2" type="STRING" value="201"/>
+					<property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+					<property name="ContentType" scope="axis2" type="STRING" value="application/json"/>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+					<property name="STATUS" scope="default" type="STRING" value="KO"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss')" name="RESPONSE_TIME" xmlns:ns="http://org.apache.synapse/xsd"/>
+					<property expression="json-eval($)" name="RESPONSE" scope="default" type="STRING"/>
+					<sequence key="APC_MSA_LOG_RESPONSE"/>
+					<respond/>
+				</then>
+				<else/>
+			</filter>
+			<property name="WITH_DA_CHECK" scope="default" type="STRING" value="1"/>
+			<property expression="fn:substring($ctx:RegMsisdn,2)" name="NORMALIZED_MSISDN_FOR_IN" scope="default" type="STRING"/>
+			<sequence key="APC_RECHARGE_GET_AND_BALANCE_SEQUENCE"/>
+			<filter regex="0" source="$ctx:GETBALANCE_RESPONSE">
+				<then>
+					<filter xpath="$ctx:APC_IN_DA_ACCOUNT_VALUE > $ctx:Amount_Paisa or $ctx:APC_IN_DA_ACCOUNT_VALUE = $ctx:Amount_Paisa">
+						<then>
+							<filter xpath="fn:starts-with($ctx:CHANNEL_NAME,'JB-')">
+								<then>
+									<property expression="fn:concat('JBWSO2',fn:substring-after(get-property('CHANNEL_NAME'),'JB-'),'Wallet')" name="HostName" scope="default" type="STRING"/>
+								</then>
+								<else>
+									<property expression="fn:concat('WSO2',$ctx:CHANNEL_NAME,'Wallet')" name="HostName" scope="default" type="STRING"/>
+								</else>
+							</filter>
+							<property expression="fn:concat('-',$ctx:Amount,'00')" name="Amount_Paisa" scope="default" type="STRING"/>
+							<property name="Recon" scope="default" type="STRING" value="UpdateBalanceAndDateAdd"/>
+							<property expression="fn:substring($ctx:RegMsisdn,2)" name="NORMALIZED_MSISDN_FOR_IN" scope="default" type="STRING"/>
+							<sequence key="APC_RECHARGE_UPDATE_AND_BALANCE_SEQUENCE"/>
+							<filter regex="0" source="$ctx:UPDATEBALANCE_RESPONSE">
+								<then>
+									<property name="WITH_DA_CHECK" scope="default" type="STRING" value="1"/>
+									<property name="DA_CHECK" scope="default" type="STRING" value="True"/>
+									<property expression="//methodResponse/params/param/value/struct/member[name='dedicatedAccountChangeInformation']/value/array/data/value/struct/member[name='dedicatedAccountID' and value/i4='2094']/parent::struct/member[name='dedicatedAccountValue1']/value/string" name="Remaning_Balance_Dedicated_Account_Value1" scope="default" type="STRING"/>
+									<property expression="fn:substring(get-property('Remaning_Balance_Dedicated_Account_Value1'), 1, fn:string-length(get-property('Remaning_Balance_Dedicated_Account_Value1')) - 2)" name="Remaning_Balance_Dedected_last_zero" scope="default" type="STRING"/>
+									<property expression="$ctx:Remaning_Balance_Dedected_last_zero" name="PARTNER_BALANCE" scope="default" type="STRING"/>
+								</then>
+								<else>
+									<payloadFactory media-type="json">
+										<format>{"Response": {"TransactionId": "$1", "StatusCode": "1013", "Status": "F", "Message": "Your request has been failed due to some technical issue. ", "MSISDN": "$2", "AcknowledgedID": "$3", "PartnerBalance": "NaN"}}</format>
+										<args>
+											<arg evaluator="xml" expression="$ctx:TRANSACTION_ID" literal="false"/>
+											<arg evaluator="xml" expression="$ctx:MSISDN" literal="false"/>
+											<arg evaluator="xml" expression="$ctx:RECEIPT_NUMBER" literal="false"/>
+										</args>
+									</payloadFactory>
+									<property name="DBStatus" scope="default" type="STRING" value="Failed"/>
+									<property name="Description" scope="default" type="STRING" value="Request has been failed due to UpdateBalanceAndDate Failure"/>
+									<property name="STATUSCODE" scope="default" type="STRING" value="1013"/>
+									<property name="DA_CHECK" scope="default" type="STRING" value="True"/>
+									<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="TIME_OUT" scope="default" type="STRING"/>
+									<sequence key="APC_MSA_HUB_TRANSACTION_STATUS"/>
+									<property name="HTTP_SC" scope="axis2" type="STRING" value="201"/>
+									<property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+									<property name="ContentType" scope="axis2" type="STRING" value="application/json"/>
+									<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+									<property name="STATUS" scope="default" type="STRING" value="KO"/>
+									<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss')" name="RESPONSE_TIME" xmlns:ns="http://org.apache.synapse/xsd"/>
+									<property expression="json-eval($)" name="RESPONSE" scope="default" type="STRING"/>
+									<sequence key="APC_MSA_LOG_RESPONSE"/>
+									<respond/>
+								</else>
+							</filter>
+						</then>
+						<else>
+							<payloadFactory media-type="json">
+								<format>{"Response": {"TransactionId": "$1", "StatusCode": "1014", "Status": "F", "Message": "Your request has been failed due to Insufficient Balance. ", "MSISDN": "$2", "AcknowledgedID": "$3", "PartnerBalance": "NaN"}}</format>
+								<args>
+									<arg evaluator="xml" expression="$ctx:TRANSACTION_ID" literal="false"/>
+									<arg evaluator="xml" expression="$ctx:MSISDN" literal="false"/>
+									<arg evaluator="xml" expression="$ctx:RECEIPT_NUMBER" literal="false"/>
+								</args>
+							</payloadFactory>
+							<property name="DBStatus" scope="default" type="STRING" value="Failed"/>
+							<property name="Description" scope="default" type="STRING" value="Request has been failed due to Insufficient Balance"/>
+							<property name="STATUSCODE" scope="default" type="STRING" value="1014"/>
+							<property name="DA_CHECK" scope="default" type="STRING" value="True"/>
+							<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="TIME_OUT" scope="default" type="STRING"/>
+							<sequence key="APC_MSA_HUB_TRANSACTION_STATUS"/>
+							<property name="HTTP_SC" scope="axis2" type="STRING" value="201"/>
+							<property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+							<property name="ContentType" scope="axis2" type="STRING" value="application/json"/>
+							<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+							<property name="STATUS" scope="default" type="STRING" value="KO"/>
+							<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss')" name="RESPONSE_TIME" xmlns:ns="http://org.apache.synapse/xsd"/>
+							<property expression="json-eval($)" name="RESPONSE" scope="default" type="STRING"/>
+							<sequence key="APC_MSA_LOG_RESPONSE"/>
+							<respond/>
+						</else>
+					</filter>
+				</then>
+				<else>
+					<payloadFactory media-type="json">
+						<format>{"Response": {"TransactionId": "$1", "StatusCode": "1015", "Status": "F", "Message": "Your request has been failed due to some technical issue. ", "MSISDN": "$2", "AcknowledgedID": "$3", "PartnerBalance": "NaN"}}</format>
+						<args>
+							<arg evaluator="xml" expression="$ctx:TRANSACTION_ID" literal="false"/>
+							<arg evaluator="xml" expression="$ctx:MSISDN" literal="false"/>
+							<arg evaluator="xml" expression="$ctx:RECEIPT_NUMBER" literal="false"/>
+						</args>
+					</payloadFactory>
+					<property name="DBStatus" scope="default" type="STRING" value="Failed"/>
+					<property name="Description" scope="default" type="STRING" value="Request has been failed due to GetBalanceAndDate Failure"/>
+					<property name="STATUSCODE" scope="default" type="STRING" value="1015"/>
+					<property name="DA_CHECK" scope="default" type="STRING" value="True"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="TIME_OUT" scope="default" type="STRING"/>
+					<sequence key="APC_MSA_HUB_TRANSACTION_STATUS"/>
+					<property name="HTTP_SC" scope="axis2" type="STRING" value="201"/>
+					<property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+					<property name="ContentType" scope="axis2" type="STRING" value="application/json"/>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+					<property name="STATUS" scope="default" type="STRING" value="KO"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss')" name="RESPONSE_TIME" xmlns:ns="http://org.apache.synapse/xsd"/>
+					<property expression="json-eval($)" name="RESPONSE" scope="default" type="STRING"/>
+					<sequence key="APC_MSA_LOG_RESPONSE"/>
+					<respond/>
+				</else>
+			</filter>
+		</else>
+	</filter>
+	<filter regex="prepaid" source="$ctx:TYPE" xmlns:ns="http://org.apache.synapse/xsd">
+		<then>
+			<property expression="fn:concat($ctx:Amount,'00')" name="Amount_Paisa" scope="default" type="STRING"/>
+			<property expression="fn:substring($ctx:CUSOMERMSISDN,3)" name="NORMALIZED_MSISDN_FOR_IN" scope="default" type="STRING"/>
+			<property expression="fn:concat(get-property('RECEIPT_NUMBER'),'-',get-property('TransactionId'),'-',get-property('RegPaymentCode'),'-',get-property('RegPostFix'))" name="External_Data" scope="default" type="STRING"/>
+			<property name="Recon" scope="default" type="STRING" value="Refill"/>
+			<sequence key="APC_RECHARGE_REFILL_SEQUENCE"/>
+		</then>
+		<else>
+			<property expression="$ctx:CUSOMERMSISDN" name="NORMALIZED_MSISDN_FOR_IN" scope="default" type="STRING"/>
+			<property expression="fn:concat(get-property('RECEIPT_NUMBER'),'-',get-property('TransactionId'),'-',get-property('RegPaymentCode'),'-',get-property('RegPostFix'))" name="External_Data" scope="default" type="STRING"/>
+			<property name="Recon" scope="default" type="STRING" value="RBS"/>
+			<sequence key="APC_RECHARGE_RBS_SEQUENCE"/>
+		</else>
+	</filter>
+	<filter regex="true" source="get-property('REFILL_CHECK')='0' and get-property('RBS_CHECK')='0'" xmlns:ns="http://org.apache.synapse/xsd">
+		<then>
+			<payloadFactory media-type="json">
+				<format>{"Response": {"TransactionId": "$1", "StatusCode": "0000", "Status": "S", "Message": "Success", "MSISDN": "$2", "AcknowledgedID": "$3", "PartnerBalance": "$4"}}</format>
+				<args>
+					<arg evaluator="xml" expression="$ctx:TRANSACTION_ID" literal="false"/>
+					<arg evaluator="xml" expression="$ctx:MSISDN" literal="false"/>
+					<arg evaluator="xml" expression="$ctx:RECEIPT_NUMBER" literal="false"/>
+					<arg evaluator="xml" expression="$ctx:PARTNER_BALANCE" literal="false"/>
+				</args>
+			</payloadFactory>
+			<property name="DBStatus" scope="default" type="STRING" value="Success"/>
+			<property name="Description" scope="default" type="STRING" value="Successfull Transaction"/>
+			<property name="STATUSCODE" scope="default" type="STRING" value="0000"/>
+			<property expression="$ctx:DA_CHECK" name="DA_CHECK" scope="default" type="STRING"/>
+			<property expression="$ctx:External_Data" name="External_Data" scope="default" type="STRING"/>
+			<log level="custom">
+				<property expression="$ctx:External_Data" name="External_Data"/>
+			</log>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="TIME_OUT" scope="default" type="STRING"/>
+			<sequence key="APC_MSA_HUB_TRANSACTION_STATUS"/>
+			<property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+			<property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+			<property name="ContentType" scope="axis2" type="STRING" value="application/json"/>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+			<property name="STATUS" scope="default" type="STRING" value="OK"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss')" name="RESPONSE_TIME" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property expression="json-eval($)" name="RESPONSE" scope="default" type="STRING"/>
+			<sequence key="APC_MSA_LOG_RESPONSE"/>
+			<respond/>
+		</then>
+		<else>
+			<filter regex="true" source="get-property('REFILL_CHECK')='1' or get-property('RBS_CHECK')='1' and get-property('WITH_DA_CHECK')='1'">
+				<then>
+					<property expression="fn:concat($ctx:Amount,'00')" name="Amount_Paisa" scope="default" type="STRING"/>
+					<property name="Recon" scope="default" type="STRING" value="UpdateBalanceAndDateSub"/>
+					<property expression="fn:substring($ctx:RegMsisdn,2)" name="NORMALIZED_MSISDN_FOR_IN" scope="default" type="STRING"/>
+					<sequence key="APC_RECHARGE_UPDATE_AND_BALANCE_SEQUENCE"/>
+					<filter regex="0" source="$ctx:UPDATEBALANCE_RESPONSE">
+						<then>
+							<payloadFactory media-type="json">
+								<format>{"Response": {"TransactionId": "$1", "StatusCode": "1016", "Status": "F", "Message": "Your request has been failed due to some technical issue. ", "MSISDN": "$2", "AcknowledgedID": "$3", "PartnerBalance": "NaN"}}</format>
+								<args>
+									<arg evaluator="xml" expression="$ctx:TRANSACTION_ID" literal="false"/>
+									<arg evaluator="xml" expression="$ctx:MSISDN" literal="false"/>
+									<arg evaluator="xml" expression="$ctx:RECEIPT_NUMBER" literal="false"/>
+								</args>
+							</payloadFactory>
+							<property name="DBStatus" scope="default" type="STRING" value="Failed"/>
+							<property name="Description" scope="default" type="STRING" value="Request has been failed due to REFILL/RBS Failure"/>
+							<property name="STATUSCODE" scope="default" type="STRING" value="1016"/>
+							<property name="DA_CHECK" scope="default" type="STRING" value="True"/>
+							<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="TIME_OUT" scope="default" type="STRING"/>
+							<sequence key="APC_MSA_HUB_TRANSACTION_STATUS"/>
+							<property name="HTTP_SC" scope="axis2" type="STRING" value="201"/>
+							<property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+							<property name="ContentType" scope="axis2" type="STRING" value="application/json"/>
+							<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+							<property name="STATUS" scope="default" type="STRING" value="KO"/>
+							<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss')" name="RESPONSE_TIME" xmlns:ns="http://org.apache.synapse/xsd"/>
+							<property expression="json-eval($)" name="RESPONSE" scope="default" type="STRING"/>
+							<sequence key="APC_MSA_LOG_RESPONSE"/>
+							<respond/>
+						</then>
+						<else/>
+					</filter>
+				</then>
+				<else/>
+			</filter>
+			<payloadFactory media-type="json">
+				<format>{"Response": {"TransactionId": "$1", "StatusCode": "1017", "Status": "F", "Message": "Your request has been failed due to some technical issue. ", "MSISDN": "$2", "AcknowledgedID": "$3", "PartnerBalance": "NaN"}}</format>
+				<args>
+					<arg evaluator="xml" expression="$ctx:TRANSACTION_ID" literal="false"/>
+					<arg evaluator="xml" expression="$ctx:MSISDN" literal="false"/>
+					<arg evaluator="xml" expression="$ctx:RECEIPT_NUMBER" literal="false"/>
+				</args>
+			</payloadFactory>
+			<property name="DBStatus" scope="default" type="STRING" value="Failed"/>
+			<property name="Description" scope="default" type="STRING" value="Request has been failed due to REFILL/RBS Failure"/>
+			<property name="STATUSCODE" scope="default" type="STRING" value="1017"/>
+			<property name="DA_CHECK" scope="default" type="STRING" value="False"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="TIME_OUT" scope="default" type="STRING"/>
+			<sequence key="APC_MSA_HUB_TRANSACTION_STATUS"/>
+			<property name="HTTP_SC" scope="axis2" type="STRING" value="201"/>
+			<property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+			<property name="ContentType" scope="axis2" type="STRING" value="application/json"/>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+			<property name="STATUS" scope="default" type="STRING" value="KO"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss')" name="RESPONSE_TIME" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property expression="json-eval($)" name="RESPONSE" scope="default" type="STRING"/>
+			<sequence key="APC_MSA_LOG_RESPONSE"/>
+			<respond/>
+		</else>
+	</filter>
+</sequence>

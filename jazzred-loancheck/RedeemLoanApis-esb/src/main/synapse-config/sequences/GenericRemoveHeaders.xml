@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="GenericRemoveHeaders" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+    <property action="remove" name="Host" scope="transport"/>
+    <property action="remove" name="ETag" scope="transport"/>
+    <property action="remove" name="Accept" scope="transport"/>
+    <property action="remove" name="Date" scope="transport"/>
+    <property action="remove" name="Authorization" scope="transport"/>
+    <property action="remove" name="Postman-Token" scope="transport"/>
+    <header action="remove" name="X-Frame-Options" scope="transport"/>
+    <header action="remove" name="X-XSS-Protection" scope="transport"/>
+    <header action="remove" name="Alternate-Protocol" scope="transport"/>
+    <header action="remove" name="X-Content-Type-Options" scope="transport"/>
+    <property action="remove" name="X-Unique-ID" scope="transport"/>
+    <property action="remove" name="X-Forwarded-Proto" scope="transport"/>
+    <property action="remove" name="X-Real-IP" scope="transport"/>
+    <property action="remove" name="Connection" scope="transport"/>
+    <property action="remove" name="User-Agent" scope="transport"/>
+    <property action="remove" name="Content-Type" scope="transport"/>
+    <property action="remove" name="Accept-Language" scope="transport"/>
+    <property action="remove" name="Transfer-Encoding" scope="transport"/>
+    <property action="remove" name="Cache-Control" scope="transport"/>
+    <property action="remove" name="Pragma" scope="transport"/>
+    <property action="remove" name="Cache-Control" scope="transport"/>
+    <property action="remove" name="Cookie" scope="transport"/>
+    <property action="remove" name="Set-Cookie" scope="transport"/>
+    <property action="remove" name="Accept-Encoding" scope="transport"/>
+</sequence>

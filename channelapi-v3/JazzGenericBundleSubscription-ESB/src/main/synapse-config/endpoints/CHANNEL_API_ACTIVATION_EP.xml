@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<endpoint name="CHANNEL_API_ACTIVATION_EP" xmlns="http://ws.apache.org/ns/synapse">
+    <http method="post" uri-template="https://preprod-bssapi.bss.jazz.com.pk/api/v1/subscriptions/{uri.var.msisdn}/relationships/products?identifier=msisdn">
+        <timeout>
+            <duration>25000</duration>
+            <responseAction>fault</responseAction>
+        </timeout>
+        <suspendOnFailure>
+            <errorCodes>-1</errorCodes>
+            <initialDuration>-1</initialDuration>
+            <progressionFactor>1.0</progressionFactor>
+        </suspendOnFailure>
+        <markForSuspension>
+            <errorCodes>-1</errorCodes>
+            <retriesBeforeSuspension>0</retriesBeforeSuspension>
+        </markForSuspension>
+    </http>
+</endpoint>

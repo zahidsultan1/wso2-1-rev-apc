@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<endpoint name="JCWallet_renablebundleprovisioningendpoint" xmlns="http://ws.apache.org/ns/synapse">
+	<http uri-template="http://microservices.jazz.com.pk/ecare/v1/renablebundleprovisioning/{uri.var.msisdn}">
+		      <suspendOnFailure>
+         <errorCodes>-1</errorCodes>
+         <progressionFactor>1.0</progressionFactor>
+      </suspendOnFailure>
+      <markForSuspension>
+         <errorCodes>-1</errorCodes>
+         <retriesBeforeSuspension>0</retriesBeforeSuspension>
+         <retryDelay>0</retryDelay>
+      </markForSuspension>
+      <timeout>
+         <duration>25000</duration>
+         <responseAction>fault</responseAction>
+      </timeout>
+   </http>
+</endpoint>

@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="INSEQUENCE_APC_POSTING_v1" xmlns="http://ws.apache.org/ns/synapse">
+	<property name="MI_API_NAME" value="APC-POSTING" scope="default" type="STRING"/>
+	<property expression="json-eval($.msisdn)" name="MSISDN" scope="default" type="STRING"/>
+	<property name="MI_TIME" expression="fn:get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" scope="default"/>
+	<property expression="json-eval($.transactionId)" name="TRANSACTION_ID" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property name="REQUEST_ID" expression="$ctx:TRANSACTION_ID" scope="default" type="STRING"/>
+	<sequence key="MIinFlow"/>
+	<property expression="json-eval($.msisdn)" name="MSISDN" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property expression="json-eval($.transactionId)" name="TransactionId" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property expression="json-eval($.amount)" name="AMOUNT" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property expression="json-eval($.ServiceUser)" name="User" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property expression="json-eval($.ServicePassword)" name="Password" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property expression="fn:concat('0',fn:substring($ctx:MSISDN,3))" name="FORMATTEDMSISDN" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:TransactionId" name="TRANSACTION_ID" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property name="API_NAME" value="APC-POSTING"/>
+	<property name="INTERFACE_NAME" value="REQUEST"/>
+	<property expression="fn:concat('msisdn:',$ctx:MSISDN,' | transactionId:',$ctx:TransactionId,' | amount:',$ctx:AMOUNT,' | ServiceUser:',$ctx:User,' | ServicePassword: xxxx')" name="REQUEST" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:MSISDN" name="MSISDN" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property xmlns:ns="http://org.apache.synapse/xsd" name="RESOURCE_URI" expression="fn:concat($trp:X-Forwarded-For,get-property('To'))"/>
+	<property name="LOG_REQUEST_ENDED" scope="default" type="STRING" value="*****"/>
+	<sequence key="APCPOSTING_LOG_REQUEST"/>
+	<payloadFactory media-type="xml">
+		<format>
+			<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/">
+				<soapenv:Header/>
+				<soapenv:Body>
+					<tem:IndigoPayment>
+						<!--Optional:-->
+						<tem:input><![CDATA[<ACTIVITY><TransactionId>$1</TransactionId><ServiceUser>$4</ServiceUser><ServicePassword>$5</ServicePassword><MSISDN>$2</MSISDN><Amount>$3</Amount></ACTIVITY>]]></tem:input>
+					</tem:IndigoPayment>
+				</soapenv:Body>
+			</soapenv:Envelope>
+		</format>
+		<args>
+			<arg evaluator="xml" expression="$ctx:TransactionId" literal="false" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+			<arg evaluator="xml" expression="$ctx:FORMATTEDMSISDN" literal="false" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+			<arg evaluator="xml" expression="$ctx:AMOUNT" literal="false" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+			<arg evaluator="xml" expression="$ctx:User" literal="false" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+			<arg evaluator="xml" expression="$ctx:Password" literal="false" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+		</args>
+	</payloadFactory>
+	<enrich>
+		<source clone="true" type="envelope"/>
+		<target action="replace" property="Log_Request" type="property"/>
+	</enrich>
+	<property expression="$ctx:Log_Request" name="EP_REQUEST" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property name="INTERFACE_NAME" value="EFICS_INDIGO"/>
+	<property expression="fn:concat('FORMATTEDMSISDN:',$ctx:FORMATTEDMSISDN,' | transactionId:',$ctx:TransactionId,' | amount:',$ctx:AMOUNT,' | ServiceUser:',$ctx:User,' | ServicePassword: xxxx')" name="REQUEST" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:MSISDN" name="MSISDN" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property value="https://efics.jazz.com.pk:481/indigo.asmx" name="RESOURCE_URI" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property name="LOG_REQUEST_ENDED" scope="default" type="STRING" value="*****"/>
+	<sequence key="APCPOSTING_LOG_REQUEST"/>
+	<header name="SOAPAction" scope="transport" value="http://tempuri.org/IndigoPayment"/>
+	<header name="Action" scope="transport" value="http://tempuri.org/IndigoPayment"/>
+	<property name="messageType" scope="axis2" type="STRING" value="application/soap+xml"/>
+	<property name="DISABLE_CHUNKING" scope="axis2" type="STRING" value="true"/>
+	<call>
+		<endpoint>
+			<address format="soap11" uri="https://efics.jazz.com.pk:481/indigo.asmx">
+				<timeout>
+					<duration>10000</duration>
+					<responseAction>fault</responseAction>
+				</timeout>
+				<suspendOnFailure>
+					<errorCodes>-1</errorCodes>
+					<initialDuration>0</initialDuration>
+					<progressionFactor>1.0</progressionFactor>
+					<maximumDuration>0</maximumDuration>
+				</suspendOnFailure>
+				<markForSuspension>
+					<errorCodes>-1</errorCodes>
+				</markForSuspension>
+			</address>
+		</endpoint>
+	</call>
+	<property expression="$body//gen:IndigoPaymentResponse/gen:IndigoPaymentResult" name="BodyParams" type="OM" xmlns:gen="http://tempuri.org/" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<payloadFactory media-type="xml">
+		<format>
+			<soapenv:Envelope xmlns:ns0="http://tempuri.org/" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+				<soapenv:Body>$1</soapenv:Body>
+			</soapenv:Envelope>
+		</format>
+		<args>
+			<arg evaluator="xml" expression="$ctx:BodyParams" literal="false" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+		</args>
+	</payloadFactory>
+	<property expression="$body//ACTIVITY/Status" name="status" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property expression="$body//ACTIVITY/Message" name="Message" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<enrich>
+		<source clone="true" type="envelope"/>
+		<target action="replace" property="Log_Response" type="property"/>
+	</enrich>
+	<filter regex="S" source="$ctx:status" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd">
+		<then>
+			<property name="INTERFACE_NAME" value="EFICS_INDIGO"/>
+			<property expression="fn:concat('status:',$ctx:status,' | Message:',$ctx:Message)" name="JSON_RESPONSE" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+			<property name="LOG_RESPONSE_STATUS" value="OK"/>
+			<sequence key="APCPOSTING_LOG_RESPONSE"/>
+			<payloadFactory media-type="json">
+				<format>{"Transaction_Id": "$1" }</format>
+				<args>
+					<arg evaluator="xml" expression="$ctx:TransactionId" literal="false"/>
+				</args>
+			</payloadFactory>
+			<property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+			<property name="ContentType" scope="axis2" type="STRING" value="application/json"/>
+			<property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+			<property name="INTERFACE_NAME" value="RESPONSE"/>
+			<property expression="json-eval($)" name="JSON_RESPONSE"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default"/>
+			<property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING"/>
+			<property name="LOG_RESPONSE_STATUS" value="OK"/>
+			<property name="LOG_RESPONSE_ENDED" scope="default" type="STRING" value="*****"/>
+			<sequence key="APCPOSTING_LOG_RESPONSE"/>
+			<property name="X-AspNet-Version" scope="transport" action="remove"/>
+			<property name="X-Powered-By" scope="transport" action="remove"/>
+			<property name="WWW-Authenticate" scope="transport" action="remove"/>
+			<property name="Server" scope="transport" action="remove"/>
+			<property name="Access-Control-Allow-Origin" scope="transport" action="remove"/>
+			<property name="TRANSPORT_HEADERS" scope="axis2" action="remove"/>
+			<property name="EXCESS_TRANSPORT_HEADERS" scope="axis2" action="remove"/>
+			<respond/>
+		</then>
+		<else>
+			<property name="INTERFACE_NAME" value="EFICS_INDIGO"/>
+			<property expression="fn:concat('status:',$ctx:status,' | Message:',$ctx:Message)" name="JSON_RESPONSE" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+			<property name="LOG_RESPONSE_STATUS" value="KO"/>
+			<sequence key="APCPOSTING_LOG_RESPONSE"/>
+			<payloadFactory media-type="json">
+				<format>{"error": {"ErrorCode": 150,"Description": "APC Posting Failed","Message": "$1","Transaction": {"Transaction_Id": "$2"}}}</format>
+				<args>
+					<arg evaluator="xml" expression="$ctx:Message" literal="false"/>
+					<arg evaluator="xml" expression="$ctx:TransactionId" literal="false"/>
+				</args>
+			</payloadFactory>
+			<property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+			<property name="ContentType" scope="axis2" type="STRING" value="application/json"/>
+			<property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+			<property name="INTERFACE_NAME" value="RESPONSE"/>
+			<property expression="json-eval($)" name="JSON_RESPONSE"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default"/>
+			<property name="LOG_RESPONSE_STATUS" value="KO"/>
+			<property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING"/>
+			<property name="LOG_RESPONSE_ENDED" scope="default" type="STRING" value="*****"/>
+			<sequence key="APCPOSTING_LOG_RESPONSE"/>
+			<property name="X-AspNet-Version" scope="transport" action="remove"/>
+			<property name="X-Powered-By" scope="transport" action="remove"/>
+			<property name="WWW-Authenticate" scope="transport" action="remove"/>
+			<property name="Server" scope="transport" action="remove"/>
+			<property name="Access-Control-Allow-Origin" scope="transport" action="remove"/>
+			<property name="TRANSPORT_HEADERS" scope="axis2" action="remove"/>
+			<property name="EXCESS_TRANSPORT_HEADERS" scope="axis2" action="remove"/>
+			<respond/>
+		</else>
+	</filter>
+</sequence>

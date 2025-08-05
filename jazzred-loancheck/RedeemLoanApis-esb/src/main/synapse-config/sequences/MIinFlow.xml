@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="MIinFlow" xmlns="http://ws.apache.org/ns/synapse">
+	<clone continueParent="true">
+		<target>
+			<sequence>
+				<property name="ENVOY_ID" expression="$trp:ENVOY_ID" scope="default" type="STRING"/>
+				<property name="ENVOY_TIME" expression="$trp:ENVOY_TIME" scope="default" type="STRING"/>
+				<property name="GW_FORWARDED_FOR" expression="$trp:GW_FORWARDED_FOR" scope="default" type="STRING"/>
+				<property name="GW_REMOTE_ADDRESS" expression="$trp:GW_REMOTE_ADDRESS" scope="default" type="STRING"/>
+				<property name="X-Forwarded-For" expression="$trp:X-Forwarded-For" scope="default" type="STRING"/>
+				<property name="x-request-id" expression="$trp:x-request-id" scope="default" type="STRING"/>
+				<property name="x-request-start" expression="$trp:x-request-start" scope="default" type="STRING"/>
+				<property name="x-forwarded-for" expression="$trp:x-forwarded-for" scope="default" type="STRING"/>
+				<filter xmlns:ns="http://org.apache.synapse/xsd" xpath="fn:boolean(fn:string-length($ctx:ENVOY_ID) = 0)">
+					<then>
+						<property name="ENVOY_ID" expression="$trp:x-request-id" scope="default" type="STRING"/>
+					</then>
+				</filter>
+				<filter xmlns:ns="http://org.apache.synapse/xsd" xpath="fn:boolean(fn:string-length($ctx:ENVOY_TIME) = 0)">
+					<then>
+						<property name="RequestedTimestamp" expression="fn:substring-after($trp:x-request-start, 't=')" scope="default"/>
+						<script language="js">
+							var UnixTimestampTmp = mc.getProperty('RequestedTimestamp');
+							var date = new java.util.Date(UnixTimestampTmp * 1000);
+							var formattedDate = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(date);
+							mc.setProperty('formattedTimestamp', formattedDate);
+						</script>
+						<property name="ENVOY_TIME" expression="fn:get-property('formattedTimestamp')" scope="default" type="STRING"/>
+					</then>
+				</filter>
+				<filter xmlns:ns="http://org.apache.synapse/xsd" xpath="fn:boolean(fn:string-length($ctx:GW_FORWARDED_FOR) = 0) and fn:boolean(fn:string-length($ctx:X-Forwarded-For) = 0)">
+					<then>
+						<property name="GW_FORWARDED_FOR" expression="$trp:x-forwarded-for" scope="default" type="STRING"/>
+					</then>
+					<els>
+						<filter xmlns:ns="http://org.apache.synapse/xsd" xpath="fn:boolean(fn:string-length($ctx:GW_FORWARDED_FOR) = 0)">
+							<then>
+								<property name="GW_FORWARDED_FOR" expression="$trp:X-Forwarded-For" scope="default" type="STRING"/>
+							</then>
+						</filter>
+					</els>
+				</filter>
+				<filter xmlns:ns="http://org.apache.synapse/xsd" xpath="fn:boolean(fn:string-length($ctx:GW_REMOTE_ADDRESS) = 0)">
+					<then>
+						<property name="GW_REMOTE_ADDRESS" expression="fn:get-property('axis2','REMOTE_ADDR')" scope="default" type="STRING"/>
+					</then>
+				</filter>
+				<log level="custom">
+					<property name="LOG_TYPE" value="MI_LOG_REQUEST" scope="default" type="STRING"/>
+					<property name="ENVOY_ID" expression="$ctx:ENVOY_ID" scope="default" type="STRING"/>
+					<property name="REQUEST_ID" expression="$ctx:REQUEST_ID" scope="default" type="STRING"/>
+					<property name="API_NAME" expression="$ctx:MI_API_NAME" scope="default" type="STRING"/>
+					<property name="ENVOY_TIME" expression="$ctx:ENVOY_TIME" scope="default" type="STRING"/>
+					<property name="GW_TIME" expression="$trp:REQUEST_TIME" scope="default"/>
+					<property name="MI_TIME" expression="$ctx:MI_TIME" scope="default"/>
+					<property name="X_FORWARDED_FOR" expression="$ctx:GW_FORWARDED_FOR" scope="default" type="STRING"/>
+					<property name="REMOTE_ADDRESS" expression="$ctx:GW_REMOTE_ADDRESS" scope="default" type="STRING"/>
+					<property name="RESOURCE_URI" expression="fn:get-property('To')" scope="default" type="STRING"/>
+					<property name="MSISDN" expression="$ctx:MSISDN" scope="default" type="STRING"/>
+					<property name="APP_NAME" expression="$trp:ApplicationName" scope="default" type="STRING"/>
+				</log>
+			</sequence>
+		</target>
+	</clone>
+</sequence>

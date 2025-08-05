@@ -1,0 +1,78 @@
+<sequence xmlns="http://ws.apache.org/ns/synapse" name="GENERIC_GETCUSTOMER_SUBSCRIPTIONDETAILS_PREPAID" trace="disable">
+<property name="API_NAME" scope="default" type="STRING" value="CHANNELAPIsPBI"/>
+	<property expression="$ctx:API_NAME" name="APP_NAME" xmlns:ns="http://org.apache.synapse/xsd"/>
+<property name="INTERFACE_NAME" scope="default" type="STRING" value="REQUEST"/>
+<property xmlns:ns="http://org.apache.synapse/xsd" expression="$ctx:msisdn" name="uri.var.msisdn" scope="default" type="STRING"/>
+<property expression="$ctx:uri.var.transaction_id" name="TRANSACTION_ID" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+<property expression="$ctx:TRANSACTION_ID" name="TRANSACTION_ID" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+<property expression="$ctx:msisdn" name="msisdn" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+<property xmlns:ns="http://org.apache.synapse/xsd" expression="fn:concat('https://bssapi.bss.jazz.com.pk/api/v1/subscriptions/',$ctx:uri.var.msisdn,'?identifier-type=msisdn')" name="RESOURCE_URI" scope="default" type="STRING"/>
+<property xmlns:ns="http://org.apache.synapse/xsd" expression="$ctx:msisdn" name="MSISDN" scope="default" type="STRING"/>
+<property xmlns:ns="http://org.apache.synapse/xsd" expression="fn:concat('NORMALIZED_MSISDN_FOR_GETCUSTOMERANDSUBSCRIPTIONDETAILS:',$ctx:MSISDN,' | TRANSACTION_ID : ',$ctx:TRANSACTION_ID)" name="REQUEST" scope="default" type="STRING"/>
+<property xmlns:ns="http://org.apache.synapse/xsd" expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING"/>
+<sequence key="PARTNERBANK_LOG_REQUEST"/>
+<header name="User-Agent" scope="transport" value="Apache-HttpClient/4.1.1 (java 1.5)"/>
+<property action="remove" name="Accept-Encoding" scope="transport"/>
+<property action="remove" name="Content-Encoding" scope="transport"/>
+<property name="INTERFACE_NAME" scope="default" type="STRING" value="GENERICGETSUBSCRIPTIONOFFER"/>
+<property xmlns:ns="http://org.apache.synapse/xsd" expression="$ctx:uri.var.msisdn" name="REQUEST" scope="default" type="STRING"/>
+<sequence key="PARTNERBANK_LOG_REQUEST"/>
+<call>
+<endpoint key="GENERIC_GETSUBSCRIPTIONOFFER"/>
+</call>
+<property expression="json-eval($.data.id)" name="ID_DATA" scope="default" type="STRING"/>
+<header name="User-Agent" scope="transport" value="Apache-HttpClient/4.1.1 (java 1.5)"/>
+<property action="remove" name="Accept-Encoding" scope="transport"/>
+<property action="remove" name="Content-Encoding" scope="transport"/>
+<log level="custom">
+<property xmlns:ns="http://org.apache.synapse/xsd" expression="$ctx:ID_DATA" name="uri.var.id" scope="default" type="STRING"/>
+</log>
+<property xmlns:ns="http://org.apache.synapse/xsd" expression="$ctx:ID_DATA" name="uri.var.id" scope="default" type="STRING"/>
+<property name="API_NAME" scope="default" type="STRING" value="CHANNELAPIsPBI"/>
+<property name="INTERFACE_NAME" scope="default" type="STRING" value="GENERICGETSUBSCRIPTIONOFFER"/>
+<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+<property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING"/>
+<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+<property expression="$ctx:ID_DATA" name="JSON_RESPONSE" scope="default" type="STRING"/>
+<sequence key="PARTNERBANK_LOG_RESPONSE"/>
+<property name="API_NAME" scope="default" type="STRING" value="CHANNELAPIsPBI"/>
+<property name="INTERFACE_NAME" scope="default" type="STRING" value="GENERICGETPREPAIDBALANCE"/>
+<property name="INTERFACE_NAME" scope="default" type="STRING" value="Abdullah"/>
+<property xmlns:ns="http://org.apache.synapse/xsd" expression="$ctx:uri.var.id" name="REQUEST" scope="default" type="STRING"/>
+<property xmlns:ns="http://org.apache.synapse/xsd" expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING"/>
+<property xmlns:ns="http://org.apache.synapse/xsd" expression="fn:concat('https://bssapi.bss.jazz.com.pk/api/v1/subscriptions/',$ctx:uri.var.id,'/balances')" name="RESOURCE_URI" scope="default" type="STRING"/>
+<sequence key="PARTNERBANK_LOG_REQUEST"/>
+<call>
+<endpoint key="GENERIC_GETPREPAIDBALANCE"/>
+</call>
+<log level="custom">
+<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+</log>
+<property expression="json-eval($.data[0].attributes.amount)" name="amount" scope="default" type="STRING"/>  
+<property expression="json-eval($.data[0].attributes.is-main-balance)" name="is-main-balance" scope="default" type="STRING"/>
+<property name="API_NAME" scope="default" type="STRING" value="CHANNELAPIsPBI"/>
+<property name="INTERFACE_NAME" scope="default" type="STRING" value="GENERICGETPREPAIDBALANCE"/>
+<property name="INTERFACE_NAME" scope="default" type="STRING" value="Abdullah"/>
+<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+<property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING"/>
+<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+<property expression="fn:concat('is-main-balance:',$ctx:is-main-balance,' | amount:',$ctx:amount)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+<sequence key="PARTNERBANK_LOG_RESPONSE"/>
+<foreach expression="//jsonObject/data">
+<sequence>
+<property expression="//attributes/is-main-balance" name="is_main_balance" scope="default" type="STRING"/>
+<log level="custom">
+<property expression="//attributes/is-main-balance" name="is_main_balance" scope="default" type="STRING"/>
+</log>
+<filter xpath="$ctx:is_main_balance ='true'">
+<then>
+<property expression="//attributes/amount" name="amount" scope="default" type="STRING"/>
+<log level="custom">
+<property expression="//attributes/amount" name="amount" scope="default" type="STRING"/>
+</log>
+</then>
+<else/>
+</filter>
+</sequence>
+</foreach>
+</sequence>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="FAULTSEQUENCE_PBI_BUNDLE_SUBSCRIPTION" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+    <log level="custom">
+        <property name="text" value="**** An unexpected error occured while calling the backend service"/>
+        <property expression="$ctx:ERROR_MESSAGE" name="ERROR_MESSAGE" xmlns:ns="http://org.apache.synapse/xsd"/>
+        <property expression="$ctx:ERROR_CODE" name="ERROR_CODE" xmlns:ns="http://org.apache.synapse/xsd"/>
+        <property expression="$ctx:ERROR_DETAIL" name="ERROR_DETAIL" xmlns:ns="http://org.apache.synapse/xsd"/>
+        <property expression="$ctx:ERROR_EXCEPTION" name="ERROR_EXCEPTION" xmlns:ns="http://org.apache.synapse/xsd"/>
+    </log>
+    <property expression="$ctx:ApplicationName" name="API_NAME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property name="INTERFACE_NAME" scope="default" type="STRING" value="REQUEST"/>
+    <property expression="$ctx:ERROR_MESSAGE" name="error_message" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property expression="$ctx:ERROR_CODE" name="error_code" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property name="error_detail" scope="default" type="STRING" value="Exception occured"/>
+    <property expression="$ctx:ERROR_EXCEPTION" name="error_exception" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property name="LOG_ERROR_STATUS" scope="default" type="STRING" value="EXCEPTION"/>
+    <property expression="$ctx:error_code" name="ERROR" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="ERROR_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <sequence key="PARTNERBANK_LOG_ERROR"/>
+    <payloadFactory media-type="json">
+        <format>{ "error":{ "errorCode":"$1","description":"$2","message":"","transaction":{"transactionId":"$3"},"STATUS":"$4"}}</format>
+        <args>
+            <arg value="410"/>
+            <arg value="Timeout from downstream"/>
+            <arg evaluator="xml" expression="$ctx:TRANSACTION_ID" xmlns:ns="http://org.apache.synapse/xsd"/>
+            <arg value="KO"/>
+        </args>
+    </payloadFactory>
+    <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+    <property name="LOG_ERROR_STATUS" scope="default" type="STRING" value="EXCEPTION"/>
+    <property expression="json-eval($)" name="ERROR" scope="default" type="STRING"/>
+    <property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="ERROR_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property expression="$ctx:ApplicationName" name="API_NAME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+    <sequence key="PARTNERBANK_LOG_ERROR"/>
+    <respond/>
+</sequence>

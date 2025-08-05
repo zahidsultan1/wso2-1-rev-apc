@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="APC_MSA_LOG_RESPONSE" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+	<log level="custom">
+		<property name="LOG_TYPE_APC" value="LOG_RESPONSE_SEQUENCE"/>
+		<property expression="$ctx:ID" name="ID" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property expression="$ctx:API_NAME" name="API_NAME" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property expression="$ctx:INTERFACE_NAME" name="INTERFACE_NAME" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property expression="$ctx:RESPONSE" name="RESPONSE" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property expression="$ctx:RESPONSE_TIME" name="RESPONSE_TIME" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property expression="$ctx:MSISDN" name="MSISDN" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property expression="$ctx:TYPE" name="TYPE" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property expression="$ctx:OPERATOR" name="OPERATOR" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property expression="$ctx:STATUS" name="STATUS" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property expression="$ctx:APP_NAME" name="APP_NAME" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property name="LOG_RESPONSE_ENDED" value="*****"/>
+	</log>
+	<clone continueParent="true">
+		<target>
+			<sequence>
+				<property expression="$ctx:ID" name="ID" xmlns:ns="http://org.apache.synapse/xsd"/>
+				<property expression="$ctx:API_NAME" name="API_NAME" xmlns:ns="http://org.apache.synapse/xsd"/>
+				<property expression="$ctx:INTERFACE_NAME" name="INTERFACE_NAME" xmlns:ns="http://org.apache.synapse/xsd"/>
+				<property expression="$ctx:RESPONSE" name="RESPONSE" xmlns:ns="http://org.apache.synapse/xsd"/>
+				<property expression="$ctx:RESPONSE_TIME" name="RESPONSE_TIME" xmlns:ns="http://org.apache.synapse/xsd"/>
+				<property expression="$ctx:MSISDN" name="MSISDN" xmlns:ns="http://org.apache.synapse/xsd"/>
+				<property expression="$ctx:TYPE" name="TYPE" xmlns:ns="http://org.apache.synapse/xsd"/>
+				<property expression="$ctx:OPERATOR" name="OPERATOR" xmlns:ns="http://org.apache.synapse/xsd"/>
+				<property expression="$ctx:STATUS" name="STATUS" xmlns:ns="http://org.apache.synapse/xsd"/>
+				<log level="custom">
+					<property name="DB RESPONSE LOGGING SEQUENCE" value="****************** STARTED ********************"/>
+				</log>
+				<dbreport>
+					<connection>
+						<pool>
+							<dsName>jdbc/APCJendi</dsName>
+						</pool>
+					</connection>
+					<statement>
+						<sql><![CDATA[INSERT INTO APC_Generic.LOG_RESPONSE (ID, API_NAME, INTERFACE_NAME, RESPONSE, RESPONSE_TIME, MSISDN, STATUS, TYPE, OPERATOR, RESPONSETIME) VALUES (?,?,?,?,?,?,?,?,?,?)]]></sql>
+						<parameter expression="$ctx:ID" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd"/>
+						<parameter expression="$ctx:API_NAME" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd"/>
+						<parameter expression="$ctx:INTERFACE_NAME" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd"/>
+						<parameter expression="$ctx:RESPONSE" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd"/>
+						<parameter expression="$ctx:RESPONSE_TIME" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd"/>
+						<parameter expression="$ctx:MSISDN" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd"/>
+						<parameter expression="$ctx:STATUS" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd"/>
+						<parameter expression="$ctx:TYPE" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd"/>
+						<parameter expression="$ctx:OPERATOR" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd"/>
+						<parameter expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd"/>
+					</statement>
+				</dbreport>
+			</sequence>
+		</target>
+	</clone>
+</sequence>

@@ -1,0 +1,191 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: wso2
+  name: <WS02_APP_NAME>-deploy-gw
+  annotations:
+    kubernetes.io/change-cause: "Initial Deployment"
+  labels:
+    app: <WS02_APP_NAME>-gw
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 50%
+      maxUnavailable: 0% # change it to 0% in prod
+  selector:
+    matchLabels:
+      app: <WS02_APP_NAME>-gw
+  template:
+    metadata:
+      labels:
+        app: <WS02_APP_NAME>-gw
+    spec:
+      # securityContext:
+      #   runAsUser: 802
+      #   runAsGroup: 802
+      #   fsGroup: 802
+      containers:
+        - name: <WS02_APP_NAME>-gw
+          image: internal-registry.tkg.mobilink.net.pk/wso2-prod/wso2/wso2gw/<WS02_APP_NAME>:<WS02_APP_TAG>
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: JVM_MEM_OPTS
+              value: "-Xms3500m -Xmx3500m"
+          resources:
+           requests:
+             memory: "4Gi"
+             cpu: "2"
+           limits:
+             memory: "4Gi"
+             cpu: "2"
+          command: ["/bin/sh"]
+          args:
+            [
+              "/home/wso2carbon/wso2am-4.1.0/bin/api-manager.sh",
+              "-Dprofile=gateway-worker",
+            ]
+          volumeMounts:
+            - name: truststore-volume
+              mountPath: "/home/wso2carbon/wso2am-4.1.0/repository/resources/security/client-truststore.jks"
+              subPath: client-truststore.jks
+            - name: log4j2-volume
+              mountPath: /home/wso2carbon/wso2am-4.1.0/repository/conf/log4j2.properties
+              subPath: log4j2.properties
+            - name: wso2-logs-volume
+              mountPath: /home/wso2carbon/wso2am-4.1.0/repository/logs
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - nc -z localhost 8280
+            initialDelaySeconds: 300
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - nc -z localhost 8280
+            initialDelaySeconds: 300
+            periodSeconds: 5
+            failureThreshold: 3
+      volumes:
+        - name: truststore-volume
+          secret:
+            secretName: gw-client-truststore
+        - name: log4j2-volume
+          configMap:
+            name: wso2-gw-log4j2
+        - name: wso2-logs-volume
+          hostPath:
+            path: /wso2-logs/<WS02_APP_NAME>
+            type: DirectoryOrCreate
+#---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: wso2-gw-h10-svc-ci
+#   namespace: wso2
+# spec:
+#   selector:
+#     app: <WS02_APP_NAME>-gw
+#   type: ClusterIP
+#   ports:
+#     - name: key-manager
+#       port: 9443
+#       targetPort: 9443
+#     - name: ws-endpoint
+#       port: 9099
+#       targetPort: 9099
+#     - name: wss-endpoint
+#       port: 8099
+#       targetPort: 8099
+#     - name: http-endpoint
+#       port: 8280
+#       targetPort: 8280
+#     - name: https-endpoint
+#       port: 8243
+#       targetPort: 8243
+# ---
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: <WS02_APP_NAME>-ing-gw
+#   namespace: wso2
+#   annotations:
+#    projectcontour.io/response-timeout: 90s
+# spec:
+#   tls:
+#     - hosts:
+#         - apis.jazz.com.pk
+#         - localapis.jazz.com.pk
+#       secretName: apis.jazz.com.pk-tls
+#   ingressClassName: contour
+#   rules:
+#     - host: apis.jazz.com.pk
+#       http:
+#         paths:
+#           - path: /jazzapi/apcwallet/msisdn_verification
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: wso2-gw-h10-svc-ci
+#                 port:
+#                   number: 8280
+#     - host: localapis.jazz.com.pk
+#       http:
+#         paths:
+#           - path: /jazzapi/apcwallet/msisdn_verification
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: wso2-gw-h10-svc-ci
+#                 port:
+#                   number: 8280    
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: <WS02_APP_NAME>-hpa-gw
+  namespace: wso2
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: <WS02_APP_NAME>-deploy-gw
+  minReplicas: 2
+  maxReplicas: 4
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 70
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 180
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 10
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 5

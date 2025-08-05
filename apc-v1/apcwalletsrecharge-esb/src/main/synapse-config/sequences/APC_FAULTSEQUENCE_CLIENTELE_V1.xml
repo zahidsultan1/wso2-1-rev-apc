@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="APC_FAULTSEQUENCE_CLIENTELE_V1" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+    <log level="custom">
+        <property expression="$ctx:ERROR_MESSAGE" name="ERROR_MESSAGE" xmlns:ns="http://org.apache.synapse/xsd"/>
+        <property expression="$ctx:ERROR_CODE" name="ERROR_CODE" xmlns:ns="http://org.apache.synapse/xsd"/>
+        <property expression="$ctx:ERROR_DETAIL" name="ERROR_DETAIL" xmlns:ns="http://org.apache.synapse/xsd"/>
+        <property expression="$ctx:ERROR_EXCEPTION" name="ERROR_EXCEPTION" xmlns:ns="http://org.apache.synapse/xsd"/>
+    </log>
+    <property expression="$ctx:ERROR_MESSAGE" name="error_message" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property expression="$ctx:ERROR_CODE" name="error_code" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property name="error_detail" scope="default" type="STRING" value="Exception occured"/>
+    <property expression="$ctx:ERROR_EXCEPTION" name="error_exception" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <payloadFactory media-type="json">
+        <format> {"error":{"errorCode": "$1","description": "$2","message": "","transaction": {"transactionId": "$3"}}} </format>
+        <args>
+            <arg evaluator="xml" expression="$ctx:error_code" xmlns:ns="http://org.apache.synapse/xsd"/>
+            <arg evaluator="xml" expression="$ctx:error_detail" xmlns:ns="http://org.apache.synapse/xsd"/>
+            <arg evaluator="xml" expression="$ctx:TRANSACTION_ID_IN" xmlns:ns="http://org.apache.synapse/xsd"/>
+        </args>
+    </payloadFactory>
+    <property name="SC_ACCEPTED" scope="axis2" type="STRING" value="false"/>
+    <property name="HTTP_SC" scope="axis2" type="STRING" value="500"/>
+    <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+    <property name="LOG_ERROR_STATUS" scope="default" type="STRING" value="EXCEPTION"/>
+    <property name="API_NAME" scope="default" type="STRING" value="APCWALLETS"/>
+    <property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+    <property expression="json-eval($)" name="ERROR" scope="default" type="STRING"/>
+    <property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="ERROR_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <sequence key="APC_LOG_ERROR"/>
+    <respond/>
+</sequence>

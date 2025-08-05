@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?><artifacts>
+    <artifact name="APCRefill" groupId="com.jazz.apcgeneric.esb.api" version="1.0.0" type="synapse/api" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/api/APCRefill.xml</file>
+    </artifact>
+    <artifact name="APCRefill_swagger" groupId="com.jazz.apcgeneric.esb.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/APCRefill_swagger.yaml</file>
+    </artifact>
+    <artifact name="APCRefill_metadata" groupId="com.jazz.apcgeneric.esb.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/APCRefill_metadata.yaml</file>
+    </artifact>
+    <artifact name="APC_AIR_EP" groupId="com.jazz.apcgeneric.esb.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/APC_AIR_EP.xml</file>
+    </artifact>
+    <artifact name="apc_clientele_preprod" groupId="com.jazz.apcgeneric.esb.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/apc_clientele_preprod.xml</file>
+    </artifact>
+    <artifact name="APC_EP_RBS" groupId="com.jazz.apcgeneric.esb.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/APC_EP_RBS.xml</file>
+    </artifact>
+    <artifact name="APC_MSA_HUB_TRANSACTION_STATUS" groupId="com.jazz.apcgeneric.esb.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/APC_MSA_HUB_TRANSACTION_STATUS.xml</file>
+    </artifact>
+    <artifact name="APC_MSA_LOG_REQUEST" groupId="com.jazz.apcgeneric.esb.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/APC_MSA_LOG_REQUEST.xml</file>
+    </artifact>
+    <artifact name="APC_RECHARGE_FAULT_SEQUENCE_MSA" groupId="com.jazz.apcgeneric.esb.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/APC_RECHARGE_FAULT_SEQUENCE_MSA.xml</file>
+    </artifact>
+    <artifact name="APC_RECHARGE_GET_AND_BALANCE_SEQUENCE" groupId="com.jazz.apcgeneric.esb.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/APC_RECHARGE_GET_AND_BALANCE_SEQUENCE.xml</file>
+    </artifact>
+    <artifact name="APC_RECHARGE_INSEQUENCE_MSA_v1" groupId="com.jazz.apcgeneric.esb.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/APC_RECHARGE_INSEQUENCE_MSA_v1.xml</file>
+    </artifact>
+    <artifact name="APC_RECHARGE_RBS_SEQUENCE" groupId="com.jazz.apcgeneric.esb.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/APC_RECHARGE_RBS_SEQUENCE.xml</file>
+    </artifact>
+    <artifact name="APC_RECHARGE_REFILL_SEQUENCE" groupId="com.jazz.apcgeneric.esb.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/APC_RECHARGE_REFILL_SEQUENCE.xml</file>
+    </artifact>
+    <artifact name="APC_RECHARGE_UPDATE_AND_BALANCE_SEQUENCE" groupId="com.jazz.apcgeneric.esb.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/APC_RECHARGE_UPDATE_AND_BALANCE_SEQUENCE.xml</file>
+    </artifact>
+    <artifact name="APC_MSA_LOG_RESPONSE" groupId="com.jazz.apcgeneric.esb.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/APC_MSA_LOG_RESPONSE.xml</file>
+    </artifact>
+    <artifact name="GenericRemoveHeaders" groupId="com.jazz.apcgeneric.esb.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/GenericRemoveHeaders.xml</file>
+    </artifact>
+</artifacts>

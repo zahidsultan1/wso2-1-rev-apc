@@ -1,0 +1,19 @@
+openapi: 3.0.1
+info:
+  title: JazzRedEcareMsisdnInfo
+  description: API Definition of JazzRedEcareMsisdnInfo
+  version: 1.0.0
+servers:
+- url: http://localhost:8290/ecare/subscription/Info/v1
+paths:
+  /{msisdn}:
+    get:
+      parameters:
+      - name: msisdn
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        default:
+          description: Default response

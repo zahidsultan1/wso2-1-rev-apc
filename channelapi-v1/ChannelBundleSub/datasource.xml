@@ -1,0 +1,15 @@
+<datasource>
+    <name>ChannelBundleSub</name>
+    <description>Channel Logging DB</description>
+    <jndiConfig useDataSourceFactory="false">
+        <name>jdbc/BundleSubNP</name>
+    </jndiConfig>
+    <definition type="RDBMS">
+        <configuration>
+            <driverClassName>com.mysql.jdbc.Driver</driverClassName>
+            <url>jdbc:mysql://10.50.13.232:3306/BundleSubNP</url>
+            <username>root</username>
+            <password>Veon@123</password>
+        </configuration>
+    </definition>
+</datasource>

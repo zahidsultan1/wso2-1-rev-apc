@@ -1,0 +1,10 @@
+---
+key: "JazzAdvanceLoan_v2-1.0.0"
+name : "JazzAdvanceLoan_v2"
+displayName : "JazzAdvanceLoan_v2"
+description: "Sample API"
+version: "1.0.0"
+serviceUrl: "https://{MI_HOST}:{MI_PORT}/ecare/loan/v2"
+definitionType: "OAS3"
+securityType: "BASIC"
+mutualSSLEnabled: false

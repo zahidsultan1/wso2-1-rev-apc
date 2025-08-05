@@ -1,0 +1,1299 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="APC_RECHARGE_INSEQUENCE_DBSS_v1" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+	<property name="MI_API_NAME" value="APC-REFILL-V1" scope="default" type="STRING"/>
+	<property name="MSISDN" expression="$ctx:Msisdn" scope="default" type="STRING"/>
+	<property name="MI_TIME" expression="fn:get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" scope="default"/>
+	<property expression="$ctx:TransactionId" name="TRANSACTION_ID" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property name="REQUEST_ID" expression="$ctx:TRANSACTION_ID" scope="default" type="STRING"/>
+	<sequence key="MIinFlow"/>
+	<property expression="$trp:ApplicationName" name="ApplicationName" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property action="remove" name="TRANSPORT_HEADERS" scope="axis2"/>
+	<property action="remove" name="EXCESS_TRANSPORT_HEADERS" scope="axis2"/>
+	<property name="REQUEST_TIME" expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" scope="default"/>
+	<property expression="fn:concat($trp:X-Forwarded-For,get-property('To'))" name="RESOURCE_URI" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<sequence key="RemoveHeaders"/>
+	<property name="APP_NAME" scope="default" type="STRING" expression="$ctx:ApplicationName"/>
+	<property name="API_NAME" scope="default" type="STRING" value="APC-REFILL-V1"/>
+	<property expression="fn:concat('R',synapse:get-property('SYSTEM_TIME'))" name="RECEIPT_NUMBER" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="fn:concat($ctx:RECEIPT_NUMBER,'|',$ctx:TransactionId)" name="Transaction_Id" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="fn:concat($ctx:RECEIPT_NUMBER,'|',$ctx:TransactionId)" name="Transaction_Id_log" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:Transaction_Id" name="TRANSACTION_ID" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="TIME_IN" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="fn:concat('R',synapse:get-property('SYSTEM_TIME'))" name="RECEIPT_NUMBER" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:Msisdn" name="msisdn" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:Msisdn" name="MSISDN" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:MSISDN" name="uri.var.msisdn" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:TRANSACTION_ID" name="uri.var.transaction_id" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="fn:substring-before($ctx:ServiceUser,'WSO2')" name="Channel_Name" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property name="INTERFACE_NAME" scope="default" type="STRING" value="REQUEST"/>
+	<property expression="fn:concat('TRANSACTION_ID:',$ctx:TransactionId,' | CHANNEL:',$ctx:ServiceUser,' | APPNAME:',$ctx:APP_NAME, ' | AMOUNT:',$ctx:Amount,' | MSISDN:',$ctx:Msisdn)" name="REQUEST" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<sequence key="APC_LOG_REQUEST"/>
+	<property name="RESOURCE_URI" scope="default" type="STRING" value="http://10.13.32.179:10011/Air"/>
+	<filter xmlns:ns="http://org.apache.synapse/xsd" xpath="fn:starts-with($ctx:Channel_Name,'JB-')">
+		<then>
+			<property expression="fn:concat('JBWSO2',fn:substring-after(get-property('Channel_Name'),'JB-'),'Wallet')" name="HostName" scope="default" type="STRING"/>
+		</then>
+		<else>
+			<property expression="fn:concat('WSO2',$ctx:Channel_Name,'Wallet')" name="HostName" scope="default" type="STRING"/>
+		</else>
+	</filter>
+	<property expression="fn:concat($ctx:Amount,'.00')" name="RBS_Amount" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<filter xmlns:ns="http://org.apache.synapse/xsd" xpath="string-length($ctx:Msisdn)!=11">
+		<then>
+			<property name="Status" scope="default" type="STRING" value="Failed"/>
+			<property name="Description" scope="default" type="STRING" value="Request has been failed due Invalid Msisdn"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="TIME_OUT" scope="default" type="STRING"/>
+			<sequence key="APC_REFILL_V1_HUB_TRANSACTION_STATUS"/>
+			<payloadFactory media-type="xml">
+				<format>
+					<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/">
+						<soapenv:Body>
+							<tem:TopUpPaymentResponse>
+								<tem:TopUpPaymentResult>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;ACTIVITY&gt;&lt;TransactionId&gt;$1&lt;/TransactionId&gt;&lt;MSISDN&gt;$2&lt;/MSISDN&gt;&lt;Status&gt;F&lt;/Status&gt;&lt;Message&gt;Your request has failed due to invalid number. Please try again later.&lt;/Message&gt;&lt;ReceiptNo/&gt;&lt;/ACTIVITY&gt;</tem:TopUpPaymentResult>
+							</tem:TopUpPaymentResponse>
+						</soapenv:Body>
+					</soapenv:Envelope>
+				</format>
+				<args>
+					<arg evaluator="xml" expression="$ctx:TransactionId" literal="false"/>
+					<arg evaluator="xml" expression="$ctx:Msisdn" literal="false"/>
+					<arg evaluator="xml" expression="$ctx:RECEIPT_NUMBER" literal="false"/>
+				</args>
+			</payloadFactory>
+			<enrich>
+				<source clone="true" type="body"/>
+				<target action="replace" property="IN_PAYLOAD" type="property"/>
+			</enrich>
+			<property expression="$ctx:IN_PAYLOAD" name="JSON_RESPONSE" scope="default" type="STRING" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+			<property name="Responsecode" scope="default" type="STRING" value="KO"/>
+			<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+			<property name="HTTP_SC" scope="axis2" type="STRING" value="500"/>
+			<property name="messageType" scope="axis2" type="STRING" value="text/xml"/>
+			<property action="remove" name="NO_ENTITY_BODY" scope="axis2"/>
+			<header action="remove" name="To" scope="default"/>
+			<property name="IsClientDoingREST" scope="default" type="BOOLEAN" value="false"/>
+			<property expression="$ctx:Transaction_Id_log" name="TRANSACTION_ID"/>
+			<sequence key="APC_LOG_RESPONSE"/>
+			<respond/>
+		</then>
+		<else/>
+	</filter>
+	<property expression="$ctx:MSISDN" name="uri.var.msisdn" scope="default" type="STRING"/>
+	<property expression="fn:concat('92',fn:substring(get-property('Msisdn'),2))" name="uri.var.msisdn" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property name="INTERFACE_NAME" value="BSS-CLINETTEL"/>
+	<property name="MSISDN" expression="$ctx:MSISDN"/>
+	<property name="REQUEST_TIME" expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" scope="default"/>
+	<property name="RESOURCE_URI" expression="fn:concat('https://bssapi.bss.jazz.com.pk/api/v1/subscriptions/',$ctx:uri.var.msisdn,'?identifier-type=msisdn&amp;include=subscription-type,owner-customer')" scope="default" type="STRING"/>
+	<property expression="$ctx:Transaction_Id_log" name="TRANSACTION_ID"/>
+	<sequence key="APC_LOG_REQUEST"/>
+	<call>
+		<endpoint key="APC_BSSAPI_CLIENTTEL"/>
+	</call>
+	<property expression="json-eval($.included[1].attributes.business-model-type)" name="TYPE" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="json-eval($.included[1].attributes.brand)" name="OPERATOR" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:TYPE" name="uri.var.type" scope="default" type="STRING"/>
+	<property expression="$ctx:OPERATOR" name="uri.var.operator" scope="default" type="STRING"/>
+	<property expression="boolean(get-property('OPERATOR'))" name="bool_Chk_OPERATOR" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="boolean(get-property('OPERATOR'))" name="bool_Chk_OPERATOR" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="fn:concat('Operator: ',$ctx:OPERATOR,' | Type:',$ctx:TYPE)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+	<filter regex="unknown" source="$ctx:OPERATOR" xmlns:ns="http://org.apache.synapse/xsd">
+		<then>
+			<property name="INTERFACE_NAME" value="BSS-CLINETTEL"/>
+			<property name="LOG_RESPONSE_STATUS" value="KO"/>
+			<property name="RESPONSE_TIME" expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" scope="default"/>
+			<property expression="$ctx:Transaction_Id_log" name="TRANSACTION_ID"/>
+			<sequence key="APC_LOG_RESPONSE"/>
+			<property name="Status" scope="default" type="STRING" value="Failed"/>
+			<property name="Description" scope="default" type="STRING" value="Request has been failed due to Unknown Operator"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="TIME_OUT" scope="default" type="STRING"/>
+			<sequence key="APC_REFILL_V1_HUB_TRANSACTION_STATUS"/>
+			<payloadFactory media-type="xml">
+				<format>
+					<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/">
+						<soapenv:Body>
+							<tem:TopUpPaymentResponse>
+								<tem:TopUpPaymentResult>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;ACTIVITY&gt;&lt;TransactionId&gt;$1&lt;/TransactionId&gt;&lt;MSISDN&gt;$2&lt;/MSISDN&gt;&lt;Status&gt;F&lt;/Status&gt;&lt;Message&gt;Your request has failed due to other network number. Please try again later.&lt;/Message&gt;&lt;ReceiptNo/&gt;&lt;/ACTIVITY&gt;</tem:TopUpPaymentResult>
+							</tem:TopUpPaymentResponse>
+						</soapenv:Body>
+					</soapenv:Envelope>
+				</format>
+				<args>
+					<arg evaluator="xml" expression="$ctx:TransactionId" literal="false"/>
+					<arg evaluator="xml" expression="$ctx:Msisdn" literal="false"/>
+					<arg evaluator="xml" expression="$ctx:RECEIPT_NUMBER" literal="false"/>
+				</args>
+			</payloadFactory>
+			<enrich>
+				<source clone="true" type="body"/>
+				<target action="replace" property="IN_PAYLOAD" type="property"/>
+			</enrich>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+			<property name="Responsecode" scope="default" type="STRING" value="KO"/>
+			<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+			<property name="HTTP_SC" scope="axis2" type="STRING" value="500"/>
+			<property name="messageType" scope="axis2" type="STRING" value="text/xml"/>
+			<property action="remove" name="NO_ENTITY_BODY" scope="axis2"/>
+			<property name="JSON_RESPONSE" scope="default" type="STRING" expression="$ctx:IN_PAYLOAD"/>
+			<header action="remove" name="To" scope="default"/>
+			<property name="IsClientDoingREST" scope="default" type="BOOLEAN" value="false"/>
+			<property expression="$ctx:Transaction_Id_log" name="TRANSACTION_ID"/>
+			<sequence key="APC_LOG_RESPONSE"/>
+			<respond/>
+		</then>
+		<else/>
+	</filter>
+	<filter regex="false" source="$ctx:bool_Chk_OPERATOR" xmlns:ns="http://org.apache.synapse/xsd">
+		<then>
+			<property name="INTERFACE_NAME" value="BSS-CLINETTEL"/>
+			<property name="LOG_RESPONSE_STATUS" value="KO"/>
+			<property name="RESPONSE_TIME" expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" scope="default"/>
+			<property expression="$ctx:Transaction_Id_log" name="TRANSACTION_ID"/>
+			<sequence key="APC_LOG_RESPONSE"/>
+			<property name="Status" scope="default" type="STRING" value="Failed"/>
+			<property name="Description" scope="default" type="STRING" value="Request has been failed due to Empty Operator"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="TIME_OUT" scope="default" type="STRING"/>
+			<sequence key="APC_REFILL_V1_HUB_TRANSACTION_STATUS"/>
+			<payloadFactory media-type="xml">
+				<format>
+					<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/">
+						<soapenv:Body>
+							<tem:TopUpPaymentResponse>
+								<tem:TopUpPaymentResult>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;ACTIVITY&gt;&lt;TransactionId&gt;$1&lt;/TransactionId&gt;&lt;MSISDN&gt;$2&lt;/MSISDN&gt;&lt;Status&gt;F&lt;/Status&gt;&lt;Message&gt;Your request has failed due to other network number. Please try again later.&lt;/Message&gt;&lt;ReceiptNo/&gt;&lt;/ACTIVITY&gt;</tem:TopUpPaymentResult>
+							</tem:TopUpPaymentResponse>
+						</soapenv:Body>
+					</soapenv:Envelope>
+				</format>
+				<args>
+					<arg evaluator="xml" expression="$ctx:TransactionId" literal="false"/>
+					<arg evaluator="xml" expression="$ctx:Msisdn" literal="false"/>
+					<arg evaluator="xml" expression="$ctx:RECEIPT_NUMBER" literal="false"/>
+				</args>
+			</payloadFactory>
+			<enrich>
+				<source clone="true" type="body"/>
+				<target action="replace" property="IN_PAYLOAD" type="property"/>
+			</enrich>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+			<property name="Responsecode" scope="default" type="STRING" value="KO"/>
+			<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+			<property name="HTTP_SC" scope="axis2" type="STRING" value="500"/>
+			<property name="messageType" scope="axis2" type="STRING" value="text/xml"/>
+			<property action="remove" name="NO_ENTITY_BODY" scope="axis2"/>
+			<property name="JSON_RESPONSE" scope="default" type="STRING" expression="$ctx:IN_PAYLOAD"/>
+			<header action="remove" name="To" scope="default"/>
+			<property name="IsClientDoingREST" scope="default" type="BOOLEAN" value="false"/>
+			<property expression="$ctx:Transaction_Id_log" name="TRANSACTION_ID"/>
+			<sequence key="APC_LOG_RESPONSE"/>
+			<respond/>
+		</then>
+		<else/>
+	</filter>
+	<property name="INTERFACE_NAME" value="BSS-CLINETTEL"/>
+	<property name="LOG_RESPONSE_STATUS" value="OK"/>
+	<property name="RESPONSE_TIME" expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" scope="default"/>
+	<property expression="$ctx:Transaction_Id_log" name="TRANSACTION_ID"/>
+	<sequence key="APC_LOG_RESPONSE"/>
+	<dblookup>
+		<connection>
+			<pool>
+				<dsName>jdbc/apcrevamp</dsName>
+			</pool>
+		</connection>
+		<statement>
+			<sql><![CDATA[
+				select MSISDN, DA_ID from PartnerDetails where Service_User =? and Service_Password = MD5(?)]]></sql>
+			<parameter expression="$ctx:ServiceUser" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<parameter expression="$ctx:ServicePassword" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<result column="1" name="DBMsisdnValue"/>
+			<result column="2" name="DA_IDValue"/>
+		</statement>
+	</dblookup>
+	<property expression="$ctx:DBMsisdnValue" name="DAMSIDN" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:DA_IDValue" name="DAIDVALUE" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<filter regex="true" source="boolean($ctx:DAMSIDN)" xmlns:ns="http://org.apache.synapse/xsd">
+		<then>
+			<class name="arcana.APCValidation"/>
+			<property expression="$ctx:Validation" name="Validation_Status" scope="default" type="STRING"/>
+			<property expression="$ctx:AountPaisa" name="Amount_Paisa" scope="default" type="STRING"/>
+			<property expression="$ctx:Field1" name="Channel_Type" scope="default" type="STRING"/>
+			<filter regex="OK" source="$ctx:Validation">
+				<then>
+					<dblookup>
+						<connection>
+							<pool>
+								<dsName>jdbc/apcrevamp</dsName>
+							</pool>
+						</connection>
+						<statement>
+							<sql><![CDATA[
+								SELECT ROUND(TransactionUser.IPD_NETTRANSFER*?,0), TRANSACTION_POSTFIX, MIN_LIMIT, MAX_LIMIT, POSTPAID_MIN_LIMIT, POSTPAID_MAX_LIMIT from TransactionUser where USER_ID=?     																			]]></sql>
+							<parameter expression="$ctx:Amount_Paisa" type="VARCHAR"/>
+							<parameter expression="$ctx:ServiceUser" type="VARCHAR"/>
+							<result column="3" name="MIN_LIMIT"/>
+							<result column="6" name="POSTPAID_MIX_LIMIT"/>
+							<result column="2" name="TRANSACTIONPOSTFIX"/>
+							<result column="4" name="MAX_LIMIT"/>
+							<result column="1" name="AMOUNTValueFromDB"/>
+							<result column="5" name="POSTPAID_MIN_LIMIT"/>
+						</statement>
+					</dblookup>
+					<filter xpath="fn:contains($ctx:AMOUNTValueFromDB,'.')">
+						<then>
+							<property expression="fn:substring-before($ctx:AMOUNTValueFromDB,'.')" name="Amount_Calculated" scope="default" type="STRING"/>
+						</then>
+						<else/>
+					</filter>
+					<property expression="$ctx:TRANSACTIONPOSTFIX" name="TRANSACTION_POSTFIX" scope="default" type="STRING"/>
+					<property expression="$ctx:MIN_LIMIT" name="PREPAID_MINLIMIT" scope="default" type="STRING"/>
+					<property expression="$ctx:MAX_LIMIT" name="PREPAID_MAXLIMIT" scope="default" type="STRING"/>
+					<property expression="$ctx:POSTPAID_MIN_LIMIT" name="POSTPAID_MINLIMIT" scope="default" type="STRING"/>
+					<property expression="$ctx:POSTPAID_MIX_LIMIT" name="POSTPAID_MAXLIMIT" scope="default" type="STRING"/>
+					<dblookup>
+						<connection>
+							<pool>
+								<dsName>jdbc/apcrevamp</dsName>
+							</pool>
+						</connection>
+						<statement>
+							<sql><![CDATA[
+								SELECT * FROM Payment_Code where USER_ID=? ]]></sql>
+							<parameter expression="$ctx:ServiceUser" type="VARCHAR"/>
+							<result column="2" name="PaymentCode"/>
+							<result column="4" name="PaymentMethodID"/>
+						</statement>
+					</dblookup>
+					<property expression="$ctx:PaymentMethodID" name="PaymentMethodIDSiebel" scope="default" type="STRING"/>
+					<property expression="$ctx:PaymentCode" name="PaymetCodeIN" scope="default" type="STRING"/>
+					<property expression="$ctx:DBMsisdnValue" name="DAMSIDN" scope="default" type="STRING"/>
+					<property expression="$ctx:DA_IDValue" name="DAIDVALUE" scope="default" type="STRING"/>
+					<property expression="fn:concat('',fn:substring(get-property('DAMSIDN'),2))" name="NORMALIZED_MSISDN_FOR_IN" scope="default" type="STRING"/>
+					<property name="InterfaceName" scope="default" type="STRING" value="GetBalanceAndDate"/>
+					<property expression="fn:concat(synapse:get-property('SYSTEM_DATE', 'yyyyMMdd'),'T',synapse:get-property('SYSTEM_DATE', 'HH:mm:ss+0500'))" name="CURR_DATE_TIME" scope="default" type="STRING"/>
+					<property expression="get-property('SYSTEM_TIME')" name="CURR_TIME" scope="default" type="STRING"/>
+					<property name="IN_PAYLOADRequest" scope="default" type="STRING" value="null"/>
+					<property name="IN_PAYLOAD" scope="default" type="STRING" value="null"/>
+					<payloadFactory media-type="xml">
+						<format>
+							<methodCall xmlns="">
+								<methodName>GetBalanceAndDate</methodName>
+								<params>
+									<param>
+										<value>
+											<struct>
+												<member>
+													<name>originTransactionID</name>
+													<value>
+														<string>$2</string>
+													</value>
+												</member>
+												<member>
+													<name>originNodeType</name>
+													<value>
+														<string>EXT</string>
+													</value>
+												</member>
+												<member>
+													<name>originHostName</name>
+													<value>
+														<string>1</string>
+													</value>
+												</member>
+												<member>
+													<name>originTimeStamp</name>
+													<value>
+														<dateTime.iso8601>$3</dateTime.iso8601>
+													</value>
+												</member>
+												<member>
+													<name>subscriberNumber</name>
+													<value>
+														<string>$1</string>
+													</value>
+												</member>
+											</struct>
+										</value>
+									</param>
+								</params>
+							</methodCall>
+						</format>
+						<args>
+							<arg evaluator="xml" expression="$ctx:NORMALIZED_MSISDN_FOR_IN" literal="false"/>
+							<arg evaluator="xml" expression="$ctx:CURR_TIME" literal="false"/>
+							<arg evaluator="xml" expression="$ctx:CURR_DATE_TIME" literal="false"/>
+						</args>
+					</payloadFactory>
+					<header name="User-Agent" scope="transport" value="UGw Server/5.0/2.0"/>
+					<header name="Authorization" scope="transport" value="Basic SU5UQVJDQU5BOjU2djM0R3oxL0FfMTgK"/>
+					<property name="messageType" scope="axis2" type="STRING" value="application/xml"/>
+					<property name="ContentType" scope="axis2" type="STRING" value="text/xml"/>
+					<property name="DISABLE_CHUNKING" scope="axis2" type="STRING" value="true"/>
+					<enrich>
+						<source clone="true" type="body"/>
+						<target action="replace" property="IN_PAYLOADRequest" type="property"/>
+					</enrich>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="IN-GETBALANCEANDDATE"/>
+					<property value="http://10.13.32.179:10010/Air" name="RESOURCE_URI" scope="default" type="STRING"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+					<property name="REQUEST" scope="default" type="STRING" expression="fn:concat('NORMALIZED_MSISDN_FOR_IN:',$ctx:NORMALIZED_MSISDN_FOR_IN,' | CURR_TIME:',$ctx:CURR_TIME,' | CURR_DATE_TIME:',$ctx:CURR_DATE_TIME)"/>
+					<property name="LOG_REQUEST_ENDED" scope="default" type="STRING" value="*****"/>
+					<property expression="$ctx:Transaction_Id_log" name="TRANSACTION_ID"/>
+					<sequence key="APC_LOG_REQUEST"/>
+					<property name="NO_KEEPALIVE" scope="axis2" type="STRING" value="true"/>
+					<call>
+						<endpoint key="IN_EP_APC"/>
+					</call>
+					<property name="ContentType" scope="axis2" type="STRING" value="application/xml"/>
+					<property name="IsClientDoingREST" scope="default" type="BOOLEAN" value="true"/>
+					<enrich>
+						<source clone="true" type="body"/>
+						<target action="replace" property="IN_PAYLOAD" type="property"/>
+					</enrich>
+					<property expression="//methodResponse/params/param/value/struct/member[name='responseCode']/value/i4/text()']" name="Responsecode" scope="default" type="STRING"/>
+					<filter regex="0" source="$ctx:Responsecode">
+						<then>
+							<property expression="//methodResponse/params/param/value/struct/member[name='dedicatedAccountInformation']/value/array/data/value/struct/member[name='dedicatedAccountID' and value/i4='2094']/value/i4" name="IN_DA_ACCOUNT_ID" scope="default" type="STRING"/>
+							<property expression="//methodResponse/params/param/value/struct/member[name='dedicatedAccountInformation']/value/array/data/value/struct/member[name='dedicatedAccountID' and value/i4='2094']/parent::struct/member[name='dedicatedAccountValue1']/value/string" name="IN_DA_ACCOUNT_VALUE" scope="default" type="STRING"/>
+							<property expression="//methodResponse/params/param/value/struct/member[name='dedicatedAccountInformation']/value/array/data/value/struct/member[name='dedicatedAccountID' and value/i4='2094']/parent::struct/member[name='dedicatedAccountUnitType']/value/i4" name="IN_DA_ACCOUNT_UNIT" scope="default" type="STRING"/>
+							<property name="INTERFACE_NAME" scope="default" type="STRING" value="IN-GETBALANCEANDDATE"/>
+							<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+							<property name="LOG_RESPONSE_STATUS" value="OK"/>
+							<property name="JSON_RESPONSE" scope="default" type="STRING" expression="fn:concat('Responsecode:',$ctx:Responsecode,' | IN_DA_ACCOUNT_ID:',$ctx:IN_DA_ACCOUNT_ID,' | IN_DA_ACCOUNT_VALUE:',$ctx:IN_DA_ACCOUNT_VALUE,' | IN_DA_ACCOUNT_UNIT:',$ctx:IN_DA_ACCOUNT_UNIT)"/>
+							<property name="LOG_RESPONSE_ENDED" scope="default" type="STRING" value="*****"/>
+							<property expression="$ctx:Transaction_Id_log" name="TRANSACTION_ID"/>
+							<sequence key="APC_LOG_RESPONSE"/>
+							<filter xpath="$ctx:IN_DA_ACCOUNT_VALUE > $ctx:Amount_Paisa or $ctx:IN_DA_ACCOUNT_VALUE = $ctx:Amount_Paisa">
+								<then>
+									<property name="PREPAIDLIMIT_CHECK" scope="default" type="STRING" value="0"/>
+									<property name="POSTPAIDLIMIT_CHECK" scope="default" type="STRING" value="0"/>
+									<property name="REFILL_CHECK" scope="default" type="STRING" value="0"/>
+									<property name="RBS_CHECK" scope="default" type="STRING" value="0"/>
+									<filter regex="prepaid" source="$ctx:TYPE">
+										<then>
+											<filter regex="false" source="get-property('Amount') > get-property('PREPAID_MINLIMIT') and get-property('PREPAID_MAXLIMIT') > get-property('Amount')">
+												<then>
+													<property name="PREPAIDLIMIT_CHECK" scope="default" type="STRING" value="1"/>
+												</then>
+												<else/>
+											</filter>
+										</then>
+										<else>
+											<filter regex="false" source="get-property('Amount') > get-property('POSTPAID_MINLIMIT') and get-property('POSTPAID_MAXLIMIT') > get-property('Amount')">
+												<then>
+													<property name="POSTPAIDLIMIT_CHECK" scope="default" type="STRING" value="1"/>
+												</then>
+												<else/>
+											</filter>
+										</else>
+									</filter>
+									<filter regex="true" source="get-property('PREPAIDLIMIT_CHECK')='0' and get-property('POSTPAIDLIMIT_CHECK')='0'">
+										<then>
+											<class name="com.arcanainfo.gdcb.dates.StartAndEndMonthDates"/>
+											<property name="Recon" scope="default" type="STRING" value="UpdateBalanceAndDate"/>
+											<property name="InterfaceName" scope="default" type="STRING" value="UpdateBalanceAndDate"/>
+											<property expression="fn:concat(synapse:get-property('SYSTEM_DATE', 'yyyyMMdd'),'T',synapse:get-property('SYSTEM_DATE', 'HH:mm:ss+0500'))" name="CURR_DATE_TIME" scope="default" type="STRING"/>
+											<property expression="get-property('SYSTEM_TIME')" name="CURR_TIME" scope="default" type="STRING"/>
+											<property expression="$ctx:MONTHLY_CREDLIMIT_START_DATE" name="MONTHLY_CREDLIMIT_START_DATE" scope="default" type="STRING"/>
+											<property expression="$ctx:MONTHLY_CREDLIMIT_END_DATE" name="MONTHLY_CREDLIMIT_END_DATE" scope="default" type="STRING"/>
+											<property expression="$ctx:CREDIT_RENEWAL_DATE" name="CREDIT_RENEWAL_DATE" scope="default" type="STRING"/>
+											<property name="IN_PAYLOADRequest" scope="default" type="STRING" value="null"/>
+											<property name="IN_PAYLOAD" scope="default" type="STRING" value="null"/>
+											<payloadFactory media-type="xml">
+												<format>
+													<methodCall xmlns="">
+														<methodName>UpdateBalanceAndDate</methodName>
+														<params>
+															<param>
+																<value>
+																	<struct>
+																		<member>
+																			<name>originNodeType</name>
+																			<value>
+																				<string>EXT</string>
+																			</value>
+																		</member>
+																		<member>
+																			<name>originHostName</name>
+																			<value>
+																				<string>$7</string>
+																			</value>
+																		</member>
+																		<member>
+																			<name>originTransactionID</name>
+																			<value>
+																				<string>$6</string>
+																			</value>
+																		</member>
+																		<member>
+																			<name>originTimeStamp</name>
+																			<value>
+																				<dateTime.iso8601>$4</dateTime.iso8601>
+																			</value>
+																		</member>
+																		<member>
+																			<name>subscriberNumber</name>
+																			<value>
+																				<string>$1</string>
+																			</value>
+																		</member>
+																		<member>
+																			<name>transactionCurrency</name>
+																			<value>
+																				<string>PKR</string>
+																			</value>
+																		</member>
+																		<member>
+																			<name>externalData1</name>
+																			<value>
+																				<string>$7</string>
+																			</value>
+																		</member>
+																		<member>
+																			<name>externalData2</name>
+																			<value>
+																				<string>$7</string>
+																			</value>
+																		</member>
+																		<member>
+																			<name>transactionType</name>
+																			<value>
+																				<string>$7</string>
+																			</value>
+																		</member>
+																		<member>
+																			<name>transactionCode</name>
+																			<value>
+																				<string>$7</string>
+																			</value>
+																		</member>
+																		<member>
+																			<name>dedicatedAccountUpdateInformation</name>
+																			<value>
+																				<array>
+																					<data>
+																						<value>
+																							<struct>
+																								<member>
+																									<name>dedicatedAccountID</name>
+																									<value>
+																										<i4>2094</i4>
+																									</value>
+																								</member>
+																								<member>
+																									<name>dedicatedAccountUnitType</name>
+																									<value>
+																										<int>1</int>
+																									</value>
+																								</member>
+																								<member>
+																									<name>adjustmentAmountRelative</name>
+																									<value>
+																										<string>-$5</string>
+																									</value>
+																								</member>
+																							</struct>
+																						</value>
+																					</data>
+																				</array>
+																			</value>
+																		</member>
+																	</struct>
+																</value>
+															</param>
+														</params>
+													</methodCall>
+												</format>
+												<args>
+													<arg evaluator="xml" expression="$ctx:NORMALIZED_MSISDN_FOR_IN" literal="false"/>
+													<arg evaluator="xml" expression="$ctx:MONTHLY_CREDLIMIT_START_DATE" literal="false"/>
+													<arg evaluator="xml" expression="$ctx:MONTHLY_CREDLIMIT_END_DATE" literal="false"/>
+													<arg evaluator="xml" expression="$ctx:CURR_DATE_TIME" literal="false"/>
+													<arg evaluator="xml" expression="$ctx:Amount_Paisa" literal="false"/>
+													<arg evaluator="xml" expression="$ctx:CURR_TIME" literal="false"/>
+													<arg evaluator="xml" expression="$ctx:HostName" literal="false"/>
+												</args>
+											</payloadFactory>
+											<header name="User-Agent" scope="transport" value="UGw Server/5.0/2.0"/>
+											<header name="Authorization" scope="transport" value="Basic SU5UQVJDQU5BOjU2djM0R3oxL0FfMTgK"/>
+											<property name="messageType" scope="axis2" type="STRING" value="application/xml"/>
+											<property name="ContentType" scope="axis2" type="STRING" value="text/xml"/>
+											<property name="DISABLE_CHUNKING" scope="axis2" type="STRING" value="true"/>
+											<enrich>
+												<source clone="true" type="body"/>
+												<target action="replace" property="IN_PAYLOADRequest" type="property"/>
+											</enrich>
+											<property name="INTERFACE_NAME" scope="default" type="STRING" value="IN-UPDATEBALANCEANDDATE"/>
+											<property value="http://10.13.32.179:10010/Air" name="RESOURCE_URI" scope="default" type="STRING"/>
+											<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+											<property name="REQUEST" scope="default" type="STRING" expression="fn:concat('NORMALIZED_MSISDN_FOR_IN:',$ctx:NORMALIZED_MSISDN_FOR_IN,' | MONTHLY_CREDLIMIT_START_DATE:',$ctx:MONTHLY_CREDLIMIT_START_DATE,' | MONTHLY_CREDLIMIT_END_DATE:',$ctx:MONTHLY_CREDLIMIT_END_DATE,' | CURR_DATE_TIME:',$ctx:CURR_DATE_TIME,' | Amount_Paisa:',$ctx:Amount_Paisa,' | CURR_TIME:',$ctx:CURR_TIME,' | HostName:',$ctx:HostName)"/>
+											<property name="LOG_REQUEST_ENDED" scope="default" type="STRING" value="*****"/>
+											<property expression="$ctx:Transaction_Id_log" name="TRANSACTION_ID"/>
+											<sequence key="APC_LOG_REQUEST"/>
+											<property name="NO_KEEPALIVE" scope="axis2" type="STRING" value="true"/>
+											<call>
+												<endpoint key="IN_EP_APC"/>
+											</call>
+											<property name="ContentType" scope="axis2" type="STRING" value="application/xml"/>
+											<property name="IsClientDoingREST" scope="default" type="BOOLEAN" value="true"/>
+											<enrich>
+												<source clone="true" type="body"/>
+												<target action="replace" property="IN_PAYLOAD" type="property"/>
+											</enrich>
+											<property expression="$body//methodResponse/params/param/value/struct/member[name='responseCode']/value/i4" name="Responsecode" scope="default" type="STRING"/>
+											<filter regex="0" source="$ctx:Responsecode">
+												<then>
+													<property expression="//methodResponse/params/param/value/struct/member[name='dedicatedAccountChangeInformation']/value/array/data/value/struct/member[name='dedicatedAccountID' and value/i4='2094']/parent::struct/member[name='dedicatedAccountValue1']/value/string" name="Remaning_Balance_Dedicated_Account_Value1" scope="default" type="STRING"/>
+													<property expression="fn:substring(get-property('Remaning_Balance_Dedicated_Account_Value1'), 1, fn:string-length(get-property('Remaning_Balance_Dedicated_Account_Value1')) - 2)" name="Remaning_Balance_Dedected_last_zero" scope="default" type="STRING"/>
+													<property expression="$ctx:Remaning_Balance_Dedected_last_zero" name="Remaning_after_Division"/>
+													<property name="INTERFACE_NAME" scope="default" type="STRING" value="IN-UPDATEBALANCEANDDATE"/>
+													<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+													<property name="LOG_RESPONSE_STATUS" value="OK"/>
+													<property name="JSON_RESPONSE" scope="default" type="STRING" expression="fn:concat('Responsecode:',$ctx:Responsecode,' | Remaning_Balance_Dedicated_Account_Value1',$ctx:Remaning_Balance_Dedicated_Account_Value1,' | Remaning_Balance_Dedected_last_zero: ',$ctx:Remaning_Balance_Dedected_last_zero)"/>
+													<property name="LOG_RESPONSE_ENDED" scope="default" type="STRING" value="*****"/>
+													<property expression="$ctx:Transaction_Id_log" name="TRANSACTION_ID"/>
+													<sequence key="APC_LOG_RESPONSE"/>
+													<filter regex="prepaid" source="$ctx:TYPE">
+														<then>
+															<property name="Recon" scope="default" type="STRING" value="Refill"/>
+															<property expression="fn:concat(synapse:get-property('SYSTEM_DATE', 'yyyyMMdd'),'T',synapse:get-property('SYSTEM_DATE', 'HH:mm:ss+0500'))" name="CURR_DATE_TIME" scope="default" type="STRING"/>
+															<property expression="get-property('SYSTEM_TIME')" name="CURR_TIME" scope="default" type="STRING"/>
+															<property expression="fn:concat('',fn:substring(get-property('Msisdn'),2))" name="Refill_Msisdn" scope="default" type="STRING"/>
+															<property name="IN_PAYLOADRequest" scope="default" type="STRING" value="null"/>
+															<property name="IN_PAYLOAD" scope="default" type="STRING" value="null"/>
+															<payloadFactory media-type="xml">
+																<format>
+																	<methodCall xmlns="">
+																		<methodName>Refill</methodName>
+																		<params>
+																			<param>
+																				<value>
+																					<struct>
+																						<member>
+																							<name>originNodeType</name>
+																							<value>
+																								<string>EXT</string>
+																							</value>
+																						</member>
+																						<member>
+																							<name>originHostName</name>
+																							<value>
+																								<string>WSO2</string>
+																							</value>
+																						</member>
+																						<member>
+																							<name>originTransactionID</name>
+																							<value>
+																								<string>$2</string>
+																							</value>
+																						</member>
+																						<member>
+																							<name>originTimeStamp</name>
+																							<value>
+																								<dateTime.iso8601>$1</dateTime.iso8601>
+																							</value>
+																						</member>
+																						<member>
+																							<name>subscriberNumber</name>
+																							<value>
+																								<string>$4</string>
+																							</value>
+																						</member>
+																						<member>
+																							<name>transactionCurrency</name>
+																							<value>
+																								<string>PKR</string>
+																							</value>
+																						</member>
+																						<member>
+																							<name>transactionAmount</name>
+																							<value>
+																								<string>$3</string>
+																							</value>
+																						</member>
+																						<member>
+																							<name>transactionType</name>
+																							<value>
+																								<string>WSO2</string>
+																							</value>
+																						</member>
+																						<member>
+																							<name>transactionCode</name>
+																							<value>
+																								<string>WSO2TOPUP</string>
+																							</value>
+																						</member>
+																						<member>
+																							<name>refillProfileID</name>
+																							<value>
+																								<string>APC</string>
+																							</value>
+																						</member>
+																						<member>
+																							<name>externalData1</name>
+																							<value>
+																								<string>$5-$6-$7-$8</string>
+																							</value>
+																						</member>
+																						<member>
+																							<name>externalData2</name>
+																							<value>
+																								<string>VOMS_Recharge</string>
+																							</value>
+																						</member>
+																					</struct>
+																				</value>
+																			</param>
+																		</params>
+																	</methodCall>
+																</format>
+																<args>
+																	<arg evaluator="xml" expression="$ctx:CURR_DATE_TIME" literal="false"/>
+																	<arg evaluator="xml" expression="$ctx:CURR_TIME" literal="false"/>
+																	<arg evaluator="xml" expression="$ctx:Amount_Calculated" literal="false"/>
+																	<arg evaluator="xml" expression="$ctx:Refill_Msisdn" literal="false"/>
+																	<arg evaluator="xml" expression="$ctx:RECEIPT_NUMBER" literal="false"/>
+																	<arg evaluator="xml" expression="$ctx:TransactionId" literal="false"/>
+																	<arg evaluator="xml" expression="$ctx:PaymetCodeIN" literal="false"/>
+																	<arg evaluator="xml" expression="$ctx:TRANSACTION_POSTFIX" literal="false"/>
+																</args>
+															</payloadFactory>
+															<header name="User-Agent" scope="transport" value="UGw Server/5.0/2.0"/>
+															<header name="Authorization" scope="transport" value="Basic SU5UQVJDQU5BOjU2djM0R3oxL0FfMTgK"/>
+															<property name="messageType" scope="axis2" type="STRING" value="application/xml"/>
+															<property name="ContentType" scope="axis2" type="STRING" value="text/xml"/>
+															<property name="DISABLE_CHUNKING" scope="axis2" type="STRING" value="true"/>
+															<enrich>
+																<source clone="true" type="body"/>
+																<target action="replace" property="IN_PAYLOADRequest" type="property"/>
+															</enrich>
+															<property name="INTERFACE_NAME" scope="default" type="STRING" value="IN-REFILL"/>
+															<property value="http://10.13.32.179:10010/Air" name="RESOURCE_URI" scope="default" type="STRING"/>
+															<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+															<property name="REQUEST" scope="default" type="STRING" expression="fn:concat('CURR_DATE_TIME:',$ctx:CURR_DATE_TIME,' | CURR_TIME:',$ctx:CURR_TIME,' | Amount_Calculated:',$ctx:Amount_Calculated,' | Refill_Msisdn:',$ctx:Refill_Msisdn,' | RECEIPT_NUMBER:',$ctx:RECEIPT_NUMBER,' | TransactionId:',$ctx:TransactionId,' | PaymetCodeIN:',$ctx:PaymetCodeIN,' | TRANSACTION_POSTFIX:',$ctx:TRANSACTION_POSTFIX)"/>
+															<property name="LOG_REQUEST_ENDED" scope="default" type="STRING" value="*****"/>
+															<property expression="$ctx:Transaction_Id_log" name="TRANSACTION_ID"/>
+															<sequence key="APC_LOG_REQUEST"/>
+															<property name="NO_KEEPALIVE" scope="axis2" type="STRING" value="true"/>
+															<call>
+																<endpoint key="IN_EP_APC"/>
+															</call>
+															<property name="ContentType" scope="axis2" type="STRING" value="application/xml"/>
+															<property name="IsClientDoingREST" scope="default" type="BOOLEAN" value="true"/>
+															<property name="ContentType" scope="axis2" type="STRING" value="application/xml"/>
+															<enrich>
+																<source clone="true" type="body"/>
+																<target action="replace" property="IN_PAYLOAD" type="property"/>
+															</enrich>
+															<property expression="$body//methodResponse/params/param/value/struct/member[name='responseCode']/value/i4" name="Responsecode" scope="default" type="STRING"/>
+															<property name="INTERFACE_NAME" scope="default" type="STRING" value="IN-REFILL"/>
+															<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+															<property name="LOG_RESPONSE_STATUS" value="OK"/>
+															<property name="JSON_RESPONSE" scope="default" type="STRING" expression="$ctx:Responsecode"/>
+															<property name="LOG_RESPONSE_ENDED" scope="default" type="STRING" value="*****"/>
+															<property expression="$ctx:Transaction_Id_log" name="TRANSACTION_ID"/>
+															<sequence key="APC_LOG_RESPONSE"/>
+															<filter xpath="$ctx:Responsecode !=0">
+																<then>
+																	<property name="REFILL_CHECK" scope="default" type="STRING" value="1"/>
+																</then>
+															</filter>
+														</then>
+														<else>
+															<property name="Recon" scope="default" type="STRING" value="RBS"/>
+															<property name="InterfaceName" scope="default" type="STRING" value="RBS"/>
+															<property expression="fn:concat(synapse:get-property('SYSTEM_DATE', 'yyyyMMdd'),'T',synapse:get-property('SYSTEM_DATE', 'HH:mm:ss+0500'))" name="CURR_DATE_TIME" scope="default" type="STRING"/>
+															<property expression="get-property('SYSTEM_TIME')" name="CURR_TIME" scope="default" type="STRING"/>
+															<property expression="get-property('Msisdn')" name="RBS_Msisdn" scope="default" type="STRING"/>
+															<property expression="fn:concat(get-property('RECEIPT_NUMBER'),'-',get-property('TransactionId'),'-',get-property('PaymetCodeIN'),'-',get-property('TRANSACTION_POSTFIX'))" name="RBS_ID" scope="default" type="STRING"/>
+															<property name="messageType" scope="axis2" value="application/json"/>
+															<property name="ContentType" scope="axis2" value="application/json"/>
+															<property name="IN_PAYLOADRequest" scope="default" type="STRING" value="null"/>
+															<property name="IN_PAYLOAD" scope="default" type="STRING" value="null"/>
+															<payloadFactory media-type="json">
+																<format>{ "data": { "type": "invoice-payments", "attributes": { "transaction_id": "$1", "channel": "BSSAPI", "msisdn": "$2", "amount": "$3", "payment-type": "edr_payment", "currency": "PKR", "payment-source": "$4" } } }
+																</format>
+																<args>
+																	<arg evaluator="xml" expression="$ctx:RBS_ID" literal="false"/>
+																	<arg evaluator="xml" expression="$ctx:RBS_Msisdn" literal="false"/>
+																	<arg evaluator="xml" expression="$ctx:RBS_Amount" literal="false"/>
+																	<arg evaluator="xml" expression="$ctx:RBS_ID" literal="false"/>
+																</args>
+															</payloadFactory>
+															<property expression="json-eval($)" name="IN_PAYLOADRequest"/>
+															<property name="ContentType" scope="axis2" value="application/vnd.api+json"/>
+															<property name="cachecontrol" scope="axis2" value="nocache"/>
+															<property expression="json-eval($)" name="JSON_RESPONSE"/>
+															<property name="INTERFACE_NAME" scope="default" type="STRING" value="BSS-RBS"/>
+															<property name="RESOURCE_URI" scope="default" type="STRING" value="https://bssapi.bss.jazz.com.pk/api/v1/invoice-payments/"/>
+															<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+															<property name="REQUEST" scope="default" type="STRING" expression="fn:concat('RBS_ID:',$ctx:RBS_ID,' | RBS_Msisdn:',$ctx:RBS_Msisdn,' | RBS_Amount:',$ctx:RBS_Amount,' | Refill_Msisdn:',$ctx:Refill_Msisdn,' | RECEIPT_NUMBER:',$ctx:RECEIPT_NUMBER,' | TransactionId:',$ctx:TransactionId,' | PaymetCodeIN:',$ctx:PaymetCodeIN,' | TRANSACTION_POSTFIX:',$ctx:TRANSACTION_POSTFIX)"/>
+															<property name="LOG_REQUEST_ENDED" scope="default" type="STRING" value="*****"/>
+															<property expression="$ctx:Transaction_Id_log" name="TRANSACTION_ID"/>
+															<sequence key="APC_LOG_REQUEST"/>
+															<property name="ContentType" scope="axis2" value="application/vnd.api+json"/>
+															<property name="cachecontrol" scope="axis2" value="nocache"/>
+															<call>
+																<endpoint key="APC_EP_RBS"/>
+															</call>
+															<property expression="json-eval($)" name="IN_PAYLOAD"/>
+															<property expression="json-eval($.data[0].id)" name="RBS_SUCCESS"/>
+															<property expression="json-eval($.errors)" name="RBS_FIELD1"/>
+															<property expression="json-eval($.errors[0].detail)" name="RBS_FIELD2"/>
+															<property name="INTERFACE_NAME" scope="default" type="STRING" value="BSS-RBS"/>
+															<property name="LOG_RESPONSE_STATUS" value="OK"/>
+															<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+															<property name="JSON_RESPONSE" scope="default" type="STRING" expression="fn:concat('RBS_SUCCESS:',$ctx:RBS_SUCCESS,' | RBS_FIELD1:',$ctx:RBS_FIELD1,' | RBS_FIELD2:',$ctx:RBS_FIELD2)"/>
+															<property name="LOG_RESPONSE_ENDED" scope="default" type="STRING" value="*****"/>
+															<property expression="$ctx:Transaction_Id_log" name="TRANSACTION_ID"/>
+															<sequence key="APC_LOG_RESPONSE"/>
+															<filter xpath="$ctx:RBS_SUCCESS =''">
+																<then>
+																	<property name="RBS_CHECK" scope="default" type="STRING" value="1"/>
+																</then>
+															</filter>
+														</else>
+													</filter>
+													<filter regex="true" source="get-property('REFILL_CHECK')='0' and get-property('RBS_CHECK')='0'">
+														<then>
+															<property name="Status" scope="default" type="STRING" value="Success"/>
+															<property name="Description" scope="default" type="STRING" value="Successfull Transaction"/>
+															<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="TIME_OUT" scope="default" type="STRING"/>
+															<property expression="fn:concat(get-property('RECEIPT_NUMBER'),'-',get-property('TransactionId'),'-',get-property('PaymetCodeIN'),'-',get-property('TRANSACTION_POSTFIX'))" name="ExternalData" scope="default" type="STRING"/>
+															<sequence key="APC_REFILL_V1_HUB_TRANSACTION_STATUS"/>
+															<payloadFactory media-type="xml">
+																<format>
+																	<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/">
+																		<soapenv:Body>
+																			<tem:TopUpPaymentResponse>
+																				<tem:TopUpPaymentResult>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;ACTIVITY&gt;&lt;TransactionId&gt;$1&lt;/TransactionId&gt;&lt;MSISDN&gt;$2&lt;/MSISDN&gt;&lt;Status&gt;S&lt;/Status&gt;&lt;Message/&gt;&lt;ReceiptNo&gt;$3&lt;/ReceiptNo&gt;&lt;/ACTIVITY&gt;</tem:TopUpPaymentResult>
+																			</tem:TopUpPaymentResponse>
+																		</soapenv:Body>
+																	</soapenv:Envelope>
+																</format>
+																<args>
+																	<arg evaluator="xml" expression="$ctx:TransactionId" literal="false"/>
+																	<arg evaluator="xml" expression="$ctx:Msisdn" literal="false"/>
+																	<arg evaluator="xml" expression="$ctx:RECEIPT_NUMBER" literal="false"/>
+																</args>
+															</payloadFactory>
+															<enrich>
+																<source clone="true" type="body"/>
+																<target action="replace" property="IN_PAYLOAD" type="property"/>
+															</enrich>
+															<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+															<property name="Responsecode" scope="default" type="STRING" value="OK"/>
+															<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+															<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+															<property name="LOG_RESPONSE_ENDED" scope="default" type="STRING" value="*****"/>
+															<property name="SC_ACCEPTED" scope="axis2" value="false"/>
+															<property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+															<property name="messageType" scope="axis2" type="STRING" value="text/xml"/>
+															<property action="remove" name="NO_ENTITY_BODY" scope="axis2"/>
+															<property name="JSON_RESPONSE" scope="default" type="STRING" expression="$ctx:IN_PAYLOAD"/>
+															<header action="remove" name="To" scope="default"/>
+															<property name="IsClientDoingREST" scope="default" type="BOOLEAN" value="false"/>
+															<property expression="$ctx:Transaction_Id_log" name="TRANSACTION_ID"/>
+															<sequence key="APC_LOG_RESPONSE"/>
+															<respond/>
+														</then>
+														<else>
+															<class name="com.arcanainfo.gdcb.dates.StartAndEndMonthDates"/>
+															<property name="Recon" scope="default" type="STRING" value="UpdateBalanceAndDateReversal"/>
+															<property name="InterfaceName" scope="default" type="STRING" value="UpdateBalanceAndDateReversal"/>
+															<property expression="fn:concat(synapse:get-property('SYSTEM_DATE', 'yyyyMMdd'),'T',synapse:get-property('SYSTEM_DATE', 'HH:mm:ss+0500'))" name="CURR_DATE_TIME" scope="default" type="STRING"/>
+															<property expression="get-property('SYSTEM_TIME')" name="CURR_TIME" scope="default" type="STRING"/>
+															<property expression="$ctx:MONTHLY_CREDLIMIT_START_DATE" name="MONTHLY_CREDLIMIT_START_DATE" scope="default" type="STRING"/>
+															<property expression="$ctx:MONTHLY_CREDLIMIT_END_DATE" name="MONTHLY_CREDLIMIT_END_DATE" scope="default" type="STRING"/>
+															<property expression="$ctx:CREDIT_RENEWAL_DATE" name="CREDIT_RENEWAL_DATE" scope="default" type="STRING"/>
+															<property name="IN_PAYLOADRequest" scope="default" type="STRING" value="null"/>
+															<property name="IN_PAYLOAD" scope="default" type="STRING" value="null"/>
+															<payloadFactory media-type="xml">
+																<format>
+																	<methodCall xmlns="">
+																		<methodName>UpdateBalanceAndDate</methodName>
+																		<params>
+																			<param>
+																				<value>
+																					<struct>
+																						<member>
+																							<name>originNodeType</name>
+																							<value>
+																								<string>EXT</string>
+																							</value>
+																						</member>
+																						<member>
+																							<name>originHostName</name>
+																							<value>
+																								<string>$7</string>
+																							</value>
+																						</member>
+																						<member>
+																							<name>originTransactionID</name>
+																							<value>
+																								<string>$6</string>
+																							</value>
+																						</member>
+																						<member>
+																							<name>originTimeStamp</name>
+																							<value>
+																								<dateTime.iso8601>$4</dateTime.iso8601>
+																							</value>
+																						</member>
+																						<member>
+																							<name>subscriberNumber</name>
+																							<value>
+																								<string>$1</string>
+																							</value>
+																						</member>
+																						<member>
+																							<name>transactionCurrency</name>
+																							<value>
+																								<string>PKR</string>
+																							</value>
+																						</member>
+																						<member>
+																							<name>externalData1</name>
+																							<value>
+																								<string>$7</string>
+																							</value>
+																						</member>
+																						<member>
+																							<name>externalData2</name>
+																							<value>
+																								<string>$7</string>
+																							</value>
+																						</member>
+																						<member>
+																							<name>transactionType</name>
+																							<value>
+																								<string>$7</string>
+																							</value>
+																						</member>
+																						<member>
+																							<name>transactionCode</name>
+																							<value>
+																								<string>$7</string>
+																							</value>
+																						</member>
+																						<member>
+																							<name>dedicatedAccountUpdateInformation</name>
+																							<value>
+																								<array>
+																									<data>
+																										<value>
+																											<struct>
+																												<member>
+																													<name>dedicatedAccountID</name>
+																													<value>
+																														<i4>2094</i4>
+																													</value>
+																												</member>
+																												<member>
+																													<name>dedicatedAccountUnitType</name>
+																													<value>
+																														<int>1</int>
+																													</value>
+																												</member>
+																												<member>
+																													<name>adjustmentAmountRelative</name>
+																													<value>
+																														<string>$5</string>
+																													</value>
+																												</member>
+																											</struct>
+																										</value>
+																									</data>
+																								</array>
+																							</value>
+																						</member>
+																					</struct>
+																				</value>
+																			</param>
+																		</params>
+																	</methodCall>
+																</format>
+																<args>
+																	<arg evaluator="xml" expression="$ctx:NORMALIZED_MSISDN_FOR_IN" literal="false"/>
+																	<arg evaluator="xml" expression="$ctx:MONTHLY_CREDLIMIT_START_DATE" literal="false"/>
+																	<arg evaluator="xml" expression="$ctx:MONTHLY_CREDLIMIT_END_DATE" literal="false"/>
+																	<arg evaluator="xml" expression="$ctx:CURR_DATE_TIME" literal="false"/>
+																	<arg evaluator="xml" expression="$ctx:Amount_Paisa" literal="false"/>
+																	<arg evaluator="xml" expression="$ctx:CURR_TIME" literal="false"/>
+																	<arg evaluator="xml" expression="$ctx:HostName" literal="false"/>
+																</args>
+															</payloadFactory>
+															<header name="User-Agent" scope="transport" value="UGw Server/5.0/2.0"/>
+															<header name="Authorization" scope="transport" value="Basic SU5UQVJDQU5BOjU2djM0R3oxL0FfMTgK"/>
+															<property name="messageType" scope="axis2" type="STRING" value="application/xml"/>
+															<property name="ContentType" scope="axis2" type="STRING" value="text/xml"/>
+															<property name="DISABLE_CHUNKING" scope="axis2" type="STRING" value="true"/>
+															<enrich>
+																<source clone="true" type="body"/>
+																<target action="replace" property="IN_PAYLOADRequest" type="property"/>
+															</enrich>
+															<property name="INTERFACE_NAME" scope="default" type="STRING" value="IN-UPDATEBALANCEANDDATE"/>
+															<property value="http://10.13.32.179:10010/Air" name="RESOURCE_URI" scope="default" type="STRING"/>
+															<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+															<property name="REQUEST" scope="default" type="STRING" expression="fn:concat('NORMALIZED_MSISDN_FOR_IN:',$ctx:NORMALIZED_MSISDN_FOR_IN,' | MONTHLY_CREDLIMIT_START_DATE:',$ctx:MONTHLY_CREDLIMIT_START_DATE,' | MONTHLY_CREDLIMIT_END_DATE:',$ctx:MONTHLY_CREDLIMIT_END_DATE,' | CURR_DATE_TIME:',$ctx:CURR_DATE_TIME,' | Amount_Paisa:',$ctx:Amount_Paisa,' | CURR_TIME:',$ctx:CURR_TIME,' | HostName:',$ctx:HostName)"/>
+															<property name="LOG_REQUEST_ENDED" scope="default" type="STRING" value="*****"/>
+															<property expression="$ctx:Transaction_Id_log" name="TRANSACTION_ID"/>
+															<sequence key="APC_LOG_REQUEST"/>
+															<property name="NO_KEEPALIVE" scope="axis2" type="STRING" value="true"/>
+															<call>
+																<endpoint key="IN_EP_APC"/>
+															</call>
+															<property name="ContentType" scope="axis2" type="STRING" value="application/xml"/>
+															<property name="IsClientDoingREST" scope="default" type="BOOLEAN" value="true"/>
+															<property name="ContentType" scope="axis2" type="STRING" value="application/xml"/>
+															<enrich>
+																<source clone="true" type="body"/>
+																<target action="replace" property="IN_PAYLOAD" type="property"/>
+															</enrich>
+															<property expression="$body//methodResponse/params/param/value/struct/member[name='responseCode']/value/i4" name="Responsecode" scope="default" type="STRING"/>
+															<property name="INTERFACE_NAME" scope="default" type="STRING" value="IN-UPDATEBALANCEANDDATE"/>
+															<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+															<property name="LOG_RESPONSE_STATUS" value="OK"/>
+															<property name="JSON_RESPONSE" scope="default" type="STRING" expression="$ctx:Responsecode"/>
+															<property name="LOG_RESPONSE_ENDED" scope="default" type="STRING" value="*****"/>
+															<property expression="$ctx:Transaction_Id_log" name="TRANSACTION_ID"/>
+															<sequence key="APC_LOG_RESPONSE"/>
+															<filter regex="0" source="$ctx:Responsecode">
+																<then>
+																	<property name="Status" scope="default" type="STRING" value="Failed"/>
+																	<property name="Description" scope="default" type="STRING" value="Request has been failed due to REFILL fail"/>
+																	<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="TIME_OUT" scope="default" type="STRING"/>
+																	<property expression="fn:concat(get-property('RECEIPT_NUMBER'),'-',get-property('TransactionId'),'-',get-property('PaymetCodeIN'),'-',get-property('TRANSACTION_POSTFIX'))" name="ExternalData" scope="default" type="STRING"/>
+																	<sequence key="APC_REFILL_V1_HUB_TRANSACTION_STATUS"/>
+																	<payloadFactory media-type="xml">
+																		<format>
+																			<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/">
+																				<soapenv:Body>
+																					<tem:TopUpPaymentResponse>
+																						<tem:TopUpPaymentResult>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;ACTIVITY&gt;&lt;TransactionId&gt;$1&lt;/TransactionId&gt;&lt;MSISDN&gt;$2&lt;/MSISDN&gt;&lt;Status&gt;F&lt;/Status&gt;&lt;Message&gt;Your request has failed due to some technical issue. Please try again later.&lt;/Message&gt;&lt;ReceiptNo/&gt;&lt;/ACTIVITY&gt;</tem:TopUpPaymentResult>
+																					</tem:TopUpPaymentResponse>
+																				</soapenv:Body>
+																			</soapenv:Envelope>
+																		</format>
+																		<args>
+																			<arg evaluator="xml" expression="$ctx:TransactionId" literal="false"/>
+																			<arg evaluator="xml" expression="$ctx:Msisdn" literal="false"/>
+																			<arg evaluator="xml" expression="$ctx:RECEIPT_NUMBER" literal="false"/>
+																		</args>
+																	</payloadFactory>
+																	<enrich>
+																		<source clone="true" type="body"/>
+																		<target action="replace" property="IN_PAYLOAD" type="property"/>
+																	</enrich>
+																	<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+																	<property name="Responsecode" scope="default" type="STRING" value="KO"/>
+																	<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+																	<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+																	<property name="SC_ACCEPTED" scope="axis2" value="false"/>
+																	<property name="HTTP_SC" scope="axis2" type="STRING" value="500"/>
+																	<property name="messageType" scope="axis2" type="STRING" value="text/xml"/>
+																	<property action="remove" name="NO_ENTITY_BODY" scope="axis2"/>
+																	<property name="JSON_RESPONSE" scope="default" type="STRING" expression="$ctx:IN_PAYLOAD"/>
+																	<header action="remove" name="To" scope="default"/>
+																	<property name="IsClientDoingREST" scope="default" type="BOOLEAN" value="false"/>
+																	<property expression="$ctx:Transaction_Id_log" name="TRANSACTION_ID"/>
+																	<sequence key="APC_LOG_RESPONSE"/>
+																	<respond/>
+																</then>
+																<else/>
+															</filter>
+														</else>
+													</filter>
+												</then>
+												<else>
+													<property name="Status" scope="default" type="STRING" value="Failed"/>
+													<property name="Description" scope="default" type="STRING" value="Request has been failed due to UpdateBalanceAndDate fail"/>
+													<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="TIME_OUT" scope="default" type="STRING"/>
+													<sequence key="APC_REFILL_V1_HUB_TRANSACTION_STATUS"/>
+													<payloadFactory media-type="xml">
+														<format>
+															<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/">
+																<soapenv:Body>
+																	<tem:TopUpPaymentResponse>
+																		<tem:TopUpPaymentResult>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;ACTIVITY&gt;&lt;TransactionId&gt;$1&lt;/TransactionId&gt;&lt;MSISDN&gt;$2&lt;/MSISDN&gt;&lt;Status&gt;F&lt;/Status&gt;&lt;Message&gt;Your request has failed due to some technical issue. Please try again later.&lt;/Message&gt;&lt;ReceiptNo/&gt;&lt;/ACTIVITY&gt;</tem:TopUpPaymentResult>
+																	</tem:TopUpPaymentResponse>
+																</soapenv:Body>
+															</soapenv:Envelope>
+														</format>
+														<args>
+															<arg evaluator="xml" expression="$ctx:TransactionId" literal="false"/>
+															<arg evaluator="xml" expression="$ctx:Msisdn" literal="false"/>
+															<arg evaluator="xml" expression="$ctx:RECEIPT_NUMBER" literal="false"/>
+														</args>
+													</payloadFactory>
+													<enrich>
+														<source clone="true" type="body"/>
+														<target action="replace" property="IN_PAYLOAD" type="property"/>
+													</enrich>
+													<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+													<property name="Responsecode" scope="default" type="STRING" value="KO"/>
+													<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+													<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+													<property name="HTTP_SC" scope="axis2" type="STRING" value="500"/>
+													<property name="messageType" scope="axis2" type="STRING" value="text/xml"/>
+													<property action="remove" name="NO_ENTITY_BODY" scope="axis2"/>
+													<property name="JSON_RESPONSE" scope="default" type="STRING" expression="$ctx:IN_PAYLOAD"/>
+													<header action="remove" name="To" scope="default"/>
+													<property name="IsClientDoingREST" scope="default" type="BOOLEAN" value="false"/>
+													<property expression="$ctx:Transaction_Id_log" name="TRANSACTION_ID"/>
+													<sequence key="APC_LOG_RESPONSE"/>
+													<respond/>
+												</else>
+											</filter>
+										</then>
+										<else>
+											<property name="Status" scope="default" type="STRING" value="Failed"/>
+											<property name="Description" scope="default" type="STRING" value="Request has been failed due to amount not in limit range"/>
+											<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="TIME_OUT" scope="default" type="STRING"/>
+											<sequence key="APC_REFILL_V1_HUB_TRANSACTION_STATUS"/>
+											<payloadFactory media-type="xml">
+												<format>
+													<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/">
+														<soapenv:Body>
+															<tem:TopUpPaymentResponse>
+																<tem:TopUpPaymentResult>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;ACTIVITY&gt;&lt;TransactionId&gt;$1&lt;/TransactionId&gt;&lt;MSISDN&gt;$2&lt;/MSISDN&gt;&lt;Status&gt;F&lt;/Status&gt;&lt;Message&gt;Your request has failed due to amount not in limit range. Please try again later.&lt;/Message&gt;&lt;ReceiptNo/&gt;&lt;/ACTIVITY&gt;</tem:TopUpPaymentResult>
+															</tem:TopUpPaymentResponse>
+														</soapenv:Body>
+													</soapenv:Envelope>
+												</format>
+												<args>
+													<arg evaluator="xml" expression="$ctx:TransactionId" literal="false"/>
+													<arg evaluator="xml" expression="$ctx:Msisdn" literal="false"/>
+													<arg evaluator="xml" expression="$ctx:RECEIPT_NUMBER" literal="false"/>
+												</args>
+											</payloadFactory>
+											<enrich>
+												<source clone="true" type="body"/>
+												<target action="replace" property="IN_PAYLOAD" type="property"/>
+											</enrich>
+											<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+											<property name="Responsecode" scope="default" type="STRING" value="KO"/>
+											<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+											<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+											<property name="HTTP_SC" scope="axis2" type="STRING" value="500"/>
+											<property name="messageType" scope="axis2" type="STRING" value="text/xml"/>
+											<property action="remove" name="NO_ENTITY_BODY" scope="axis2"/>
+											<property name="JSON_RESPONSE" scope="default" type="STRING" expression="$ctx:IN_PAYLOAD"/>
+											<header action="remove" name="To" scope="default"/>
+											<property name="IsClientDoingREST" scope="default" type="BOOLEAN" value="false"/>
+											<property expression="$ctx:Transaction_Id_log" name="TRANSACTION_ID"/>
+											<sequence key="APC_LOG_RESPONSE"/>
+											<respond/>
+										</else>
+									</filter>
+								</then>
+								<else>
+									<property name="Status" scope="default" type="STRING" value="Failed"/>
+									<property name="Description" scope="default" type="STRING" value="Request has been failed due to Insufficient Balance"/>
+									<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="TIME_OUT" scope="default" type="STRING"/>
+									<sequence key="APC_REFILL_V1_HUB_TRANSACTION_STATUS"/>
+									<payloadFactory media-type="xml">
+										<format>
+											<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/">
+												<soapenv:Body>
+													<tem:TopUpPaymentResponse>
+														<tem:TopUpPaymentResult>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;ACTIVITY&gt;&lt;TransactionId&gt;$1&lt;/TransactionId&gt;&lt;MSISDN&gt;$2&lt;/MSISDN&gt;&lt;Status&gt;F&lt;/Status&gt;&lt;Message&gt;Your request has failed due to Insufficient Balance. Please try again later.&lt;/Message&gt;&lt;ReceiptNo/&gt;&lt;/ACTIVITY&gt;</tem:TopUpPaymentResult>
+													</tem:TopUpPaymentResponse>
+												</soapenv:Body>
+											</soapenv:Envelope>
+										</format>
+										<args>
+											<arg evaluator="xml" expression="$ctx:TransactionId" literal="false"/>
+											<arg evaluator="xml" expression="$ctx:Msisdn" literal="false"/>
+											<arg evaluator="xml" expression="$ctx:RECEIPT_NUMBER" literal="false"/>
+										</args>
+									</payloadFactory>
+									<enrich>
+										<source clone="true" type="body"/>
+										<target action="replace" property="IN_PAYLOAD" type="property"/>
+									</enrich>
+									<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+									<property name="Responsecode" scope="default" type="STRING" value="KO"/>
+									<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+									<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+									<property name="HTTP_SC" scope="axis2" type="STRING" value="500"/>
+									<property name="messageType" scope="axis2" type="STRING" value="text/xml"/>
+									<property action="remove" name="NO_ENTITY_BODY" scope="axis2"/>
+									<property name="JSON_RESPONSE" scope="default" type="STRING" expression="$ctx:IN_PAYLOAD"/>
+									<header action="remove" name="To" scope="default"/>
+									<property name="IsClientDoingREST" scope="default" type="BOOLEAN" value="false"/>
+									<property expression="$ctx:Transaction_Id_log" name="TRANSACTION_ID"/>
+									<sequence key="APC_LOG_RESPONSE"/>
+									<respond/>
+								</else>
+							</filter>
+						</then>
+						<else>
+							<property name="INTERFACE_NAME" scope="default" type="STRING" value="IN-GETBALANCEANDDATE"/>
+							<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+							<property name="LOG_RESPONSE_STATUS" value="KO"/>
+							<property name="JSON_RESPONSE" scope="default" type="STRING" expression="fn:concat('Responsecode:',$ctx:Responsecode,' | IN_DA_ACCOUNT_ID:',$ctx:IN_DA_ACCOUNT_ID,' | IN_DA_ACCOUNT_VALUE:',$ctx:IN_DA_ACCOUNT_VALUE,' | IN_DA_ACCOUNT_UNIT:',$ctx:IN_DA_ACCOUNT_UNIT)"/>
+							<property name="LOG_RESPONSE_ENDED" scope="default" type="STRING" value="*****"/>
+							<property expression="$ctx:Transaction_Id_log" name="TRANSACTION_ID"/>
+							<sequence key="APC_LOG_RESPONSE"/>
+							<property name="Status" scope="default" type="STRING" value="Failed"/>
+							<property name="Description" scope="default" type="STRING" value="Request has been failed due to GetBalanceAndDate fail"/>
+							<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="TIME_OUT" scope="default" type="STRING"/>
+							<sequence key="APC_REFILL_V1_HUB_TRANSACTION_STATUS"/>
+							<payloadFactory media-type="xml">
+								<format>
+									<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/">
+										<soapenv:Body>
+											<tem:TopUpPaymentResponse>
+												<tem:TopUpPaymentResult>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;ACTIVITY&gt;&lt;TransactionId&gt;$1&lt;/TransactionId&gt;&lt;MSISDN&gt;$2&lt;/MSISDN&gt;&lt;Status&gt;F&lt;/Status&gt;&lt;Message&gt;Your request has failed due to some technical issue. Please try again later.&lt;/Message&gt;&lt;ReceiptNo/&gt;&lt;/ACTIVITY&gt;</tem:TopUpPaymentResult>
+											</tem:TopUpPaymentResponse>
+										</soapenv:Body>
+									</soapenv:Envelope>
+								</format>
+								<args>
+									<arg evaluator="xml" expression="$ctx:TransactionId" literal="false"/>
+									<arg evaluator="xml" expression="$ctx:Msisdn" literal="false"/>
+									<arg evaluator="xml" expression="$ctx:RECEIPT_NUMBER" literal="false"/>
+								</args>
+							</payloadFactory>
+							<enrich>
+								<source clone="true" type="body"/>
+								<target action="replace" property="IN_PAYLOAD" type="property"/>
+							</enrich>
+							<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+							<property name="Responsecode" scope="default" type="STRING" value="KO"/>
+							<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+							<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+							<property name="HTTP_SC" scope="axis2" type="STRING" value="500"/>
+							<property name="messageType" scope="axis2" type="STRING" value="text/xml"/>
+							<property action="remove" name="NO_ENTITY_BODY" scope="axis2"/>
+							<property name="JSON_RESPONSE" scope="default" type="STRING" expression="$ctx:IN_PAYLOAD"/>
+							<header action="remove" name="To" scope="default"/>
+							<property name="IsClientDoingREST" scope="default" type="BOOLEAN" value="false"/>
+							<property expression="$ctx:Transaction_Id_log" name="TRANSACTION_ID"/>
+							<sequence key="APC_LOG_RESPONSE"/>
+							<respond/>
+						</else>
+					</filter>
+				</then>
+				<else>
+					<property name="Status" scope="default" type="STRING" value="Failed"/>
+					<property name="Description" scope="default" type="STRING" value="Request has been failed due to Invalid Parameters"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="TIME_OUT" scope="default" type="STRING"/>
+					<sequence key="APC_REFILL_V1_HUB_TRANSACTION_STATUS"/>
+					<payloadFactory media-type="xml">
+						<format>
+							<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/">
+								<soapenv:Body>
+									<tem:TopUpPaymentResponse>
+										<tem:TopUpPaymentResult>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;ACTIVITY&gt;&lt;TransactionId&gt;$1&lt;/TransactionId&gt;&lt;MSISDN&gt;$2&lt;/MSISDN&gt;&lt;Status&gt;F&lt;/Status&gt;&lt;Message&gt;Your request has failed due to Invalid Parameters. Please try again later.&lt;/Message&gt;&lt;ReceiptNo/&gt;&lt;/ACTIVITY&gt;</tem:TopUpPaymentResult>
+									</tem:TopUpPaymentResponse>
+								</soapenv:Body>
+							</soapenv:Envelope>
+						</format>
+						<args>
+							<arg evaluator="xml" expression="$ctx:TransactionId" literal="false"/>
+							<arg evaluator="xml" expression="$ctx:Msisdn" literal="false"/>
+							<arg evaluator="xml" expression="$ctx:RECEIPT_NUMBER" literal="false"/>
+						</args>
+					</payloadFactory>
+					<enrich>
+						<source clone="true" type="body"/>
+						<target action="replace" property="IN_PAYLOAD" type="property"/>
+					</enrich>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+					<property name="Responsecode" scope="default" type="STRING" value="KO"/>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+					<property name="HTTP_SC" scope="axis2" type="STRING" value="500"/>
+					<property name="messageType" scope="axis2" type="STRING" value="text/xml"/>
+					<property action="remove" name="NO_ENTITY_BODY" scope="axis2"/>
+					<property name="JSON_RESPONSE" scope="default" type="STRING" expression="$ctx:IN_PAYLOAD"/>
+					<header action="remove" name="To" scope="default"/>
+					<property name="IsClientDoingREST" scope="default" type="BOOLEAN" value="false"/>
+					<property expression="$ctx:Transaction_Id_log" name="TRANSACTION_ID"/>
+					<sequence key="APC_LOG_RESPONSE"/>
+					<respond/>
+				</else>
+			</filter>
+		</then>
+		<else>
+			<property name="Status" scope="default" type="STRING" value="Failed"/>
+			<property name="Description" scope="default" type="STRING" value="Request has been failed due to Invalid Credentials"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="TIME_OUT" scope="default" type="STRING"/>
+			<sequence key="APC_REFILL_V1_HUB_TRANSACTION_STATUS"/>
+			<payloadFactory media-type="xml">
+				<format>
+					<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/">
+						<soapenv:Body>
+							<tem:TopUpPaymentResponse>
+								<tem:TopUpPaymentResult>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;ACTIVITY&gt;&lt;TransactionId&gt;$1&lt;/TransactionId&gt;&lt;MSISDN&gt;$2&lt;/MSISDN&gt;&lt;Status&gt;F&lt;/Status&gt;&lt;Message&gt;Your request has failed due to Invalid Credentials. Please try again later.&lt;/Message&gt;&lt;ReceiptNo/&gt;&lt;/ACTIVITY&gt;</tem:TopUpPaymentResult>
+							</tem:TopUpPaymentResponse>
+						</soapenv:Body>
+					</soapenv:Envelope>
+				</format>
+				<args>
+					<arg evaluator="xml" expression="$ctx:TransactionId" literal="false"/>
+					<arg evaluator="xml" expression="$ctx:Msisdn" literal="false"/>
+					<arg evaluator="xml" expression="$ctx:RECEIPT_NUMBER" literal="false"/>
+				</args>
+			</payloadFactory>
+			<enrich>
+				<source clone="true" type="body"/>
+				<target action="replace" property="IN_PAYLOAD" type="property"/>
+			</enrich>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+			<property name="Responsecode" scope="default" type="STRING" value="KO"/>
+			<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+			<property name="HTTP_SC" scope="axis2" type="STRING" value="500"/>
+			<property name="messageType" scope="axis2" type="STRING" value="text/xml"/>
+			<property action="remove" name="NO_ENTITY_BODY" scope="axis2"/>
+			<property name="JSON_RESPONSE" scope="default" type="STRING" expression="$ctx:IN_PAYLOAD"/>
+			<header action="remove" name="To" scope="default"/>
+			<property name="IsClientDoingREST" scope="default" type="BOOLEAN" value="false"/>
+			<property expression="$ctx:Transaction_Id_log" name="TRANSACTION_ID"/>
+			<sequence key="APC_LOG_RESPONSE"/>
+			<respond/>
+		</else>
+	</filter>
+	<property name="Status" scope="default" type="STRING" value="Failed"/>
+	<property name="Description" scope="default" type="STRING" value="Request has been failed due to not exicute any check"/>
+	<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="TIME_OUT" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<sequence key="APC_REFILL_V1_HUB_TRANSACTION_STATUS"/>
+	<payloadFactory media-type="xml">
+		<format>
+			<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/">
+				<soapenv:Body>
+					<tem:TopUpPaymentResponse>
+						<tem:TopUpPaymentResult>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;ACTIVITY&gt;&lt;TransactionId&gt;$1&lt;/TransactionId&gt;&lt;MSISDN&gt;$2&lt;/MSISDN&gt;&lt;Status&gt;F&lt;/Status&gt;&lt;Message&gt;Your request has failed due to some technical issue. Please try again later.&lt;/Message&gt;&lt;ReceiptNo/&gt;&lt;/ACTIVITY&gt;</tem:TopUpPaymentResult>
+					</tem:TopUpPaymentResponse>
+				</soapenv:Body>
+			</soapenv:Envelope>
+		</format>
+		<args>
+			<arg evaluator="xml" expression="$ctx:TransactionId" literal="false" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<arg evaluator="xml" expression="$ctx:Msisdn" literal="false" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<arg evaluator="xml" expression="$ctx:RECEIPT_NUMBER" literal="false" xmlns:ns="http://org.apache.synapse/xsd"/>
+		</args>
+	</payloadFactory>
+	<enrich>
+		<source clone="true" type="body"/>
+		<target action="replace" property="IN_PAYLOAD" type="property"/>
+	</enrich>
+	<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+	<property name="Responsecode" scope="default" type="STRING" value="KO"/>
+	<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+	<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+	<property name="HTTP_SC" scope="axis2" type="STRING" value="500"/>
+	<property name="messageType" scope="axis2" type="STRING" value="text/xml"/>
+	<property name="JSON_RESPONSE" scope="default" type="STRING" expression="$ctx:IN_PAYLOAD"/>
+	<property action="remove" name="NO_ENTITY_BODY" scope="axis2"/>
+	<header action="remove" name="To" scope="default"/>
+	<property name="IsClientDoingREST" scope="default" type="BOOLEAN" value="false"/>
+	<property expression="$ctx:Transaction_Id_log" name="TRANSACTION_ID"/>
+	<sequence key="APC_LOG_RESPONSE"/>
+	<respond/>
+</sequence>

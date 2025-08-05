@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="ECARE_DBSS_INSEQUENCE_BILLDETAILS_NEW_V1" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+	<property name="MI_API_NAME" value="JAZZRED-BILLDETAILS" scope="default" type="STRING"/>
+	<property name="MSISDN" expression="$ctx:uri.var.msisdn" scope="default" type="STRING"/>
+	<property name="MI_TIME" expression="fn:get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" scope="default"/>
+	<property expression="fn:substring-after(get-property('MessageID'),'urn:uuid:')" name="TRANSACTION_ID" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property name="REQUEST_ID" expression="$ctx:TRANSACTION_ID" scope="default" type="STRING"/>
+	<sequence key="MIinFlow"/>
+	<property expression="$ctx:uri.var.msisdn" name="MSISDN" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:MSISDN" name="uri.var.msisdn" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:uri.var.operator" name="OPERATOR" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property name="uri.var.type" scope="default" type="STRING" value="postpaid"/>
+	<property name="uri.var.operator" scope="default" type="STRING" expression="$ctx:OPERATOR"/>
+	<property expression="$trp:ApplicationName" name="ApplicationName" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:TRANSACTION_ID" name="TRANSACTION_ID" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:ApplicationName" name="APP_NAME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property value="JAZZRED-BILLDETAILS" name="API_NAME_LOG" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="fn:concat('JAZZRED-BILLDETAILS | ',get-property('ApplicationName'))" name="API_NAME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property name="INTERFACE_NAME" scope="default" type="STRING" value="REQUEST"/>
+	<property name="REQUEST" scope="default" type="STRING" expression="$ctx:MSISDN"/>
+	<property expression="fn:concat($trp:X-Forwarded-For,get-property('To'))" name="RESOURCE_URI" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss')" name="TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<sequence key="ECARE_LOG_REQUEST"/>
+	<filter regex="jazz" source="$ctx:OPERATOR" xmlns:ns="http://org.apache.synapse/xsd">
+		<then>
+			<property expression="$ctx:MSISDN" name="uri.var.msisdn" scope="default" type="STRING"/>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="BSS-GETCUSTOMERID"/>
+			<property expression="$ctx:msisdn" name="REQUEST" scope="default" type="STRING"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING"/>
+			<property expression="fn:concat('https://bssapi.bss.jazz.com.pk/api/v1/subscriptions/', get-property('uri.var.msisdn'), '?identifier-type=msisdn')" name="RESOURCE_URI" scope="default" type="STRING"/>
+			<property expression="$ctx:msisdn" name="MSISDN" scope="default" type="STRING"/>
+			<sequence key="ECARE_LOG_REQUEST"/>
+			<call>
+				<endpoint key="DBSS_EP_GETSUBSCRIPTIONOFFER_ENDPOINT"/>
+			</call>
+			<property expression="json-eval($.data.id)" name="uri.var.dataId" scope="default" type="STRING"/>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="BSS-GETCUSTOMERID"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+			<property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING"/>
+			<property expression="$ctx:uri.var.dataId" name="JSON_RESPONSE" scope="default" type="STRING"/>
+			<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+			<sequence key="ECARE_LOG_RESPONSE"/>
+			<property expression="json-eval($.data)" name="DATA" scope="default" type="STRING"/>
+			<filter regex="true" source="boolean($ctx:DATA)">
+				<then>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="BSS-GETCUSTOMERPACKAGE"/>
+					<property expression="$ctx:MSISDN" name="REQUEST" scope="default" type="STRING"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING"/>
+					<property expression="$ctx:msisdn" name="MSISDN" scope="default" type="STRING"/>
+					<property expression="fn:concat('https://bssapi.bss.jazz.com.pk/api/v1/subscriptions/', get-property('uri.var.msisdn'), '?identifier-type=msisdn&amp;include=subscription-type')" name="RESOURCE_URI" scope="default" type="STRING"/>
+					<sequence key="ECARE_LOG_REQUEST"/>
+					<call>
+						<endpoint key="DBSS_EP_GETCUSTOMERPACKAGE"/>
+					</call>
+					<property expression="json-eval($.included[0].attributes.code)" name="PACKAGE" scope="default" type="STRING"/>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="BSS-GETCUSTOMERPACKAGE"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+					<property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+					<property expression="$ctx:PACKAGE" name="JSON_RESPONSE" scope="default" type="STRING"/>
+					<sequence key="ECARE_LOG_RESPONSE"/>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="BSS-ACTIVEBILLING"/>
+					<property expression="$ctx:uri.var.dataId" name="REQUEST" scope="default" type="STRING"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING"/>
+					<property expression="fn:concat('https://bssapi.bss.jazz.com.pk/api/v1/subscriptions/', get-property('uri.var.dataId'), '/billing-accounts')" name="RESOURCE_URI" scope="default" type="STRING"/>
+					<property expression="$ctx:msisdn" name="MSISDN" scope="default" type="STRING"/>
+					<sequence key="ECARE_LOG_REQUEST"/>
+					<call>
+						<endpoint key="ActiveBillingAccount"/>
+					</call>
+					<foreach expression="//jsonObject/data">
+						<sequence>
+							<property expression="//attributes/deactivated-at/text()" name="deactivatedAt" scope="default" type="STRING"/>
+							<filter regex="false" source="boolean($ctx:deactivatedAt)">
+								<then>
+									<property expression="(//data/id/text())[1]" name="activeAccountId" scope="default" type="STRING"/>
+									<property name="INTERFACE_NAME" scope="default" type="STRING" value="BSS-ACTIVEBILLING"/>
+									<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+									<property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING"/>
+									<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+									<property expression="$ctx:activeAccountId" name="JSON_RESPONSE" scope="default" type="STRING"/>
+									<sequence key="ECARE_LOG_RESPONSE"/>
+								</then>
+								<else>
+									<property name="INTERFACE_NAME" scope="default" type="STRING" value="BSS-ACTIVEBILLING"/>
+									<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+									<property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING"/>
+									<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+									<property expression="$ctx:deactivatedAt" name="JSON_RESPONSE" scope="default" type="STRING"/>
+									<sequence key="ECARE_LOG_RESPONSE"/>
+								</else>
+							</filter>
+						</sequence>
+					</foreach>
+					<property expression="$ctx:activeAccountId" name="checkActiveAccountId" scope="default" type="STRING"/>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="BSS-BILLING"/>
+					<property expression="$ctx:uri.var.dataId" name="REQUEST" scope="default" type="STRING"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING"/>
+					<property expression="fn:concat('https://bssapi.bss.jazz.com.pk/api/v1/subscriptions/', get-property('uri.var.dataId'), '/billing-reports')" name="RESOURCE_URI" scope="default" type="STRING"/>
+					<property expression="$ctx:msisdn" name="MSISDN" scope="default" type="STRING"/>
+					<sequence key="ECARE_LOG_REQUEST"/>
+					<call>
+						<endpoint key="DBSS_ECAREBilling"/>
+					</call>
+					<foreach expression="//jsonObject/data">
+						<sequence>
+							<property expression="//relationships/billing-account/data/id/text()" name="billingAccountId" scope="default" type="STRING"/>
+							<filter xpath="$ctx:billingAccountId = $ctx:checkActiveAccountId">
+								<then>
+									<property expression="//attributes/unbilled/text()" name="Unbilled" scope="default" type="STRING"/>
+									<property expression="//attributes/debt/text()" name="Debt" scope="default" type="STRING"/>
+									<property expression="//attributes/credit-limit-usage/text()" name="Credit_limit_Usage" scope="default" type="STRING"/>
+									<property expression="//attributes/credit-limit/text()" name="Credit_Limit" scope="default" type="STRING"/>
+									<property expression="//attributes/deposits/default/text()" name="Credit_default_value" scope="default" type="STRING"/>
+									<property expression="//attributes/deposits/Waived/text()" name="Credit_waived_value" scope="default" type="STRING"/>
+								</then>
+								<else/>
+							</filter>
+						</sequence>
+					</foreach>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="BSS-BILLING"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+					<property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+					<property expression="fn:concat('Unbilled: ',$ctx:Unbilled,' | Debt: ',$ctx:Debt,' | Credit_limit_Usage: ',$ctx:Credit_limit_Usage,' | Credit_Limit: ',$ctx:Credit_Limit,' | Credit_default_value: ',$ctx:Credit_default_value,' | Credit_waived_value: ',$ctx:Credit_waived_value)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+					<sequence key="ECARE_LOG_RESPONSE"/>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="BSS-ECAREINVOICES"/>
+					<property expression="$ctx:uri.var.dataId" name="REQUEST" scope="default" type="STRING"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING"/>
+					<property expression="fn:concat('https://bssapi.bss.jazz.com.pk/api/v1/subscriptions/', get-property('uri.var.dataId'), '/invoices')" name="RESOURCE_URI" scope="default" type="STRING"/>
+					<property expression="$ctx:msisdn" name="MSISDN" scope="default" type="STRING"/>
+					<sequence key="ECARE_LOG_REQUEST"/>
+					<call>
+						<endpoint key="DBSS_ECAREINVOICES"/>
+					</call>
+					<property expression="fn:count(//jsonObject/data)" name="COUNT" scope="default" type="STRING"/>
+					<property expression="json-eval($.data[*].attributes.due-date)" name="dueDatesBSSApi" scope="default" type="STRING"/>
+					<property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+					<property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+					<property name="DueDate1" scope="default" type="STRING" value=" "/>
+					<payloadFactory media-type="json">
+						<format>$1</format>
+						<args>
+							<arg evaluator="xml" expression="$ctx:dueDatesBSSApi"/>
+						</args>
+					</payloadFactory>
+					<script language="js"><![CDATA[var datesArray = mc.getPayloadJSON();	var newObject = {};var dates = datesArray.map(function(obj) {var regEx = new RegExp(/-/g); var dateKey = parseInt(obj.replace(regEx, ""), 10); newObject[dateKey] = obj; return dateKey;});var MaxDate = newObject[Math.max.apply(null,dates)]; mc.setProperty("LatestDueDate",MaxDate);]]></script>
+					<property expression="$ctx:LatestDueDate" name="DueDate" scope="default" type="STRING"/>
+					<property expression="fn:concat($ctx:DueDate, ' 00:00:00')" name="Due_Date" scope="default" type="STRING"/>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="BSS-ECAREINVOICES"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+					<property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+					<property expression="$ctx:DueDate" name="JSON_RESPONSE" scope="default" type="STRING"/>
+					<sequence key="ECARE_LOG_RESPONSE"/>
+					<property expression="$ctx:Unbilled + $ctx:Debt" name="TotalBill" scope="default" type="STRING"/>
+					<property expression="$ctx:Credit_Limit - $ctx:Credit_limit_Usage" name="Total_Credit" scope="default" type="STRING"/>
+					<filter xpath="fn:contains($ctx:TotalBill, '.')">
+						<then>
+							<property expression="fn:substring-before($ctx:TotalBill,'.')" name="TotalBill" scope="default" type="STRING"/>
+						</then>
+						<else/>
+					</filter>
+					<filter xpath="fn:contains($ctx:Unbilled, '.')">
+						<then>
+							<property expression="fn:substring-before($ctx:Unbilled,'.')" name="CURRENT_MONTH" scope="default" type="STRING"/>
+						</then>
+						<else>
+							<property expression="$ctx:Unbilled" name="CURRENT_MONTH" scope="default" type="STRING"/>
+						</else>
+					</filter>
+					<filter xpath="fn:contains($ctx:Debt, '.')">
+						<then>
+							<property expression="fn:substring-before($ctx:Debt,'.')" name="unpaid" scope="default" type="STRING"/>
+						</then>
+						<else>
+							<property expression="$ctx:Debt" name="unpaid" scope="default" type="STRING"/>
+						</else>
+					</filter>
+					<filter regex="true" source="boolean($ctx:Credit_Limit)">
+						<then/>
+						<else>
+							<property name="Credit_Limit" scope="default" type="STRING" value="0"/>
+						</else>
+					</filter>
+					<filter regex="true" source="boolean($ctx:Credit_default_value)">
+						<then/>
+						<else>
+							<property name="Credit_default_value" scope="default" type="STRING" value="0"/>
+						</else>
+					</filter>
+					<filter regex="true" source="boolean($ctx:Credit_waived_value)">
+						<then/>
+						<else>
+							<property name="Credit_waived_value" scope="default" type="STRING" value="0"/>
+						</else>
+					</filter>
+					<property expression="$ctx:Credit_Limit + $ctx:Credit_default_value + $ctx:Credit_waived_value" name="TotalCreditLimit" scope="default" type="STRING"/>
+					<filter xpath="fn:contains($ctx:TotalCreditLimit, '.')">
+						<then>
+							<property expression="fn:substring-before($ctx:TotalCreditLimit,'.')" name="TotalCreditLimit" scope="default" type="STRING"/>
+						</then>
+						<else/>
+					</filter>
+					<payloadFactory media-type="json">
+						<format>{  "Unpaid_Bill":"$1", "Due_Date": "$2"}</format>
+						<args>
+							<arg evaluator="xml" expression="$ctx:unpaid"/>
+							<arg evaluator="xml" expression="$ctx:Due_Date"/>
+						</args>
+					</payloadFactory>
+					<property expression="$ctx:TotalCreditLimit - $ctx:TotalBill " name="TotalAvalibleCredit" scope="default" type="STRING"/>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+					<property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+					<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+					<sequence key="ECARE_LOG_RESPONSE"/>
+					<property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+					<respond/>
+				</then>
+				<else>
+					<payloadFactory media-type="json">
+						<format>{"error":{"errorCode":"$1","description":"$2","message":"$3","transaction":{"transactionId": "$4"}}}</format>
+						<args>
+							<arg value="204"/>
+							<arg value="Record Not Found"/>
+							<arg value="Not Found"/>
+							<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+						</args>
+					</payloadFactory>
+					<property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+					<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+					<sequence key="ECARE_LOG_RESPONSE"/>
+					<property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+					<respond/>
+				</else>
+			</filter>
+		</then>
+		<else>
+			<payloadFactory media-type="json">
+				<format>{"error":{"errorCode":"$1","description":"$2","message":"$3","transaction":{"transactionId": "$4"}}}</format>
+				<args>
+					<arg value="204"/>
+					<arg value="Operator type is in correct"/>
+					<arg value="Operator jazz required"/>
+					<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+				</args>
+			</payloadFactory>
+			<property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+			<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+			<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+			<sequence key="ECARE_LOG_RESPONSE"/>
+			<respond/>
+		</else>
+	</filter>
+</sequence>

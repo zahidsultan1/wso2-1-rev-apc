@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<proxy name="APCRechargeV2DBSS" startOnLoad="true" transports="http https" xmlns="http://ws.apache.org/ns/synapse">
+    <target faultSequence="APC_DBSS_FAULT_SEQUENCE_V2">
+        <inSequence>
+            <property expression="get-property('Action')" name="Action" scope="default" type="STRING"/>
+            <switch source="$ctx:Action">
+                <case regex="http://tempuri.org/TopUpPayment">
+                    <property expression="//tem:input" name="CDATAPAYLOAD" scope="default" type="OM" xmlns:tem="http://tempuri.org/"/>
+                    <property expression="get-property('CDATAPAYLOAD')//*[local-name()='TransactionId']" name="TransactionId" scope="default" type="STRING"/>
+                    <property expression="get-property('CDATAPAYLOAD')//*[local-name()='ServiceUser']" name="ServiceUser" scope="default" type="STRING"/>
+                    <property expression="get-property('CDATAPAYLOAD')//*[local-name()='ServicePassword']" name="ServicePassword" scope="default" type="STRING"/>
+                    <property expression="get-property('CDATAPAYLOAD')//*[local-name()='Field1']" name="Field1" scope="default" type="STRING"/>
+                    <property expression="get-property('CDATAPAYLOAD')//*[local-name()='MSISDN']" name="Msisdn" scope="default" type="STRING"/>
+                    <property expression="get-property('CDATAPAYLOAD')//*[local-name()='Amount']" name="Amount" scope="default" type="STRING"/>
+                    <property name="Case" scope="default" type="STRING" value="TopUpPayment"/>
+                    <sequence key="APC_RECHARGE_INSEQUENCE_DBSS_v2"/>
+                </case>
+                <default/>
+            </switch>
+        </inSequence>
+        <outSequence/>
+    </target>
+    <publishWSDL preservePolicy="false">
+        <wsdl:definitions targetNamespace="http://tempuri.org/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:tns="http://tempuri.org/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">-                               <wsdl:types>-                                                             <s:schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/">-                                                                                           <s:element name="TopUpPayment">-                                                                                                                         <s:complexType>-                                                                                                                                                       <s:sequence>
+                                <s:element maxOccurs="1" minOccurs="0" name="input" type="s:string"/>
+                            </s:sequence>
+                        </s:complexType>
+                    </s:element>-                                                                                           <s:element name="TopUpPaymentResponse">-                                                                                                                         <s:complexType>-                                                                                                                                                       <s:sequence>
+                                <s:element maxOccurs="1" minOccurs="0" name="TopUpPaymentResult" type="s:string"/>
+                            </s:sequence>
+                        </s:complexType>
+                    </s:element>-                                                                                           <s:element name="TopUpReversal">-                                                                                                                         <s:complexType>-                                                                                                                                                       <s:sequence>
+                                <s:element maxOccurs="1" minOccurs="0" name="input" type="s:string"/>
+                            </s:sequence>
+                        </s:complexType>
+                    </s:element>-                                                                                           <s:element name="TopUpReversalResponse">-                                                                                                                         <s:complexType>-                                                                                                                                                       <s:sequence>
+                                <s:element maxOccurs="1" minOccurs="0" name="TopUpReversalResult" type="s:string"/>
+                            </s:sequence>
+                        </s:complexType>
+                    </s:element>-                                                                                           <s:element name="Lookup">-                                                                                                                         <s:complexType>-                                                                                                                                                       <s:sequence>
+                                <s:element maxOccurs="1" minOccurs="0" name="input" type="s:string"/>
+                            </s:sequence>
+                        </s:complexType>
+                    </s:element>-                                                                                           <s:element name="LookupResponse">-                                                                                                                         <s:complexType>-                                                                                                                                                       <s:sequence>
+                                <s:element maxOccurs="1" minOccurs="0" name="LookupResult" type="s:string"/>
+                            </s:sequence>
+                        </s:complexType>
+                    </s:element>-                                                                                           <s:element name="TopUpPaymentReversal">-                                                                                                                         <s:complexType>-                                                                                                                                                       <s:sequence>
+                                <s:element maxOccurs="1" minOccurs="0" name="input" type="s:string"/>
+                            </s:sequence>
+                        </s:complexType>
+                    </s:element>-                                                                                           <s:element name="TopUpPaymentReversalResponse">-                                                                                                                         <s:complexType>-                                                                                                                                                       <s:sequence>
+                                <s:element maxOccurs="1" minOccurs="0" name="TopUpPaymentReversalResult" type="s:string"/>
+                            </s:sequence>
+                        </s:complexType>
+                    </s:element>
+                </s:schema>
+            </wsdl:types>-                               <wsdl:message name="TopUpPaymentSoapIn">
+                <wsdl:part element="tns:TopUpPayment" name="parameters"/>
+            </wsdl:message>-                               <wsdl:message name="TopUpPaymentSoapOut">
+                <wsdl:part element="tns:TopUpPaymentResponse" name="parameters"/>
+            </wsdl:message>-                               <wsdl:message name="TopUpReversalSoapIn">
+                <wsdl:part element="tns:TopUpReversal" name="parameters"/>
+            </wsdl:message>-                               <wsdl:message name="TopUpReversalSoapOut">
+                <wsdl:part element="tns:TopUpReversalResponse" name="parameters"/>
+            </wsdl:message>-                               <wsdl:message name="LookupSoapIn">
+                <wsdl:part element="tns:Lookup" name="parameters"/>
+            </wsdl:message>-                               <wsdl:message name="LookupSoapOut">
+                <wsdl:part element="tns:LookupResponse" name="parameters"/>
+            </wsdl:message>-                               <wsdl:message name="TopUpPaymentReversalSoapIn">
+                <wsdl:part element="tns:TopUpPaymentReversal" name="parameters"/>
+            </wsdl:message>-                               <wsdl:message name="TopUpPaymentReversalSoapOut">
+                <wsdl:part element="tns:TopUpPaymentReversalResponse" name="parameters"/>
+            </wsdl:message>-                               <wsdl:portType name="ServiceSoap">-                                                             <wsdl:operation name="TopUpPayment">
+                    <wsdl:documentation>Recharging a Prepaid Number</wsdl:documentation>
+                    <wsdl:input message="tns:TopUpPaymentSoapIn"/>
+                    <wsdl:output message="tns:TopUpPaymentSoapOut"/>
+                </wsdl:operation>-                                                             <wsdl:operation name="TopUpReversal">
+                    <wsdl:documentation>Negative Recharging a prepaid number</wsdl:documentation>
+                    <wsdl:input message="tns:TopUpReversalSoapIn"/>
+                    <wsdl:output message="tns:TopUpReversalSoapOut"/>
+                </wsdl:operation>-                                                             <wsdl:operation name="Lookup">
+                    <wsdl:documentation>Lookup status of TopUp payment transaction</wsdl:documentation>
+                    <wsdl:input message="tns:LookupSoapIn"/>
+                    <wsdl:output message="tns:LookupSoapOut"/>
+                </wsdl:operation>-                                                             <wsdl:operation name="TopUpPaymentReversal">
+                    <wsdl:documentation>Transaction Reversal</wsdl:documentation>
+                    <wsdl:input message="tns:TopUpPaymentReversalSoapIn"/>
+                    <wsdl:output message="tns:TopUpPaymentReversalSoapOut"/>
+                </wsdl:operation>
+            </wsdl:portType>-                               <wsdl:binding name="ServiceSoap" type="tns:ServiceSoap">
+                <soap:binding transport="http://schemas.xmlsoap.org/soap/http"/> -                                                             <wsdl:operation name="TopUpPayment">
+                    <soap:operation soapAction="http://tempuri.org/TopUpPayment" style="document"/> -                                                                                           <wsdl:input>
+                        <soap:body use="literal"/>
+                    </wsdl:input>-                                                                                           <wsdl:output>
+                        <soap:body use="literal"/>
+                    </wsdl:output>
+                </wsdl:operation>-                                                             <wsdl:operation name="TopUpReversal">
+                    <soap:operation soapAction="http://tempuri.org/TopUpReversal" style="document"/> -                                                                                           <wsdl:input>
+                        <soap:body use="literal"/>
+                    </wsdl:input>-                                                                                           <wsdl:output>
+                        <soap:body use="literal"/>
+                    </wsdl:output>
+                </wsdl:operation>-                                                             <wsdl:operation name="Lookup">
+                    <soap:operation soapAction="http://tempuri.org/Lookup" style="document"/> -                                                                                           <wsdl:input>
+                        <soap:body use="literal"/>
+                    </wsdl:input>-                                                                                           <wsdl:output>
+                        <soap:body use="literal"/>
+                    </wsdl:output>
+                </wsdl:operation>-                                                             <wsdl:operation name="TopUpPaymentReversal">
+                    <soap:operation soapAction="http://tempuri.org/TopUpPaymentReversal" style="document"/> -                                                                                           <wsdl:input>
+                        <soap:body use="literal"/>
+                    </wsdl:input>-                                                                                           <wsdl:output>
+                        <soap:body use="literal"/>
+                    </wsdl:output>
+                </wsdl:operation>
+            </wsdl:binding>-                               <wsdl:binding name="ServiceSoap12" type="tns:ServiceSoap">
+                <soap12:binding transport="http://schemas.xmlsoap.org/soap/http"/> -                                                             <wsdl:operation name="TopUpPayment">
+                    <soap12:operation soapAction="http://tempuri.org/TopUpPayment" style="document"/> -                                                                                           <wsdl:input>
+                        <soap12:body use="literal"/>
+                    </wsdl:input>-                                                                                           <wsdl:output>
+                        <soap12:body use="literal"/>
+                    </wsdl:output>
+                </wsdl:operation>-                                                             <wsdl:operation name="TopUpReversal">
+                    <soap12:operation soapAction="http://tempuri.org/TopUpReversal" style="document"/> -                                                                                           <wsdl:input>
+                        <soap12:body use="literal"/>
+                    </wsdl:input>-                                                                                           <wsdl:output>
+                        <soap12:body use="literal"/>
+                    </wsdl:output>
+                </wsdl:operation>-                                                             <wsdl:operation name="Lookup">
+                    <soap12:operation soapAction="http://tempuri.org/Lookup" style="document"/> -                                                                                           <wsdl:input>
+                        <soap12:body use="literal"/>
+                    </wsdl:input>-                                                                                           <wsdl:output>
+                        <soap12:body use="literal"/>
+                    </wsdl:output>
+                </wsdl:operation>-                                                             <wsdl:operation name="TopUpPaymentReversal">
+                    <soap12:operation soapAction="http://tempuri.org/TopUpPaymentReversal" style="document"/> -                                                                                           <wsdl:input>
+                        <soap12:body use="literal"/>
+                    </wsdl:input>-                                                                                           <wsdl:output>
+                        <soap12:body use="literal"/>
+                    </wsdl:output>
+                </wsdl:operation>
+            </wsdl:binding>-                               <wsdl:service name="Service">-                                                             <wsdl:port binding="tns:ServiceSoap" name="ServiceSoap">
+                    <soap:address location="https://10.50.13.11:481/service.asmx"/>
+                </wsdl:port>-                                                             <wsdl:port binding="tns:ServiceSoap12" name="ServiceSoap12">
+                    <soap12:address location="https://10.50.13.11:481/service.asmx"/>
+                </wsdl:port>
+            </wsdl:service>
+        </wsdl:definitions>
+    </publishWSDL>
+</proxy>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="APC_GETCUSTOMER_SUBCLIENT" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+    <property name="INTERFACE_NAME" scope="default" type="STRING" value="CLEINTELE-REQUEST"/>
+    <property expression="fn:concat('https://bssapi.bss.jazz.com.pk/api/v1/subscriptions/',$ctx:msisdn,'?identifier-type=msisdn&amp;include=subscription-type,owner-customer')" name="RESOURCE_URI" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property expression="$ctx:msisdn" name="MSISDN" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property expression="$ctx:MSISDN" name="REQUEST" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <sequence key="APC_LOG_REQUEST"/>
+    <header name="User-Agent" scope="transport" value="Apache-HttpClient/4.1.1 (java 1.5)"/>
+    <property action="remove" name="Accept-Encoding" scope="transport"/>
+    <property action="remove" name="Content-Encoding" scope="transport"/>
+    <property expression="$ctx:msisdn" name="uri.var.msisdn" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <call>
+        <endpoint key="APC_BSSAPI_CLIENTTEL"/>
+    </call>
+    <property expression="json-eval($.included[1].attributes.business-model-type)" name="subscriberType" scope="default" type="STRING"/>
+    <property expression="json-eval($.included[1].attributes.brand)" name="Brand" scope="default" type="STRING"/>
+	<property name="INTERFACE_NAME" scope="default" type="STRING" value="CLIENTELE-RESPONSE"/>
+    <property expression="fn:concat('Brand',$ctx:Brand,'subscriberType',$ctx:subscriberType)" name="JSON_RESPONSE" scope="default" type="STRING"/>	
+    <property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>	
+    <property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+	<property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING"/>	
+    <sequence key="APC_LOG_RESPONSE"/>	
+</sequence>

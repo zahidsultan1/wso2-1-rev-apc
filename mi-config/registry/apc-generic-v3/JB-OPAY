@@ -1,0 +1,16 @@
+<data>
+	<ServiceUser>JB-OPAYWSO2</ServiceUser>
+	<ServicePassword>T1BBWUB3czAy</ServicePassword>
+	<PartnerMsisdn>03040639178</PartnerMsisdn>
+	<PartnerDAID>2094</PartnerDAID>
+	<PostFix>WSO2</PostFix>
+	<PreMinLimit>1</PreMinLimit>
+	<PreMaxLimit>10001</PreMaxLimit>
+	<PostMinLimit>1</PostMinLimit>
+	<PostMaxLimit>10001</PostMaxLimit>
+	<PaymentCode>JB-OPAY</PaymentCode>
+	<PostCode>Null</PostCode>
+	<WalletCheck>1</WalletCheck>
+	<ExParam1>Null</ExParam1>
+	<ExParam2>Null</ExParam2>
+</data>

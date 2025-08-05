@@ -1,0 +1,10 @@
+---
+key: "Jazzapi_Jazzwallet-1.0.0"
+name : "Jazzapi_Jazzwallet"
+displayName : "Jazzapi_Jazzwallet"
+description: "Sample API"
+version: "1.0.0"
+serviceUrl: "https://{MI_HOST}:{MI_PORT}/jazz_api/jazzwallet/v1"
+definitionType: "OAS3"
+securityType: "BASIC"
+mutualSSLEnabled: false

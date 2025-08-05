@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<endpoint name="IN_EP_APC" xmlns="http://ws.apache.org/ns/synapse">
+  <http method="post" uri-template="http://10.13.32.179:10011/Air" format="rest">
+        <timeout>
+            <duration>25000</duration>
+            <responseAction>fault</responseAction>
+        </timeout>
+        <suspendOnFailure>
+            <initialDuration>-1</initialDuration>
+            <progressionFactor>1.0</progressionFactor>
+        </suspendOnFailure>
+        <markForSuspension>
+            <retriesBeforeSuspension>0</retriesBeforeSuspension>
+        </markForSuspension>
+    </http>
+</endpoint>

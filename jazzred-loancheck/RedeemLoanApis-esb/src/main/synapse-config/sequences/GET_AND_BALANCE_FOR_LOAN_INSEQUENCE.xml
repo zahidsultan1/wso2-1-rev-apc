@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="GET_AND_BALANCE_FOR_LOAN_INSEQUENCE" xmlns="http://ws.apache.org/ns/synapse">
+	<property expression="fn:concat(synapse:get-property('SYSTEM_DATE', 'yyyyMMdd'),'T',synapse:get-property('SYSTEM_DATE', 'HH:mm:ss+0500'))" name="CURR_DATE_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<sequence key="GenericRemoveHeaders"/>
+	<property expression="fn:substring($ctx:MSISDN,3)" name="NORMALIZED_MSISDN_FOR_IN" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="get-property('SYSTEM_TIME')" name="TRANSACTION_ID_IN" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="fn:concat(synapse:get-property('SYSTEM_DATE', 'yyyyMMdd'),'T',synapse:get-property('SYSTEM_DATE', 'HH:mm:ss+0500'))" name="CURR_DATE_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<payloadFactory media-type="xml">
+		<format>
+			<methodCall xmlns="">
+				<methodName>GetBalanceAndDate</methodName>
+				<params>
+					<param>
+						<value>
+							<struct>
+								<member>
+									<name>originTransactionID</name>
+									<value>
+										<string>$2</string>
+									</value>
+								</member>
+								<member>
+									<name>originNodeType</name>
+									<value>
+										<string>EXT</string>
+									</value>
+								</member>
+								<member>
+									<name>originHostName</name>
+									<value>
+										<string>1</string>
+									</value>
+								</member>
+								<member>
+									<name>originTimeStamp</name>
+									<value>
+										<dateTime.iso8601>$3</dateTime.iso8601>
+									</value>
+								</member>
+								<member>
+									<name>subscriberNumber</name>
+									<value>
+										<string>$1</string>
+									</value>
+								</member>
+							</struct>
+						</value>
+					</param>
+				</params>
+			</methodCall>
+		</format>
+		<args>
+			<arg evaluator="xml" expression="$ctx:NORMALIZED_MSISDN_FOR_IN" literal="false" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<arg evaluator="xml" expression="$ctx:TRANSACTION_ID" literal="false" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<arg evaluator="xml" expression="$ctx:CURR_DATE_TIME" literal="false" xmlns:ns="http://org.apache.synapse/xsd"/>
+		</args>
+	</payloadFactory>
+	<property name="INTERFACE_NAME" value="GET_BALANCEANDDATE"/>
+	<property name="RESOURCE_URI" scope="default" type="STRING" value="http://10.11.221.85:10011/Air"/>
+	<sequence key="LOYALTY_MSA_LOG_REQUEST"/>
+	<property name="DISABLE_CHUNKING" scope="axis2" value="true"/>
+	<property action="remove" name="HTTP_SC" scope="transport"/>
+	<property name="FORCE_HTTP_1.0" value="true"/>
+	<property name="FORCE_HTTP_1.1" scope="axis2" value="true"/>
+	<property name="messageType" value="application/xml"/>
+	<property name="ContentType" scope="axis2" type="STRING" value="text/xml"/>
+	<property action="remove" name="Content-Encoding" scope="transport"/>
+	<property action="remove" name="Content-Length" scope="transport"/>
+	<property action="remove" name="Accept-Encoding"/>
+	<header name="User-Agent" scope="transport" value="UGw Server/4.3/1.0"/>
+	<header name="Authorization" scope="transport" value="Basic SU5UQVJDQU5BOjU2djM0R3oxL0FfMTgK"/>
+	<call>
+		<endpoint key="APC_AIR_EP"/>
+	</call>
+	<property name="IsClientDoingREST" scope="default" type="BOOLEAN" value="true"/>
+	<property name="ContentType" scope="axis2" type="STRING" value="text/xml"/>
+	<log level="custom">
+		<property name="GETBALANCEANDDATE" value="After GETBALANCEANDDATE here############3"/>
+	</log>
+	<enrich>
+		<source clone="true" type="body"/>
+		<target action="replace" property="IN_PAYLOAD" type="property"/>
+	</enrich>
+	<property expression="$ctx:IN_PAYLOAD" name="IN_PAYLOAD" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="//methodResponse/params/param/value/struct/member[name='responseCode']/value/i4/text()']" name="Responsecode" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:Responsecode" name="STATUS" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="//methodResponse/fault/value/struct/member[name='faultCode']/value/i4/text()" name="faultCode" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<filter xmlns:ns="http://org.apache.synapse/xsd" xpath="$ctx:StatusCode !=200">
+		<then>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="GET_BALANCEANDDATE"/>
+			<property name="STATUS" scope="default" type="STRING" value="KO"/>
+			<property expression="fn:concat('FaultCode:',$ctx:faultCode,' | Responsecode:',$ctx:Responsecode)" name="RESPONSE" scope="default" type="STRING"/>
+			<sequence key="LOYALTY_MSA_LOG_RESPONSE"/>
+			<property name="GETBALANCE_FAULT" scope="default" type="STRING" value="1"/>
+			<property expression="$axis2:HTTP_SC" name="StatusCode"/>
+			<property expression="//methodResponse/fault/value/struct/member[name='faultCode']/value/i4/text()" name="faultCode"/>
+			<property expression="//methodResponse/fault/value/struct/member[name='faultString']/value/i4/text()" name="faultDescription"/>
+		</then>
+		<else>
+			<filter regex="0" source="$ctx:Responsecode">
+				<then>
+					<property expression="//methodResponse/params/param/value/struct/member[name='responseCode']/value/i4/text()']" name="INResponseCode"/>
+					<property expression="$axis2:HTTP_SC" name="StatusCode"/>
+					<property expression="//methodResponse/params/param/value/struct/member[name='responseCode']/value/i4/text()']" name="Responsecode" scope="default" type="STRING"/>
+					<property expression="//methodResponse/params/param/value/struct/member[name='dedicatedAccountInformation']/value/array/data/value/struct/member[name='dedicatedAccountID' and value/i4='16']/value/i4" name="IN_DA_ACCOUNT_ID"/>
+					<property expression="//methodResponse/params/param/value/struct/member[name='dedicatedAccountInformation']/value/array/data/value/struct/member[name='dedicatedAccountID' and value/i4='16']/parent::struct/member[name='dedicatedAccountValue1']/value/string" name="IN_DA_ACCOUNT_VALUE"/>
+					<property expression="//methodResponse/params/param/value/struct/member[name='dedicatedAccountInformation']/value/array/data/value/struct/member[name='dedicatedAccountID' and value/i4='16']/parent::struct/member[name='dedicatedAccountUnitType']/value/i4" name="IN_DA_ACCOUNT_UNIT"/> 
+					<property expression="$ctx:Responsecode" name="Responsecode"/>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="GET_BALANCEANDDATE"/>
+					<property name="STATUS" scope="default" type="STRING" value="OK"/>
+					<property name="Responsecode" value="0"/>
+					<property expression="fn:concat('Responsecode:',$ctx:Responsecode,' | IN_DA_ACCOUNT_ID:',$ctx:IN_DA_ACCOUNT_ID,' | IN_DA_ACCOUNT_VALUE:',$ctx:IN_DA_ACCOUNT_VALUE)" name="RESPONSE" scope="default" type="STRING"/>
+					<sequence key="LOYALTY_MSA_LOG_RESPONSE"/>
+				</then>
+				<else>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="GET_BALANCEANDDATE"/>
+					<property name="STATUS" scope="default" type="STRING" value="KO"/>
+					<property expression="fn:concat('FaultCode:',$ctx:faultCode,' | 'FaultDescription:',$ctx:faultDescription,' | Responsecode:',$ctx:Responsecode)" name="RESPONSE" scope="default" type="STRING"/>
+					<sequence key="LOYALTY_MSA_LOG_RESPONSE"/>
+					<property name="GETBALANCE_RESPONSE" scope="default" type="STRING" value="1"/>
+					<property expression="$ctx:Responsecode" name="Responsecode"/>
+				</else>
+			</filter>
+		</else>
+	</filter>
+</sequence>

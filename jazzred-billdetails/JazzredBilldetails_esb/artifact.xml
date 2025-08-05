@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?><artifacts>
+    <artifact name="JazzRedEcareBillDetail" groupId="jazz.jazzred.billdetails.api" version="1.0.0" type="synapse/api" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/api/JazzRedEcareBillDetail.xml</file>
+    </artifact>
+    <artifact name="JazzRedEcareBillDetail_swagger" groupId="jazz.jazzred.billdetails.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/JazzRedEcareBillDetail_swagger.yaml</file>
+    </artifact>
+    <artifact name="JazzRedEcareBillDetail_metadata" groupId="jazz.jazzred.billdetails.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/JazzRedEcareBillDetail_metadata.yaml</file>
+    </artifact>
+    <artifact name="ActiveBillingAccount" groupId="jazz.jazzred.billdetails.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/ActiveBillingAccount.xml</file>
+    </artifact>
+    <artifact name="DBSS_ECAREBilling" groupId="jazz.jazzred.billdetails.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/DBSS_ECAREBilling.xml</file>
+    </artifact>
+    <artifact name="DBSS_ECAREINVOICES" groupId="jazz.jazzred.billdetails.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/DBSS_ECAREINVOICES.xml</file>
+    </artifact>
+    <artifact name="DBSS_EP_GETCUSTOMERPACKAGE" groupId="jazz.jazzred.billdetails.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/DBSS_EP_GETCUSTOMERPACKAGE.xml</file>
+    </artifact>
+    <artifact name="DBSS_EP_GETSUBSCRIPTIONOFFER_ENDPOINT" groupId="jazz.jazzred.billdetails.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/DBSS_EP_GETSUBSCRIPTIONOFFER_ENDPOINT.xml</file>
+    </artifact>
+    <artifact name="ECARE_DBSS_INSEQUENCE_BILLDETAILS_NEW_V1" groupId="jazz.jazzred.billdetails.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/ECARE_DBSS_INSEQUENCE_BILLDETAILS_NEW_V1.xml</file>
+    </artifact>
+    <artifact name="ECARE_FAULTSEQUENCE_BILLDETAILS" groupId="jazz.jazzred.billdetails.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/ECARE_FAULTSEQUENCE_BILLDETAILS.xml</file>
+    </artifact>
+</artifacts>

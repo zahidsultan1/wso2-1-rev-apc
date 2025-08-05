@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<endpoint name="Ecare_Topup_Ep" xmlns="http://ws.apache.org/ns/synapse">
+    <http method="post" uri-template="http://microservices.jazz.com.pk/ecarelive/topup/{uri.var.msisdn}/{uri.var.operator}/{uri.var.type}">
+        <suspendOnFailure>
+         <errorCodes>-1</errorCodes>
+         <progressionFactor>1.0</progressionFactor>
+      </suspendOnFailure>
+      <markForSuspension>
+         <errorCodes>-1</errorCodes>
+         <retriesBeforeSuspension>0</retriesBeforeSuspension>
+         <retryDelay>0</retryDelay>
+      </markForSuspension>
+      <timeout>
+         <duration>10000</duration>
+         <responseAction>fault</responseAction>
+      </timeout>
+    </http>
+
+</endpoint>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<endpoint name="IN_EP_PRD" xmlns="http://ws.apache.org/ns/synapse">
+<http method="post" uri-template="http://10.13.32.181:10010/Air" format="rest">
+		<suspendOnFailure>
+         <errorCodes>-1</errorCodes>
+         <progressionFactor>1.0</progressionFactor>
+      </suspendOnFailure>
+      <markForSuspension>
+         <errorCodes>-1</errorCodes>
+         <retriesBeforeSuspension>0</retriesBeforeSuspension>
+         <retryDelay>0</retryDelay>
+      </markForSuspension>
+      <timeout>
+         <duration>4000</duration>
+         <responseAction>fault</responseAction>
+      </timeout>
+	</http>
+</endpoint>

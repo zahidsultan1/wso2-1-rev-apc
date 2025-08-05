@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="FAULTSEQUENCE_JAZZCASHWALLET_SUBSCRIPTION" xmlns="http://ws.apache.org/ns/synapse">
+	<property expression="$trp:ApplicationName" name="API_NAME" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:INTERFACE_NAME" name="INTERFACE_NAME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:TRANSACTION_ID" name="TRANSACTION_ID" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:ERROR_MESSAGE" name="error_message" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:ERROR_CODE" name="error_code" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:ERROR_EXCEPTION" name="error_exception" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property name="error_detail" value="Exception occured"/>
+	<property name="LOG_ERROR_STATUS" value="EXCEPTION"/>
+	<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="ERROR_TIME" scope="default" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="fn:concat('ERROR_CODE:',$ctx:error_code,' | ERROR_MESSAGE:',$ctx:error_message,' | ERROR_EXCEPTION:',$ctx:error_exception)" name="ERROR" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<sequence key="JAZZCASHWALLET_LOG_ERROR"/>
+	<filter xpath="contains($ctx:error_message, 'The script engine returned an error executing the inlined js script function mediate')">
+		<then>
+			<payloadFactory media-type="json">
+				<format> {"Success": false,"Data": {"Code": "$1","Message": "$2","Description": "NaN","Msisdn": "$3","PartnerBalance": "NaN","TransactionId": "$4"}}</format>
+				<args>
+					<arg value="00111"/>
+					<arg value="Please ensure that the MPIN you entered is correct and try again."/>
+					<arg evaluator="xml" expression="$ctx:MSISDN"/>
+					<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+				</args>
+			</payloadFactory>
+			<property name="HTTP_SC" scope="axis2" type="STRING" value="400"/>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+			<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+			<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+			<sequence key="JAZZCASHWALLET_LOG_RESPONSE"/>
+			<respond/>
+		</then>
+	</filter>
+	<payloadFactory media-type="json">
+				<format>{"Success": false,   "Data": { "Code": "$1", "Message": "$2", "Description": "NaN", "Msisdn": "$3", "PartnerBalance": "NaN", "TransactionId": "$4" }}</format>
+				<args>
+					<arg literal="false" value="00110"/>
+					<arg literal="false" value="Your request has failed due to some technical problem"/>
+					<arg evaluator="xml" expression="$ctx:MSISDN" literal="false" xmlns:ns="http://org.apache.synapse/xsd"/>
+					<arg evaluator="xml" expression="$ctx:TRANSACTION_ID" literal="false" xmlns:ns="http://org.apache.synapse/xsd"/>
+				</args>
+			</payloadFactory>
+			<property name="SC_ACCEPTED" scope="axis2" type="STRING" value="false"/>
+			<property name="HTTP_SC" scope="axis2" type="STRING" value="500"/>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+			<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<sequence key="JAZZCASHWALLET_LOG_RESPONSE"/>
+			<respond/>
+</sequence>

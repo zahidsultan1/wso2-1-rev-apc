@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="BUNDLE_LOG_RESPONSE" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+	<log level="custom">
+		<property name="LOG_TYPE_BUNDLE" value="LOG_RESPONSE_SEQUENCE"/>
+		<property expression="$ctx:TRANSACTION_ID" name="ID" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property expression="$ctx:API_NAME" name="API_NAME" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property expression="$ctx:INTERFACE_NAME" name="INTERFACE_NAME" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property expression="$ctx:JSON_RESPONSE" name="RESPONSE" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property expression="$ctx:RESPONSE_TIME" name="RESPONSE_TIME" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property expression="$ctx:MSISDN" name="MSISDN" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property expression="fn:upper-case($ctx:uri.var.operator)" name="OPERATOR" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property expression="fn:upper-case($ctx:uri.var.type)" name="TYPE" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property expression="$ctx:LOG_RESPONSE_STATUS" name="STATUS" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property expression="$ctx:APP_NAME" name="APP_NAME" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property name="LOG_RESPONSE_ENDED" value="*****"/>
+	</log>
+	<property expression="$ctx:API_NAME" name="API_NAME" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<filter regex="JAZZ_HBL" source="$ctx:API_NAME">
+		<then>
+			<clone continueParent="true">
+				<target>
+					<sequence>
+						<property name="LOG_TYPE_BUNDLE" scope="default" type="STRING" value="LOG_RESPONSE_SEQUENCE"/>
+						<property expression="$ctx:TRANSACTION_ID" name="ID" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+						<property expression="$ctx:API_NAME" name="API_NAME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+						<property expression="$ctx:INTERFACE_NAME" name="INTERFACE_NAME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+						<property expression="$ctx:JSON_RESPONSE" name="RESPONSE" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+						<property expression="$ctx:RESPONSE_TIME" name="RESPONSE_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+						<property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+						<property expression="fn:upper-case($ctx:uri.var.operator)" name="OPERATOR" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+						<property expression="fn:upper-case($ctx:uri.var.type)" name="TYPE" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+						<property expression="$ctx:LOG_RESPONSE_STATUS" name="STATUS" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+						<dbreport>
+							<connection>
+								<pool>
+									<driver>com.mysql.jdbc.Driver</driver>
+									<url>jdbc:mysql://10.50.13.232:3306/BundleSubHBL</url>
+									<user>root</user>
+									<password>Veon@123</password>
+								</pool>
+							</connection>
+							<statement>
+								<sql><![CDATA[INSERT INTO BundleSubHBL.LOG_RESPONSE (ID, API_NAME, INTERFACE_NAME, RESPONSE, RESPONSE_TIME, MSISDN, STATUS, TYPE, OPERATOR, RESPONSETIME) VALUES (?,?,?,?,?,?,?,?,?,?)]]></sql>
+								<parameter expression="$ctx:TRANSACTION_ID" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+								<parameter expression="$ctx:API_NAME" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+								<parameter expression="$ctx:INTERFACE_NAME" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+								<parameter expression="$ctx:JSON_RESPONSE" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+								<parameter expression="$ctx:RESPONSE_TIME" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+								<parameter expression="$ctx:MSISDN" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+								<parameter expression="$ctx:LOG_RESPONSE_STATUS" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+								<parameter expression="$ctx:TYPE" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+								<parameter expression="$ctx:OPERATOR" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+								<parameter expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss')" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+							</statement>
+						</dbreport>
+					</sequence>
+				</target>
+			</clone>
+		</then>
+		<else>
+			<clone continueParent="true">
+				<target>
+					<sequence>
+						<property name="LOG_TYPE_BUNDLE" scope="default" type="STRING" value="LOG_RESPONSE_SEQUENCE"/>
+						<property expression="$ctx:TRANSACTION_ID" name="ID" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+						<property expression="$ctx:API_NAME" name="API_NAME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+						<property expression="$ctx:INTERFACE_NAME" name="INTERFACE_NAME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+						<property expression="$ctx:JSON_RESPONSE" name="RESPONSE" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+						<property expression="$ctx:RESPONSE_TIME" name="RESPONSE_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+						<property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+						<property expression="fn:upper-case($ctx:uri.var.operator)" name="OPERATOR" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+						<property expression="fn:upper-case($ctx:uri.var.type)" name="TYPE" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+						<property expression="$ctx:LOG_RESPONSE_STATUS" name="STATUS" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+						<dbreport>
+							<connection>
+								<pool>
+									<driver>com.mysql.jdbc.Driver</driver>
+									<url>jdbc:mysql://10.50.13.232:3306/BundleSubEP</url>
+									<user>root</user>
+									<password>Veon@123</password>
+								</pool>
+							</connection>
+							<statement>
+								<sql><![CDATA[INSERT INTO BundleSubEP.LOG_RESPONSE (ID, API_NAME, INTERFACE_NAME, RESPONSE, RESPONSE_TIME, MSISDN, STATUS, TYPE, OPERATOR, RESPONSETIME) VALUES (?,?,?,?,?,?,?,?,?,?)]]></sql>
+								<parameter expression="$ctx:TRANSACTION_ID" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+								<parameter expression="$ctx:API_NAME" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+								<parameter expression="$ctx:INTERFACE_NAME" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+								<parameter expression="$ctx:JSON_RESPONSE" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+								<parameter expression="$ctx:RESPONSE_TIME" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+								<parameter expression="$ctx:MSISDN" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+								<parameter expression="$ctx:LOG_RESPONSE_STATUS" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+								<parameter expression="$ctx:TYPE" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+								<parameter expression="$ctx:OPERATOR" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+								<parameter expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss')" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+							</statement>
+						</dbreport>
+					</sequence>
+				</target>
+			</clone>
+		</else>
+	</filter>
+</sequence>

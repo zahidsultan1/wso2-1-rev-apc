@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="GENERIC_CHECKMSISDN_INSEQUENCE" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+	<property expression="$trp:APPNAME" name="APP_NAME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$trp:APINAME" name="API_NAME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:uri.var.msisdn" name="msisdn" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:uri.var.msisdn" name="uri.var.msisdn" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:uri.var.msisdn" name="MSISDN" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property name="API_NAME_LOG" scope="default" type="STRING" value="CHANNEL_BUNDLE_SUBSCRIPTION_V1"/>
+	<property name="INTERFACE_NAME" scope="default" type="STRING" value="REQUEST"/>
+	<property expression="$ctx:uri.var.transaction_id" name="TRANSACTION_ID" scope="default" type="STRING"/>
+	<property expression="$ctx:uri.var.msisdn" name="REQUEST" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="fn:concat($trp:X-Forwarded-For,get-property('To'))" name="RESOURCE_URI" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<sequence key="PARTNERBANK_LOG_REQUEST"/>
+	<property name="INTERFACE_NAME" scope="default" type="STRING" value="GENERICCLIENTELE"/>
+	<property expression="fn:concat('https://bssapi.bss.jazz.com.pk/api/v1/subscriptions/',$ctx:uri.var.msisdn,'?identifier-type=msisdn&amp;include=subscription-type,owner-customer')" name="RESOURCE_URI" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:MSISDN" name="uri.var.msisdn" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:MSISDN" name="REQUEST" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<sequence key="PARTNERBANK_LOG_REQUEST"/>
+	<call>
+		<endpoint key="GENERIC_BSSAPI_CLIENTTEL"/>
+	</call>
+	<property name="type" expression="json-eval($.included[1].attributes.business-model-type)"/>
+	<property name="network" expression="json-eval($.included[1].attributes.brand)"/>
+	<property expression="boolean(get-property('type'))" name="bool_Chk_type" scope="default" type="STRING"/>
+	<property expression="boolean(get-property('network'))" name="bool_Chk_network" scope="default" type="STRING"/>
+	<property name="INTERFACE_NAME" scope="default" type="STRING" value="GENERICCLIENTELE"/>
+	<property expression="fn:concat('type:',$ctx:type,'  | network : ',$ctx:network)" name="JSON_RESPONSE" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+	<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:type" name="TYPE" scope="default" type="STRING"/>
+	<property expression="$ctx:network" name="OPERATOR" scope="default" type="STRING"/>
+	<sequence key="PARTNERBANK_LOG_RESPONSE"/>
+	<property expression="$ctx:type" name="TYPE" scope="default" type="STRING"/>
+	<property expression="$ctx:network" name="OPERATOR" scope="default" type="STRING"/>
+	<property expression="json-eval($.error.errorCode)" name="Error_Exist" scope="default" type="STRING"/>
+	<filter regex="305100" source="$ctx:Error_Exist">
+		<then>
+			<payloadFactory media-type="json">
+				<format>{ "error": { "errorCode": $1, "description": "$2", "message": "", "transaction": { "transactionId": "$3" } } }</format>
+				<args>
+					<arg evaluator="xml" expression="$ctx:Error_Exist"/>
+					<arg value="Exception Occured"/>
+					<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+				</args>
+			</payloadFactory>
+			<property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+			<property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+			<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+			<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+			<sequence key="PARTNERBANK_LOG_RESPONSE"/>
+			<respond/>
+		</then>
+		<else/>
+	</filter>
+	<filter regex="unknown" source="$ctx:network">
+		<then>
+			<payloadFactory media-type="json">
+				<format>{"operator":"omno","type":"","loan":""}</format>
+				<args/>
+			</payloadFactory>
+			<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+			<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+			<sequence key="PARTNERBANK_LOG_RESPONSE"/>
+			<respond/>
+		</then>
+		<else/>
+	</filter>
+	<payloadFactory media-type="xml">
+		<format key="conf:/custom/channelapiv1/INGetServiceStatus"/>
+		<args>
+			<arg evaluator="xml" expression="$ctx:msisdn"/>
+			<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+		</args>
+	</payloadFactory>
+	<header name="User-Agent" scope="transport" value="UGw Server/4.3/1.0"/>
+	<header name="Authorization" scope="transport" value="Basic SU5UQUNBR0Q6UGF0Y2gjMTIz"/>
+	<property name="messageType" scope="axis2" type="STRING" value="text/XML"/>
+	<property name="ContentType" scope="axis2" type="STRING" value="text/xml"/>
+	<property name="DISABLE_CHUNKING" scope="axis2" type="STRING" value="true"/>
+	<property expression="$ctx:TRANSACTION_ID" name="TRANSACTION_ID" scope="default" type="STRING"/>
+	<property expression="fn:substring($ctx:msisdn,3)" name="NORMALIZED_MSISDN_FOR_IN" scope="default" type="STRING"/>
+	<payloadFactory media-type="xml">
+		<format key="conf:/custom/channelapiv1/INreq"/>
+		<args>
+			<arg evaluator="xml" expression="$ctx:NORMALIZED_MSISDN_FOR_IN" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<arg evaluator="xml" expression="$ctx:TRANSACTION_ID" xmlns:ns="http://org.apache.synapse/xsd"/>
+		</args>
+	</payloadFactory>
+	<property name="RESOURCE_URI" scope="default" type="STRING" value="http://10.13.32.179:10010/Air"/>
+	<property name="INTERFACE_NAME" scope="default" type="STRING" value="GETBALANCEANDDATE"/>
+	<property expression="fn:concat('NORMALIZED_MSISDN_FOR_IN:',$ctx:NORMALIZED_MSISDN_FOR_IN,' | TRANSACTION_ID:',$ctx:TRANSACTION_ID)" name="REQUEST" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<sequence key="PARTNERBANK_LOG_REQUEST"/>
+	<header name="User-Agent" scope="transport" value="UGw Server/4.3/1.0"/>
+	<header name="Authorization" scope="transport" value="Basic SU5UQUNBR0Q6UGF0Y2gjMTIz"/>
+	<property name="messageType" scope="axis2" type="STRING" value="text/xml"/>
+	<property name="DISABLE_CHUNKING" scope="axis2" type="STRING" value="true"/>
+	<call>
+		<endpoint key="AIR_EP"/>
+	</call>
+	<property name="After Calling" scope="default" type="STRING" value="IN"/>
+	<property expression="//methodResponse/params/param/value/struct/member[name='dedicatedAccountInformation']/value/array/data/value/struct/member[name='dedicatedAccountID' and value/i4='16']/value/i4" name="IN_DA_ACCOUNT_ID" scope="default" type="STRING"/>
+	<property expression="//methodResponse/params/param/value/struct/member[name='dedicatedAccountInformation']/value/array/data/value/struct/member[name='dedicatedAccountID' and value/i4='16']/parent::struct/member[name='dedicatedAccountValue1']/value/string" name="IN_DA_ACCOUNT_VALUE" scope="default" type="STRING"/>
+	<property expression="//methodResponse/params/param/value/struct/member[name='dedicatedAccountInformation']/value/array/data/value/struct/member[name='dedicatedAccountID' and value/i4='16']/parent::struct/member[name='dedicatedAccountUnitType']/value/i4" name="IN_DA_ACCOUNT_UNIT" scope="default" type="STRING"/>
+	<property expression="//methodResponse/params/param/value/struct/member[name='responseCode']/value/i4/text()']" name="INResponseCode" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$axis2:HTTP_SC" name="StatusCode" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="//methodResponse/fault/value/struct/member[name='faultCode']/value/i4/text()" name="faultCode" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="//methodResponse/fault/value/struct/member[name='faultString']/value/i4/text()" name="faultDescription" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="boolean($ctx:IN_DA_ACCOUNT_ID ='16' and $ctx:IN_DA_ACCOUNT_VALUE > '0')" name="P2" scope="default" type="STRING"/>
+	<property name="INTERFACE_NAME" scope="default" type="STRING" value="GETBALANCEANDDATE"/>
+	<property expression="fn:concat('IN_DA_ACCOUNT_ID:',$ctx:IN_DA_ACCOUNT_ID,'  | IN_DA_ACCOUNT_VALUE : ',$ctx:IN_DA_ACCOUNT_VALUE,'  | IN_DA_ACCOUNT_UNIT : ',$ctx:IN_DA_ACCOUNT_UNIT,'  | INResponseCode : ',$ctx:INResponseCode,'  | faultCode : ',$ctx:faultCode,'  | faultDescription : ',$ctx:faultDescription)" name="JSON_RESPONSE" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+	<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<sequence key="PARTNERBANK_LOG_RESPONSE"/>
+	<filter regex="true" source="boolean($ctx:IN_DA_ACCOUNT_ID ='16' and $ctx:IN_DA_ACCOUNT_VALUE > '0')">
+		<then>
+			<payloadFactory media-type="json">
+				<format>{"operator":"$1","type":"$2","loan":"yes"}</format>
+				<args>
+					<arg evaluator="xml" expression="$ctx:network"/>
+					<arg evaluator="xml" expression="$ctx:type"/>
+				</args>
+			</payloadFactory>
+			<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+			<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+			<sequence key="PARTNERBANK_LOG_RESPONSE"/>
+			<respond/>
+		</then>
+		<else>
+			<filter regex="PREPAID" source="fn:upper-case($ctx:type)">
+				<then>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="BALANCE"/>
+					<property name="RESOURCE_URI" scope="default" type="STRING" value="http://localhost:8290/jazzChannel/v1/balance/"/>
+					<property expression="$ctx:uri.var.msisdn" name="msisdn" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+					<property expression="$ctx:uri.var.msisdn" name="REQUEST" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+					<property expression="$ctx:uri.var.transaction_id" name="TRANSACTION_ID" scope="default" type="STRING"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+					<sequence key="PARTNERBANK_LOG_REQUEST"/>
+					<call>
+						<endpoint>
+							<http method="get" uri-template="http://localhost:8290/jazzChannel/v1/balance/{uri.var.msisdn}/{uri.var.transaction_id}/jazz/prepaid">
+								<timeout>
+									<duration>10000</duration>
+									<responseAction>fault</responseAction>
+								</timeout>
+								<suspendOnFailure>
+									<errorCodes>-1</errorCodes>
+									<initialDuration>-1</initialDuration>
+									<progressionFactor>1.0</progressionFactor>
+								</suspendOnFailure>
+								<markForSuspension>
+									<errorCodes>-1</errorCodes>
+									<retriesBeforeSuspension>0</retriesBeforeSuspension>
+								</markForSuspension>
+							</http>
+						</endpoint>
+					</call>
+					<property expression="json-eval($.balance)" name="balance" scope="default" type="STRING"/>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="BALANCE"/>
+					<property name="RESOURCE_URI" scope="default" type="STRING" value="http://localhost:8290/jazzChannel/v1/balance/"/>
+					<property expression="json-eval($.balance)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+					<sequence key="PARTNERBANK_LOG_RESPONSE"/>
+					<payloadFactory media-type="json">
+						<format>{"operator":"$1","type":"$2","loan":"no","balance":"$3"}</format>
+						<args>
+							<arg evaluator="xml" expression="$ctx:network"/>
+							<arg evaluator="xml" expression="$ctx:type"/>
+							<arg evaluator="xml" expression="$ctx:balance"/>
+						</args>
+					</payloadFactory>
+					<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+					<sequence key="PARTNERBANK_LOG_RESPONSE"/>
+					<respond/>
+				</then>
+				<else>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="BALANCE"/>
+					<property name="RESOURCE_URI" scope="default" type="STRING" value="http://localhost:8290/jazzChannel/v1/balance/"/>
+					<property expression="$ctx:uri.var.msisdn" name="msisdn" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+					<property expression="$ctx:msisdn" name="REQUEST" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+					<property expression="$ctx:uri.var.transaction_id" name="TRANSACTION_ID" scope="default" type="STRING"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+					<sequence key="PARTNERBANK_LOG_REQUEST"/>
+					<call>
+						<endpoint>
+							<http method="get" uri-template="http://localhost:8290/jazzChannel/v1/balance/{uri.var.msisdn}/{uri.var.transaction_id}/jazz/postpaid">
+								<timeout>
+									<duration>10000</duration>
+									<responseAction>fault</responseAction>
+								</timeout>
+								<suspendOnFailure>
+									<errorCodes>-1</errorCodes>
+									<initialDuration>-1</initialDuration>
+									<progressionFactor>1.0</progressionFactor>
+								</suspendOnFailure>
+								<markForSuspension>
+									<errorCodes>-1</errorCodes>
+									<retriesBeforeSuspension>0</retriesBeforeSuspension>
+								</markForSuspension>
+							</http>
+						</endpoint>
+					</call>
+					<property expression="json-eval($.balance)" name="balance" scope="default" type="STRING"/>
+					<property expression="$ctx:balance" name="JSON_RESPONSE" scope="default" type="STRING"/>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="BALANCE"/>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+					<sequence key="PARTNERBANK_LOG_RESPONSE"/>
+					<payloadFactory media-type="json">
+						<format>{"operator":"$1","type":"$2","loan":"no","balance":"$3"}</format>
+						<args>
+							<arg evaluator="xml" expression="$ctx:network"/>
+							<arg evaluator="xml" expression="$ctx:type"/>
+							<arg evaluator="xml" expression="$ctx:balance"/>
+						</args>
+					</payloadFactory>
+					<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+					<sequence key="PARTNERBANK_LOG_RESPONSE"/>
+					<respond/>
+				</else>
+			</filter>
+		</else>
+	</filter>
+	<respond/>
+</sequence>

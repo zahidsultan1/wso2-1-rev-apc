@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/ecare/subscription/info/v1" name="JazzRedEcareMsisdnInfo" xmlns="http://ws.apache.org/ns/synapse">
+    <resource faultSequence="ECARE_FAULTSEQUENCE_CLIENTELE" inSequence="ECARE_CLIENTELE_DBSS_INSEQUENCE_NEW_V1" methods="GET" uri-template="/{msisdn}">
+        <outSequence/>
+    </resource>
+</api>

@@ -1,0 +1,10 @@
+---
+key: "GENERIC_CHECKMSISDN-1.0.0"
+name : "GENERIC_CHECKMSISDN"
+displayName : "GENERIC_CHECKMSISDN"
+description: "Sample API"
+version: "1.0.0"
+serviceUrl: "https://{MI_HOST}:{MI_PORT}/jazzChannel/V2"
+definitionType: "OAS3"
+securityType: "BASIC"
+mutualSSLEnabled: false

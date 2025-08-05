@@ -1,0 +1,11 @@
+---
+key: "GENERIC_INSEQUENCE_CLIENTELE_V1-1.0.0"
+name : "GENERIC_INSEQUENCE_CLIENTELE_V1"
+displayName : "GENERIC_INSEQUENCE_CLIENTELE_V1"
+description: "Sample API"
+version: "1.0.0"
+serviceUrl: "https://{MI_HOST}:{MI_PORT}/clientelelive"
+definitionType: "OAS3"
+securityType: "BASIC"
+mutualSSLEnabled: false
+apiId : "null"

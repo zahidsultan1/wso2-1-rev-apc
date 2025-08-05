@@ -1,0 +1,28 @@
+openapi: 3.0.1
+info:
+  title: Jazz
+  description: API Definition of Jazz
+  version: 1.0.0
+servers:
+- url: http://localhost:8290/jazzcash
+paths:
+  /checkmsisdn/{msisdn}/{transaction_id}:
+    get:
+      parameters:
+      - name: msisdn
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: transaction_id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        default:
+          description: Default response

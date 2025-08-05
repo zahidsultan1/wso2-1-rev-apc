@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifacts>
+	<artifact name="JazzRedEcareMsisdnInfo" groupId="com.example.api" version="1.0.0" type="synapse/api" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/api/JazzRedEcareMsisdnInfo.xml</file>
+	</artifact>
+	<artifact name="JazzRedEcareMsisdnInfo_swagger" groupId="com.example.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+		<file>src/main/resources/metadata/JazzRedEcareMsisdnInfo_swagger.yaml</file>
+	</artifact>
+	<artifact name="JazzRedEcareMsisdnInfo_metadata" groupId="com.example.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+		<file>src/main/resources/metadata/JazzRedEcareMsisdnInfo_metadata.yaml</file>
+	</artifact>
+	<artifact name="GETSUBSCRIPTIONID" groupId="com.example.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/endpoints/GETSUBSCRIPTIONID.xml</file>
+	</artifact>
+	<artifact name="SMS_INCENTIVES" groupId="com.example.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/endpoints/SMS_INCENTIVES.xml</file>
+	</artifact>
+	<artifact name="DBSS_ECARECLIENTTEL_v1" groupId="com.example.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/endpoints/DBSS_ECARECLIENTTEL_v1.xml</file>
+	</artifact>
+	<artifact name="MIinFlow" groupId="com.example.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/sequences/MIinFlow.xml</file>
+	</artifact>
+	<artifact name="ECARE_CLIENTELE_DBSS_INSEQUENCE_NEW_V1" groupId="com.example.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/sequences/ECARE_CLIENTELE_DBSS_INSEQUENCE_NEW_V1.xml</file>
+	</artifact>
+	<artifact name="DBSS_GETCUSTOMERANDSUBCLIENT_CALL" groupId="com.example.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/sequences/DBSS_GETCUSTOMERANDSUBCLIENT_CALL.xml</file>
+	</artifact>
+	<artifact name="ECARE_FAULTSEQUENCE_CLIENTELE" groupId="com.example.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/sequences/ECARE_FAULTSEQUENCE_CLIENTELE.xml</file>
+	</artifact>
+	<artifact name="ECARE_LOG_ERROR" groupId="com.example.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/sequences/ECARE_LOG_ERROR.xml</file>
+	</artifact>
+	<artifact name="ECARE_LOG_REQUEST" groupId="com.example.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/sequences/ECARE_LOG_REQUEST.xml</file>
+	</artifact>
+	<artifact name="ECARE_LOG_RESPONSE" groupId="com.example.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/sequences/ECARE_LOG_RESPONSE.xml</file>
+	</artifact>
+</artifacts>

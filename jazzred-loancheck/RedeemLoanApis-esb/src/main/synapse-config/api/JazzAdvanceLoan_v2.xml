@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/ecare/loan/v2" name="JazzAdvanceLoan_v2" xmlns="http://ws.apache.org/ns/synapse">
+    <resource faultSequence="SUBSCRIBE_WITH_LOAN_FAULTSEQUENCE" inSequence="LOYALITY_BALANCES_DADICATESACOUNTS_INSEQUENCE_V2" methods="POST" uri-template="/view">
+        <outSequence/>
+    </resource>
+</api>

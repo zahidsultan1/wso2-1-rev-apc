@@ -1,0 +1,42 @@
+openapi: 3.0.1
+info:
+  title: GENERIC_INSEQUENCE_BALANCE_V1
+  description: API Definition of GENERIC_INSEQUENCE_BALANCE_V1
+  version: 1.0.0
+servers:
+- url: http://localhost:8290/balancelive
+paths:
+  /v1/balance/{msisdn}/{transaction_id}/{operator}/{type}:
+    get:
+      parameters:
+      - name: msisdn
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: transaction_id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: operator
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: type
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        default:
+          description: Default response

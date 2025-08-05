@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/clientelelive" name="GENERIC_INSEQUENCE_CLIENTELE_V1" xmlns="http://ws.apache.org/ns/synapse">
+	<resource methods="GET" uri-template="/v1/clientele/{msisdn}/{transaction_id}">
+		<inSequence>
+			<property expression="get-property('uri.var.msisdn')" name="msisdn" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property expression="$ctx:msisdn" name="uri.var.msisdn" scope="default" type="STRING"/>
+			<property expression="get-property('uri.var.transaction_id')" name="TRANSACTION_ID" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property expression="fn:substring($ctx:msisdn,3)" name="NORMALIZED_MSISDN_FOR_IN" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property name="API_NAME" scope="default" type="STRING" value="CLIENTEL"/>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="REQUEST"/>
+			<property name="REQUEST" scope="default" type="STRING" value="null"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property expression="$ctx:uri.var.msisdn" name="MSISDN" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property expression="fn:concat($trp:X-Forwarded-For,get-property('To'))" name="RESOURCE_URI" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property name="LOG_REQUEST_ENDED" scope="default" type="STRING" value="*****"/>
+			<sequence key="BUNDLE_LOG_REQUEST"/>
+			<sequence key="GENERIC_GETCUSTOMERA_SUBCLIENT"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property expression="json-eval($.included[1].attributes.business-model-type)" name="subscriberType" scope="default" type="STRING"/>
+			<property expression="json-eval($.included[1].attributes.brand)" name="Brand" scope="default" type="STRING"/>
+			<filter regex="true" source="boolean($ctx:Brand)" xmlns:ns="http://org.apache.synapse/xsd">
+				<then>
+					<filter regex="Jazz" source="$ctx:Brand">
+						<then>
+							<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+							<property expression="json-eval($.included[1].attributes.business-model-type)" name="subscriberType" scope="default" type="STRING"/>
+							<filter regex="prepaid" source="$ctx:subscriberType">
+								<then>
+									<payloadFactory media-type="json">
+										<format>{"operator":"jazz","type":"prepaid"}</format>
+										<args>
+											<arg evaluator="xml" expression="$ctx:subscriberType"/>
+										</args>
+									</payloadFactory>
+									<property name="SC_ACCEPTED" scope="axis2" type="STRING" value="false"/>
+									<property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+									<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+									<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+									<property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING"/>
+									<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+									<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+									<property name="LOG_RESPONSE_ENDED" scope="default" type="STRING" value="*****"/>
+									<sequence key="BUNDLE_LOG_RESPONSE"/>
+								</then>
+								<else>
+									<payloadFactory media-type="json">
+										<format>{"operator":"jazz","type":"postpaid"}</format>
+										<args>
+											<arg evaluator="xml" expression="$ctx:subscriberType"/>
+										</args>
+									</payloadFactory>
+									<property name="SC_ACCEPTED" scope="axis2" type="STRING" value="false"/>
+									<property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+									<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+									<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+									<property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING"/>
+									<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+									<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+									<property name="LOG_RESPONSE_ENDED" scope="default" type="STRING" value="*****"/>
+									<sequence key="BUNDLE_LOG_RESPONSE"/>
+								</else>
+							</filter>
+						</then>
+						<else>
+							<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+							<property expression="json-eval($.business-model-type)" name="subscriberType" scope="default" type="STRING"/>
+							<filter regex="prepaid" source="$ctx:subscriberType">
+								<then>
+									<payloadFactory media-type="json">
+										<format>{"operator":"warid","type":"prepaid"}</format>
+										<args>
+											<arg evaluator="xml" expression="$ctx:subscriberType"/>
+										</args>
+									</payloadFactory>
+									<property name="SC_ACCEPTED" scope="axis2" type="STRING" value="false"/>
+									<property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+									<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+									<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+									<property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING"/>
+									<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+									<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+									<property name="LOG_RESPONSE_ENDED" scope="default" type="STRING" value="*****"/>
+									<sequence key="BUNDLE_LOG_RESPONSE"/>
+								</then>
+								<else>
+									<payloadFactory media-type="json">
+										<format>{"operator":"warid","type":"postpaid"}</format>
+										<args>
+											<arg evaluator="xml" expression="$ctx:subscriberType"/>
+										</args>
+									</payloadFactory>
+									<property name="SC_ACCEPTED" scope="axis2" type="STRING" value="false"/>
+									<property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+									<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+									<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+									<property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING"/>
+									<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+									<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+									<property name="LOG_RESPONSE_ENDED" scope="default" type="STRING" value="*****"/>
+									<sequence key="BUNDLE_LOG_RESPONSE"/>
+								</else>
+							</filter>
+						</else>
+					</filter>
+				</then>
+				<else>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+					<payloadFactory media-type="json">
+						<format>{"operator":"unknown","type":"unknown"}</format>
+						<args/>
+					</payloadFactory>
+					<property name="SC_ACCEPTED" scope="axis2" type="STRING" value="false"/>
+					<property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+					<property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+					<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_ENDED" scope="default" type="STRING" value="*****"/>
+					<sequence key="BUNDLE_LOG_RESPONSE"/>
+				</else>
+			</filter>
+			<respond/>
+		</inSequence>
+		<outSequence/>
+		<faultSequence/>
+	</resource>
+</api>

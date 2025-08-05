@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/balancelive" name="GENERIC_INSEQUENCE_BALANCE_V1" xmlns="http://ws.apache.org/ns/synapse">
+	<resource faultSequence="FAULTSEQUENCE_BUNDLE_SUBSCRIPTION" methods="GET" uri-template="/v1/balance/{msisdn}/{transaction_id}/{operator}/{type}">
+		<inSequence>
+			<property expression="fn:substring-after(get-property('MessageID'),'urn:uuid:')" name="TRANSACTION_ID" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property name="API_NAME" scope="default" type="STRING" value="JAZZCASH-CHECKMSISDN"/>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="BALANCE"/>
+			<property expression="$ctx:uri.var.msisdn" name="MSISDN" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property expression="$ctx:uri.var.type" name="TYPE" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property expression="$ctx:uri.var.operator" name="OPERATOR" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property expression="$ctx:uri.var.transactionId" name="TRANSACTION_ID" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property value="http://localhost:8290/ecarelive/balance" name="RESOURCE_URI" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<sequence key="BUNDLE_LOG_REQUEST"/>
+			<filter regex="jazz" source="$ctx:OPERATOR" xmlns:ns="http://org.apache.synapse/xsd">
+				<then>
+					<filter regex="postpaid" source="$ctx:TYPE">
+						<then>
+							<sequence key="GENERIC_GETCUSTOMER_SUBSCRIPTIONDETAILS_POSTPAID"/>
+							<property expression="json-eval($.included[0].attributes.total-current-charges)" name="total-current-charges" scope="default" type="STRING"/>
+							<property expression="json-eval($.included[0].attributes.credit-limit)" name="credit-limit" scope="default" type="STRING"/>
+							<property expression="json-eval($.included[0].attributes.unbilled-total)" name="unbilled-total" scope="default" type="STRING"/>
+							<property expression="json-eval($.included[0].attributes.adjustments)" name="adjustments" scope="default" type="STRING"/>
+							<property expression="json-eval($.error)" name="ERROR" scope="default" type="STRING"/>
+							<filter regex="true" source="boolean($ctx:credit-limit)">
+								<then>
+									<payloadFactory media-type="json">
+										<format>   {"totalBill":$1,"currentMonth":$2,"creditLimit":$3,"lastRefresh":$4}</format>
+										<args>
+											<arg evaluator="xml" expression="$ctx:total-current-charges"/>
+											<arg evaluator="xml" expression="$ctx:unbilled-total"/>
+											<arg evaluator="xml" expression="$ctx:credit-limit"/>
+											<arg evaluator="xml" expression="$ctx:adjustments"/>
+										</args>
+									</payloadFactory>
+									<log level="custom"/>
+									<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+									<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+									<property name="INTERFACE_NAME" scope="default" type="STRING" value="BALANCE"/>
+									<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+									<sequence key="BUNDLE_LOG_RESPONSE"/>
+									<respond/>
+								</then>
+								<else>
+									<payloadFactory media-type="json">
+										<format>  {"error":{"errorCode": 404,"description": "Balance is not avalible"}}</format>
+										<args>
+											<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+										</args>
+									</payloadFactory>
+									<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+									<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+									<property name="INTERFACE_NAME" scope="default" type="STRING" value="BALANCE"/>
+									<sequence key="BUNDLE_LOG_RESPONSE"/>
+									<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+									<sequence key="BUNDLE_LOG_RESPONSE"/>
+									<respond/>
+								</else>
+							</filter>
+						</then>
+						<else>
+							<sequence key="GENERIC_GETCUSTOMER_SUBSCRIPTIONDETAILS_PREPAID"/>
+							<payloadFactory media-type="json">
+								<format>{"balance":"$1"}</format>
+								<args>
+									<arg evaluator="xml" expression="$ctx:amount"/>
+								</args>
+							</payloadFactory>
+							<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+							<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+							<property name="INTERFACE_NAME" scope="default" type="STRING" value="BALANCE"/>
+							<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+							<sequence key="BUNDLE_LOG_RESPONSE"/>
+							<respond/>
+						</else>
+					</filter>
+				</then>
+				<else>
+					<filter regex="postpaid" source="$ctx:TYPE">
+						<then>
+							<sequence key="GENERIC_GETCUSTOMER_SUBSCRIPTIONDETAILS_POSTPAID"/>
+							<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+							<property expression="json-eval($.included[0].attributes.amount)" name="amount" scope="default" type="STRING"/>
+							<property expression="json-eval($.error)" name="ERROR" scope="default" type="STRING"/>
+							<filter regex="true" source="boolean($ctx:amount)">
+								<then>
+									<property expression="fn:concat('Balance:',$ctx:amount)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+									<sequence key="BUNDLE_LOG_RESPONSE"/>
+									<payloadFactory media-type="json">
+										<format>{"balance": $1}</format>
+										<args>
+											<arg evaluator="xml" expression="$ctx:amount"/>
+										</args>
+									</payloadFactory>
+									<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+									<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+									<property name="INTERFACE_NAME" scope="default" type="STRING" value="BALANCE"/>
+									<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+									<sequence key="BUNDLE_LOG_RESPONSE"/>
+									<respond/>
+								</then>
+								<else>
+									<payloadFactory media-type="json">
+										<format>{"error":{"errorCode": 404,"description":"Balance is not avalible"}}</format>
+										<args>
+											<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+										</args>
+									</payloadFactory>
+									<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+									<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+									<property name="INTERFACE_NAME" scope="default" type="STRING" value="BALANCE"/>
+									<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+									<sequence key="BUNDLE_LOG_RESPONSE"/>
+									<respond/>
+								</else>
+							</filter>
+						</then>
+						<else>
+							<sequence key="GENERIC_GETCUSTOMER_SUBSCRIPTIONDETAILS_PREPAID"/>
+							<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+							<property expression="json-eval($.included[0].attributes.amount)" name="amount" scope="default" type="STRING"/>
+							<property expression="fn:count(//jsonObject/included)" name="COUNT" scope="default" type="STRING"/>
+							<foreach expression="//jsonObject/included">
+								<sequence>
+									<property expression="//attributes/is-main-balance/text()" name="ismainbalance" scope="default" type="STRING"/>
+									<property expression="//attributes/amount/text()" name="amount" scope="default" type="STRING"/>
+									<filter regex="true" source="$ctx:ismainbalance">
+										<then>
+											<property expression="//attributes/amount/text()" name="ismainbalanceData" scope="default" type="STRING"/>
+										</then>
+										<else>
+											<log level="custom">
+												<property name="IN_FOREACH Jazz prepaid else" value="***********"/>
+											</log>
+										</else>
+									</filter>
+								</sequence>
+							</foreach>
+							<payloadFactory media-type="json">
+								<format>{"balance":$1}</format>
+								<args>
+									<arg evaluator="xml" expression="$ctx:ismainbalanceData"/>
+								</args>
+							</payloadFactory>
+							<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+							<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+							<property name="INTERFACE_NAME" scope="default" type="STRING" value="BALANCE"/>
+							<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+							<sequence key="BUNDLE_LOG_RESPONSE"/>
+							<respond/>
+						</else>
+					</filter>
+				</else>
+			</filter>
+		</inSequence>
+		<outSequence/>
+	</resource>
+</api>

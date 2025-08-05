@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<endpoint name="WSO2APCEndpoint" xmlns="http://ws.apache.org/ns/synapse">
+    <address format="soap11" uri="http://wso2-apcwallets-recharge-svc-ci-mi:8290/services/APCRecharge.APCRechargeHttpSoap11Endpoint">
+        <timeout>
+            <duration>15000</duration>
+            <responseAction>fault</responseAction>
+        </timeout>
+        <suspendOnFailure>
+            <errorCodes>-1</errorCodes>
+            <initialDuration>-1</initialDuration>
+            <progressionFactor>1.0</progressionFactor>
+        </suspendOnFailure>
+        <markForSuspension>
+            <errorCodes>-1</errorCodes>
+            <retriesBeforeSuspension>0</retriesBeforeSuspension>
+        </markForSuspension>
+    </address>
+</endpoint>

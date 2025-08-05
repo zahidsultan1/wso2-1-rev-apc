@@ -1,0 +1,16 @@
+<data>
+	<ServiceUser>JB-TESTINGAPCWSO2</ServiceUser>
+	<ServicePassword>VGVzdGluZ0FQQ0AyMDI0</ServicePassword>
+	<PartnerMsisdn>Null</PartnerMsisdn>
+	<PartnerDAID>Null</PartnerDAID>
+	<PostFix>WSO2</PostFix>
+	<PreMinLimit>99</PreMinLimit>
+	<PreMaxLimit>5001</PreMaxLimit>
+	<PostMinLimit>99</PostMinLimit>
+	<PostMaxLimit>5001</PostMaxLimit>
+	<PaymentCode>TESTINGAPC</PaymentCode>
+	<PostCode>UEw=</PostCode>
+	<WalletCheck>0</WalletCheck>
+	<ExParam1>Null</ExParam1>
+	<ExParam2>Null</ExParam2>
+</data>

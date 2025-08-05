@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifacts>
+	<artifact name="JazzAdvanceLoan_v2" groupId="com.jazz.redeem.loan.apis.api" version="1.0.0" type="synapse/api" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/api/JazzAdvanceLoan_v2.xml</file>
+	</artifact>
+	<artifact name="JazzAdvanceLoan_v2_swagger" groupId="com.jazz.redeem.loan.apis.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+		<file>src/main/resources/metadata/JazzAdvanceLoan_v2_swagger.yaml</file>
+	</artifact>
+	<artifact name="JazzAdvanceLoan_v2_metadata" groupId="com.jazz.redeem.loan.apis.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+		<file>src/main/resources/metadata/JazzAdvanceLoan_v2_metadata.yaml</file>
+	</artifact>
+	<artifact name="JazzLoanAPIs" groupId="com.jazz.redeem.loan.apis.api" version="1.0.0" type="synapse/api" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/api/JazzLoanAPIs.xml</file>
+	</artifact>
+	<artifact name="JazzLoanAPIs_swagger" groupId="com.jazz.redeem.loan.apis.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+		<file>src/main/resources/metadata/JazzLoanAPIs_swagger.yaml</file>
+	</artifact>
+	<artifact name="JazzLoanAPIs_metadata" groupId="com.jazz.redeem.loan.apis.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+		<file>src/main/resources/metadata/JazzLoanAPIs_metadata.yaml</file>
+	</artifact>
+	<artifact name="APC_AIR_EP" groupId="com.jazz.redeem.loan.apis.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/endpoints/APC_AIR_EP.xml</file>
+	</artifact>
+	<artifact name="apc_clientele_preprod" groupId="com.jazz.redeem.loan.apis.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/endpoints/apc_clientele_preprod.xml</file>
+	</artifact>
+	<artifact name="BundlePriceCheckGETEP" groupId="com.jazz.redeem.loan.apis.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/endpoints/BundlePriceCheckGETEP.xml</file>
+	</artifact>
+	<artifact name="CHANNEL_API_ACTIVATION_EP" groupId="com.jazz.redeem.loan.apis.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/endpoints/CHANNEL_API_ACTIVATION_EP.xml</file>
+	</artifact>
+	<artifact name="BUNDLE_PRICE_CHECK_INSEQUENCE" groupId="com.jazz.redeem.loan.apis.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/sequences/BUNDLE_PRICE_CHECK_INSEQUENCE.xml</file>
+	</artifact>
+	<artifact name="MIinFlow" groupId="com.jazz.redeem.loan.apis.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/sequences/MIinFlow.xml</file>
+	</artifact>
+	<artifact name="BUNDLE_SUBCRIPTION_FOR_LOAN_SUB_INSEQUENCE" groupId="com.jazz.redeem.loan.apis.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/sequences/BUNDLE_SUBCRIPTION_FOR_LOAN_SUB_INSEQUENCE.xml</file>
+	</artifact>
+	<artifact name="GenericRemoveHeaders" groupId="com.jazz.redeem.loan.apis.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/sequences/GenericRemoveHeaders.xml</file>
+	</artifact>
+	<artifact name="GET_AND_BALANCE_FOR_LOAN_INSEQUENCE" groupId="com.jazz.redeem.loan.apis.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/sequences/GET_AND_BALANCE_FOR_LOAN_INSEQUENCE.xml</file>
+	</artifact>
+	<artifact name="REFILL_FOR_LOAN_SUB_INSEQUENCE" groupId="com.jazz.redeem.loan.apis.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/sequences/REFILL_FOR_LOAN_SUB_INSEQUENCE.xml</file>
+	</artifact>
+	<artifact name="REQUEST_PAYLOAD_EP" groupId="com.jazz.redeem.loan.apis.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/sequences/REQUEST_PAYLOAD_EP.xml</file>
+	</artifact>
+	<artifact name="LOYALITY_BALANCES_DADICATESACOUNTS_INSEQUENCE" groupId="com.jazz.redeem.loan.apis.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/sequences/LOYALITY_BALANCES_DADICATESACOUNTS_INSEQUENCE.xml</file>
+	</artifact>
+	<artifact name="LOYALITY_BALANCES_DADICATESACOUNTS_INSEQUENCE_V2" groupId="com.jazz.redeem.loan.apis.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/sequences/LOYALITY_BALANCES_DADICATESACOUNTS_INSEQUENCE_V2.xml</file>
+	</artifact>
+	<artifact name="LOYALTY_MSA_LOG_ERROR" groupId="com.jazz.redeem.loan.apis.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/sequences/LOYALTY_MSA_LOG_ERROR.xml</file>
+	</artifact>
+	<artifact name="LOYALTY_MSA_LOG_REQUEST" groupId="com.jazz.redeem.loan.apis.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/sequences/LOYALTY_MSA_LOG_REQUEST.xml</file>
+	</artifact>
+	<artifact name="LOYALTY_MSA_LOG_RESPONSE" groupId="com.jazz.redeem.loan.apis.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/sequences/LOYALTY_MSA_LOG_RESPONSE.xml</file>
+	</artifact>
+	<artifact name="SUBSCRIBE_WITH_LOAN_FAULTSEQUENCE" groupId="com.jazz.redeem.loan.apis.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/sequences/SUBSCRIBE_WITH_LOAN_FAULTSEQUENCE.xml</file>
+	</artifact>
+	<artifact name="SUBSCRIBE_WITH_LOAN_INSEQUENCE_MSA" groupId="com.jazz.redeem.loan.apis.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/sequences/SUBSCRIBE_WITH_LOAN_INSEQUENCE_MSA.xml</file>
+	</artifact>
+</artifacts>

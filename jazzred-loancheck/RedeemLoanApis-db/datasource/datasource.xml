@@ -1,0 +1,15 @@
+<datasource>
+	<name>loyaltygenericdbconnection</name>
+	<description>MySQL Connection</description>
+	<jndiConfig useDataSourceFactory="false">
+		<name>jdbc/loyaltydata</name>
+	</jndiConfig>
+	<definition type="RDBMS">
+		<configuration>
+			<driverClassName>com.mysql.jdbc.Driver</driverClassName>
+			<url>jdbc:mysql://10.50.13.233:3306/JazzRedLoan</url>
+			<username>root</username>
+			<password>Veon@123</password>
+		</configuration>
+	</definition>
+</datasource>

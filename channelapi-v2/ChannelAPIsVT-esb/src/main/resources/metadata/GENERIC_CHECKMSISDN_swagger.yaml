@@ -1,0 +1,38 @@
+openapi: 3.0.1
+info:
+  title: GENERIC_CHECKMSISDN
+  description: API Definition of GENERIC_CHECKMSISDN
+  version: 1.0.0
+servers:
+- url: http://localhost:8290/jazzChannel/V2
+paths:
+  /checkmsisdn/{msisdn}/{transaction_id}:
+    post:
+      parameters:
+      - name: msisdn
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: transaction_id
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        description: Sample Payload
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                payload:
+                  type: object
+        required: false
+      responses:
+        default:
+          description: Default response

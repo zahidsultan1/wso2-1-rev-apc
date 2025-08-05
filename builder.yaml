@@ -1,0 +1,78 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kaniko
+spec:
+  hostAliases: 
+   - ip: 10.50.49.26
+     hostnames:
+       - gitlab.jazz.com.pk
+  #nodeSelector:
+    #kubernetes.io/hostname: tkc-dev-wso2-ns001-workers-5ghrc-6ddb5bf6-4vfn7
+  containers:
+    - name: kubectl
+      image: internal-registry.tkg.mobilink.net.pk/wso2-dev/jenkins/kubectl:vsphere
+      imagePullPolicy: IfNotPresent
+      resources:
+        requests:
+          ephemeral-storage: "20Mi"
+        limits:
+          ephemeral-storage: "100Mi"
+      command:
+        - /bin/cat
+      tty: true
+      env:
+        - name: KUBECTL_VSPHERE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: cluster-pass
+              key: password
+    - name: kaniko
+      image: internal-registry.tkg.mobilink.net.pk/wso2-dev/kaniko/executor:v1.0
+      imagePullPolicy: IfNotPresent
+      resources:
+        requests:
+          ephemeral-storage: "1Gi"
+        limits:
+          ephemeral-storage: "3Gi"
+      command:
+        - /busybox/cat
+      tty: true
+      volumeMounts:
+        - name: kaniko-secret
+          mountPath: /kaniko/.docker
+    - name: maven
+      image: internal-registry.tkg.mobilink.net.pk/wso2-dev/maven:3.8.5-orcl-jdk-11
+      imagePullPolicy: IfNotPresent
+      resources:
+        requests:
+          ephemeral-storage: "20Mi"
+        limits:
+          ephemeral-storage: "100Mi"
+      command:
+        - /bin/cat
+      tty: true
+      volumeMounts:
+        - name: maven-storage
+          mountPath: /root/.m2
+    - name: apictl
+      image: internal-registry.tkg.mobilink.net.pk/wso2-dev/wso2/apictl:v1.0
+      imagePullPolicy: IfNotPresent
+      resources:
+        requests:
+          ephemeral-storage: "20Mi"
+        limits:
+          ephemeral-storage: "100Mi"
+      command:
+        - /bin/cat
+      tty: true
+  volumes:
+    - name: kaniko-secret
+      secret:
+        secretName: regcred
+        items:
+          - key: .dockerconfigjson
+            path: config.json
+    - name: maven-storage
+      persistentVolumeClaim:
+        claimName: maven-pvc

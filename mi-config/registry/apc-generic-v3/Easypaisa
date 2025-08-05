@@ -1,0 +1,16 @@
+<data>
+	<ServiceUser>EasypaisaWSO2</ServiceUser>
+	<ServicePassword>TW9iaWxpbmtFUEBFOVA5</ServicePassword>
+	<PartnerMsisdn>03060602178</PartnerMsisdn>
+	<PartnerDAID>2094</PartnerDAID>
+	<PostFix>WSO2</PostFix>
+	<PreMinLimit>99</PreMinLimit>
+	<PreMaxLimit>10001</PreMaxLimit>
+	<PostMinLimit>99</PostMinLimit>
+	<PostMaxLimit>10001</PostMaxLimit>
+	<PaymentCode>Easypaisa</PaymentCode>
+	<PostCode>NULL</PostCode>
+	<WalletCheck>1</WalletCheck>
+	<ExParam1>Null</ExParam1>
+	<ExParam2>Null</ExParam2>
+</data>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/apcwallets" name="kycBalanceClientele" xmlns="http://ws.apache.org/ns/synapse">
+    <resource faultSequence="APC_FAULTSEQUENCE_CLIENTELE_V1" inSequence="APC_INSEQUENCE_CLIENTELE_V1" methods="GET" uri-template="/v1/clientele/{msisdn}">
+        <outSequence/>
+    </resource>
+</api>

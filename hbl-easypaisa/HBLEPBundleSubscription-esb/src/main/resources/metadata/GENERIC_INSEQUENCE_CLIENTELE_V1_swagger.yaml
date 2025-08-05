@@ -1,0 +1,24 @@
+openapi: 3.0.1
+info:
+  title: GENERIC_INSEQUENCE_CLIENTELE_V1
+  description: API Definition of GENERIC_INSEQUENCE_CLIENTELE_V1
+  version: 1.0.0
+servers:
+- url: http://localhost:8290/clientelelive
+paths:
+  /v1/clientele/{msisdn}/{transaction_id}:
+    get:
+      parameters:
+      - name: msisdn
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: transaction_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        default:
+          description: Default response

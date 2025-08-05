@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?><artifacts>
+    <artifact name="APCRechargeV2DBSS" groupId="com.example.proxy-service" version="1.0.0" type="synapse/proxy-service" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/proxy-services/APCRechargeV2DBSS.xml</file>
+    </artifact>
+    <artifact name="_proxy_metadata" groupId="com.example.proxy-service.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/_proxy_metadata.yaml</file>
+    </artifact>
+    <artifact name="APC_RECHARGE_INSEQUENCE_DBSS_v2" groupId="com.example.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/APC_RECHARGE_INSEQUENCE_DBSS_v2.xml</file>
+    </artifact>
+    <artifact name="APC_REFILL_V2_HUB_TRANSACTION_STATUS" groupId="com.example.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/APC_REFILL_V2_HUB_TRANSACTION_STATUS.xml</file>
+    </artifact>
+    <artifact name="APC_REFILL_V2_LOG_REQUEST" groupId="com.example.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/APC_REFILL_V2_LOG_REQUEST.xml</file>
+    </artifact>
+    <artifact name="APC_REFILL_V2_LOG_RESPONSE" groupId="com.example.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/APC_REFILL_V2_LOG_RESPONSE.xml</file>
+    </artifact>
+    <artifact name="APC_EP_RBS" groupId="com.example.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/APC_EP_RBS.xml</file>
+    </artifact>
+    <artifact name="IN_EP_DBSS_APC" groupId="com.example.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/IN_EP_DBSS_APC.xml</file>
+    </artifact>
+</artifacts>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="APC_DB_STATUS_SEQUENCE" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+    <log level="custom">
+        <property name="APC_DB_STATUS_SEQUENCE" value="********** STARTED ***********"/>
+    </log>
+    <dbreport>
+        <connection>
+            <pool>
+                <dsName>jdbc/apcrevamp</dsName>
+            </pool>
+        </connection>
+        <statement>
+            <sql><![CDATA[INSERT INTO `HUB_TRANSACTION_STATUS` (`ID`, `MSISDN`, `CHANNEL_NAME`, `AMOUNT`, `STATUS` ,`RECEIPT_NO`,`DESCRIPTION`) VALUES (?,?,?,?,?,?,?)							]]></sql>
+            <parameter expression="$ctx:Transaction_Id" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd"/>
+            <parameter expression="$ctx:Msisdn" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd"/>
+            <parameter expression="$ctx:Channel_Name" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd"/>
+            <parameter expression="$ctx:Amount" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd"/>
+            <parameter expression="$ctx:Status" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd"/>
+            <parameter expression="$ctx:RECEIPT_NUMBER" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd"/>
+            <parameter expression="$ctx:Description" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd"/>
+        </statement>
+    </dbreport>
+</sequence>
