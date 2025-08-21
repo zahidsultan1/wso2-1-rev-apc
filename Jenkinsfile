@@ -181,7 +181,7 @@ pipeline {
         // Image Push
         stage('Image Push') {
             steps {
-                //withCredentials([usernamePassword(credentialsId: 'ghcr-creds', usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')]) 
+                withCredentials([usernamePassword(credentialsId: 'ghcr-creds', usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')]) 
                 {
                     sh """
                         echo $GITHUB_TOKEN | podman login ghcr.io -u $GITHUB_USER --password-stdin
