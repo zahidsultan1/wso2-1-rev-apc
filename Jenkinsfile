@@ -4,12 +4,16 @@ pipeline {
     agent any
 
     environment {
+        // Base image (kept same as current Jenkinsfile)
         REGISTRY_PREFIX   = "ghcr.io/zahidsultan1/wso2mi-staging"
         DEFAULT_IMAGE     = "wso2mi"
         DEFAULT_IMAGE_TAG = "4.4.0"
 
+        // OpenShift registry details
+        OCP_REGISTRY_HOST = "default-route-openshift-image-registry.apps.stgocpv1.jazz.com.pk" // OpenShift registry host (no namespace)
+        OCP_NAMESPACE     = "wso2" // namespace/project in OpenShift
+
         IMAGE_NAME        = "mi-services"
-        REGISTRY          = "ghcr.io/zahidsultan1/wso2-mi-services"
         IMAGE_TAG         = "${BUILD_NUMBER}"
         DOCKERFILE_PATH   = "mi-config/Dockerfile"
         BUILD_CONTEXT     = "mi-config"
@@ -27,7 +31,7 @@ pipeline {
                         def lastSuccessfulBuild = currentBuild.previousSuccessfulBuild
                         if (lastSuccessfulBuild) {
                             def lastSuccessfulBuildNumber = lastSuccessfulBuild.number
-                            BASE_IMAGE = "${REGISTRY}/${IMAGE_NAME}:${lastSuccessfulBuildNumber}"
+                            BASE_IMAGE = "${OCP_REGISTRY_HOST}/${OCP_NAMESPACE}/${IMAGE_NAME}:${lastSuccessfulBuildNumber}"
                             echo "Using last successful build image: ${BASE_IMAGE}"
                         } else {
                             BASE_IMAGE = "${REGISTRY_PREFIX}/${DEFAULT_IMAGE}:${DEFAULT_IMAGE_TAG}"
@@ -38,7 +42,7 @@ pipeline {
             }
         }
 
-        // Parallel Maven module builds (same as before)
+        // Parallel Maven builds for all microservices
         stage('Parallel') {
             parallel {
                 stage('JC Bundle Sub') {
@@ -169,25 +173,22 @@ pipeline {
                 script {
                     sh """
                         podman build \
-                          --cgroup-manager=cgroupfs \
-                          --build-arg BASE_IMAGE=$BASE_IMAGE \
                           -f $DOCKERFILE_PATH \
-                          -t $REGISTRY/$IMAGE_NAME:$IMAGE_TAG \
-                          $BUILD_CONTEXT
+                          -t $OCP_REGISTRY_HOST/$OCP_NAMESPACE/$IMAGE_NAME:$IMAGE_TAG \
+                          $BUILD_CONTEXT                    
                     """
                 }
             }
         }
 
-        // Image Push
-        stage('Image Push') {
+        // Push to OpenShift Registry
+        stage('Login & Push to OpenShift Registry') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'ghcr-creds', usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')]) 
-                {
+                withCredentials([string(credentialsId: 'ocp-registry-sa-token', variable: 'OCP_TOKEN')]) {
                     sh """
-                        echo $GITHUB_TOKEN | podman login ghcr.io -u $GITHUB_USER --password-stdin
-                        podman push $REGISTRY/$IMAGE_NAME:$IMAGE_TAG
-                        podman rmi  $REGISTRY/$IMAGE_NAME:$IMAGE_TAG || true
+                        echo $OCP_TOKEN | podman login $OCP_REGISTRY_HOST --username serviceaccount --password-stdin --tls-verify=false
+                        podman push --tls-verify=false $OCP_REGISTRY_HOST/$OCP_NAMESPACE/$IMAGE_NAME:$IMAGE_TAG
+                        podman rmi  $OCP_REGISTRY_HOST/$OCP_NAMESPACE/$IMAGE_NAME:$IMAGE_TAG || true
                     """
                 }
             }
