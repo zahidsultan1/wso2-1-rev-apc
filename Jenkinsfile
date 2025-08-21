@@ -169,6 +169,7 @@ pipeline {
                 script {
                     sh """
                         podman build \
+                          --cgroup-manager=cgroupfs \
                           --build-arg BASE_IMAGE=$BASE_IMAGE \
                           -f $DOCKERFILE_PATH \
                           -t $REGISTRY/$IMAGE_NAME:$IMAGE_TAG \
