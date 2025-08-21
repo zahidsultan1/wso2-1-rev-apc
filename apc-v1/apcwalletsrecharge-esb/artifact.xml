@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?><artifacts>
+    <artifact name="APCBalance" groupId="com.example.api" version="1.0.0" type="synapse/api" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/api/APCBalance.xml</file>
+    </artifact>
+    <artifact name="APCBalance_swagger" groupId="com.example.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/APCBalance_swagger.yaml</file>
+    </artifact>
+    <artifact name="APCBalance_metadata" groupId="com.example.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/APCBalance_metadata.yaml</file>
+    </artifact>
+    <artifact name="kycBalanceClientele" groupId="com.example.api" version="1.0.0" type="synapse/api" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/api/kycBalanceClientele.xml</file>
+    </artifact>
+    <artifact name="kycBalanceClientele_swagger" groupId="com.example.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/kycBalanceClientele_swagger.yaml</file>
+    </artifact>
+    <artifact name="kycBalanceClientele_metadata" groupId="com.example.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/kycBalanceClientele_metadata.yaml</file>
+    </artifact>
+    <artifact name="APC_BSSAPI_CLIENTTEL" groupId="com.example.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/APC_BSSAPI_CLIENTTEL.xml</file>
+    </artifact>
+    <artifact name="APC_EP_RBS" groupId="com.example.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/APC_EP_RBS.xml</file>
+    </artifact>
+    <artifact name="ClientTell" groupId="com.example.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/ClientTell.xml</file>
+    </artifact>
+    <artifact name="IN_EP_APC" groupId="com.example.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/IN_EP_APC.xml</file>
+    </artifact>
+    <artifact name="IN_EP_PRD" groupId="com.example.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/IN_EP_PRD.xml</file>
+    </artifact>
+    <artifact name="APC_DB_STATUS_SEQUENCE" groupId="com.example.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/APC_DB_STATUS_SEQUENCE.xml</file>
+    </artifact>
+    <artifact name="APC_DBSS_FAULT_SEQUENCE" groupId="com.example.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/APC_DBSS_FAULT_SEQUENCE.xml</file>
+    </artifact>
+    <artifact name="APC_FAULTSEQUENCE_CLIENTELE_V1" groupId="com.example.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/APC_FAULTSEQUENCE_CLIENTELE_V1.xml</file>
+    </artifact>
+    <artifact name="APC_GETCUSTOMER_SUBCLIENT" groupId="com.example.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/APC_GETCUSTOMER_SUBCLIENT.xml</file>
+    </artifact>
+    <artifact name="APC_INSEQUENCE_CLIENTELE_V1" groupId="com.example.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/APC_INSEQUENCE_CLIENTELE_V1.xml</file>
+    </artifact>
+    <artifact name="APC_LOG_ERROR" groupId="com.example.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/APC_LOG_ERROR.xml</file>
+    </artifact>
+    <artifact name="APC_LOG_REQUEST" groupId="com.example.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/APC_LOG_REQUEST.xml</file>
+    </artifact>
+    <artifact name="APC_LOG_RESPONSE" groupId="com.example.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/APC_LOG_RESPONSE.xml</file>
+    </artifact>
+    <artifact name="APC_RECHARGE_INSEQUENCE_DBSS_v1" groupId="com.example.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/APC_RECHARGE_INSEQUENCE_DBSS_v1.xml</file>
+    </artifact>
+    <artifact name="APC_REFILL_V1_HUB_TRANSACTION_STATUS" groupId="com.example.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/APC_REFILL_V1_HUB_TRANSACTION_STATUS.xml</file>
+    </artifact>
+    <artifact name="RemoveHeaders" groupId="com.example.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/RemoveHeaders.xml</file>
+    </artifact>
+    <artifact name="APCRecharge" groupId="com.example.proxy-service" version="1.0.0" type="synapse/proxy-service" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/proxy-services/APCRecharge.xml</file>
+    </artifact>
+</artifacts>

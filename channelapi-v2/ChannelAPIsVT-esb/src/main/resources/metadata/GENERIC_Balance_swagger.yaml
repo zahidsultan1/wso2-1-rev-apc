@@ -1,0 +1,42 @@
+openapi: 3.0.1
+info:
+  title: GENERIC_Balance
+  description: API Definition of GENERIC_Balance
+  version: 1.0.0
+servers:
+- url: http://localhost:8290/jazzChannel/V2
+paths:
+  /v1/balance/{msisdn}/{operator}/{type}/{transactionId}:
+    get:
+      parameters:
+      - name: msisdn
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: operator
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: type
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: transactionId
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        default:
+          description: Default response

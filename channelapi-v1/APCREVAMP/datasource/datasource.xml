@@ -1,0 +1,15 @@
+<datasource>
+    <name>APCREVAMP</name>
+    <description>APC Wallets Recharge</description>
+    <jndiConfig useDataSourceFactory="false">
+        <name>jdbc/apcrevamp</name>
+    </jndiConfig>
+    <definition type="RDBMS">
+        <configuration>
+            <driverClassName>com.mysql.jdbc.Driver</driverClassName>
+            <url>jdbc:mysql://10.50.13.228:3306/APC</url>
+            <username>devteam</username>
+            <password>Dev_Team123</password>
+        </configuration>
+    </definition>
+</datasource>

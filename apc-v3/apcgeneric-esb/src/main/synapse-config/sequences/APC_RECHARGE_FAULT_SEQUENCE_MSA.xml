@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="APC_RECHARGE_FAULT_SEQUENCE_MSA" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+	<property expression="$ctx:ERROR_MESSAGE" name="ERROR_MESSAGE" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:ERROR_CODE" name="ERROR_CODE" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:ERROR_DETAIL" name="ERROR_DETAIL" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:ERROR_EXCEPTION" name="ERROR_EXCEPTION" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:API_NAME" name="API_NAME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:ID" name="ID" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:RECEIPT_NUMBER" name="RECEIPT_NUMBER" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:INTERFACE_NAME" name="INTERFACE_NAME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property name="ResponseStatus" scope="default" type="STRING" value="F"/>
+	<property name="Reason" scope="default" type="STRING" value="Failed"/>
+	<filter regex="Refill" source="$ctx:Recon" xmlns:ns="http://org.apache.synapse/xsd">
+		<then>
+			<property name="ResponseStatus" scope="default" type="STRING" value="E"/>
+			<property name="Reason" scope="default" type="STRING" value="REFILL-Recon"/>
+		</then>
+		<else/>
+	</filter>
+	<filter regex="RBS" source="$ctx:Recon" xmlns:ns="http://org.apache.synapse/xsd">
+		<then>
+			<property name="ResponseStatus" scope="default" type="STRING" value="E"/>
+			<property name="Reason" scope="default" type="STRING" value="RBS-Recon"/>
+		</then>
+		<else/>
+	</filter>
+	<filter regex="UpdateBalanceAndDateAdd" source="$ctx:Recon" xmlns:ns="http://org.apache.synapse/xsd">
+		<then>
+			<property name="ResponseStatus" scope="default" type="STRING" value="E"/>
+			<property name="Reason" scope="default" type="STRING" value="WADDITION-Recon"/>
+		</then>
+		<else/>
+	</filter>
+	<filter regex="UpdateBalanceAndDateSub" source="$ctx:Recon" xmlns:ns="http://org.apache.synapse/xsd">
+		<then>
+			<property name="ResponseStatus" scope="default" type="STRING" value="E"/>
+			<property name="Reason" scope="default" type="STRING" value="WSUBTRACT-Recon"/>
+		</then>
+		<else/>
+	</filter>
+	<property expression="fn:concat('ERROR_CODE:',$ctx:error_code,' | ERROR_MESSAGE:',$ctx:error_message,' | ERROR_EXCEPTION:',$ctx:error_exception)" name="RESPONSE" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property name="STATUS" scope="default" type="STRING" value="EXCEPTION"/>
+	<sequence key="APC_MSA_LOG_RESPONSE"/>
+	<payloadFactory media-type="json">
+		<format>{"Response": {"TransactionId": "$1", "StatusCode": "1020", "Status": "$4", "Message": "Your request has failed due to some technical issue.", "MSISDN": "$2", "AcknowledgedID": "$3", "PartnerBalance": "NaN"}}</format>
+		<args>
+			<arg evaluator="xml" expression="$ctx:TRANSACTION_ID" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<arg evaluator="xml" expression="$ctx:MSISDN" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<arg evaluator="xml" expression="$ctx:RECEIPT_NUMBER" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<arg evaluator="xml" expression="$ctx:ResponseStatus" xmlns:ns="http://org.apache.synapse/xsd"/>
+		</args>
+	</payloadFactory>
+	<property expression="$ctx:ResponseStatus" name="DBStatus" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property name="Description" scope="default" type="STRING" value="Request has been failed due to EXCEPTION"/>
+	<property name="STATUSCODE" scope="default" type="STRING" value="1020"/>
+	<property expression="$ctx:DA_CHECK" name="DA_CHECK" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="TIME_OUT" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<sequence key="APC_MSA_HUB_TRANSACTION_STATUS"/>
+	<property name="HTTP_SC" scope="axis2" type="STRING" value="500"/>
+	<property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+	<property name="ContentType" scope="axis2" type="STRING" value="application/json"/>
+	<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+	<property name="STATUS" scope="default" type="STRING" value="KO"/>
+	<property expression="json-eval($)" name="RESPONSE" scope="default" type="STRING"/>
+	<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss')" name="RESPONSE_TIME" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<sequence key="APC_MSA_LOG_RESPONSE"/>
+	<header action="remove" name="To" scope="default"/>
+	<respond/>
+</sequence>

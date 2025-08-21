@@ -1,0 +1,15 @@
+<datasource>
+    <name>APC_Generic</name>
+    <description>MySQLConnection</description>
+    <jndiConfig useDataSourceFactory="false">
+        <name>jdbc/APCJendi</name>
+    </jndiConfig>
+    <definition type="RDBMS">
+         <configuration>
+            <driverClassName>com.mysql.jdbc.Driver</driverClassName>
+            <url>jdbc:mysql://10.50.13.23:3306/APC_Generic</url>
+            <username>app_user</username>
+            <password>@Ws02@RC</password>
+        </configuration>
+    </definition>
+</datasource>

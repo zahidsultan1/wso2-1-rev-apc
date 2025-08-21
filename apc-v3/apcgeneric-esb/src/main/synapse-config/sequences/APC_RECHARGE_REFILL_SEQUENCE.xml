@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="APC_RECHARGE_REFILL_SEQUENCE" xmlns="http://ws.apache.org/ns/synapse">
+	<property name="REFILL_CHECK" scope="default" type="STRING" value="0"/>
+	<property expression="get-property('SYSTEM_TIME')" name="CURR_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="fn:concat(synapse:get-property('SYSTEM_DATE', 'yyyyMMdd'),'T',synapse:get-property('SYSTEM_DATE', 'HH:mm:ss+0500'))" name="CURR_DATE_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<payloadFactory media-type="xml">
+		<format>
+			<methodCall xmlns="">
+				<methodName>Refill</methodName>
+				<params>
+					<param>
+						<value>
+							<struct>
+								<member>
+									<name>originNodeType</name>
+									<value>
+										<string>EXT</string>
+									</value>
+								</member>
+								<member>
+									<name>originHostName</name>
+									<value>
+										<string>WSO2</string>
+									</value>
+								</member>
+								<member>
+									<name>originTransactionID</name>
+									<value>
+										<string>$2</string>
+									</value>
+								</member>
+								<member>
+									<name>originTimeStamp</name>
+									<value>
+										<dateTime.iso8601>$1</dateTime.iso8601>
+									</value>
+								</member>
+								<member>
+									<name>subscriberNumber</name>
+									<value>
+										<string>$4</string>
+									</value>
+								</member>
+								<member>
+									<name>transactionCurrency</name>
+									<value>
+										<string>PKR</string>
+									</value>
+								</member>
+								<member>
+									<name>transactionAmount</name>
+									<value>
+										<string>$3</string>
+									</value>
+								</member>
+								<member>
+									<name>transactionType</name>
+									<value>
+										<string>WSO2</string>
+									</value>
+								</member>
+								<member>
+									<name>transactionCode</name>
+									<value>
+										<string>WSO2TOPUP</string>
+									</value>
+								</member>
+								<member>
+									<name>refillProfileID</name>
+									<value>
+										<string>APC</string>
+									</value>
+								</member>
+								<member>
+									<name>externalData1</name>
+									<value>
+										<string>$5-$6-$7-$8</string>
+									</value>
+								</member>
+								<member>
+									<name>externalData2</name>
+									<value>
+										<string>VOMS_Recharge</string>
+									</value>
+								</member>
+							</struct>
+						</value>
+					</param>
+				</params>
+			</methodCall>
+		</format>
+		<args>
+			<arg evaluator="xml" expression="$ctx:CURR_DATE_TIME" literal="false" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<arg evaluator="xml" expression="$ctx:CURR_TIME" literal="false" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<arg evaluator="xml" expression="$ctx:Amount_Paisa" literal="false" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<arg evaluator="xml" expression="$ctx:NORMALIZED_MSISDN_FOR_IN" literal="false" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<arg evaluator="xml" expression="$ctx:RECEIPT_NUMBER" literal="false" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<arg evaluator="xml" expression="$ctx:TransactionId" literal="false" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<arg evaluator="xml" expression="$ctx:RegPaymentCode" literal="false" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<arg evaluator="xml" expression="$ctx:RegPostFix" literal="false" xmlns:ns="http://org.apache.synapse/xsd"/>
+		</args>
+	</payloadFactory>
+	<property name="INTERFACE_NAME" value="IN-REFILL"/>
+	<property name="RESOURCE_URI" value="http://10.13.32.180:10010/Air"/>
+	<header name="User-Agent" scope="transport" value="UGw Server/4.3/1.0"/>
+	<header name="Authorization" scope="transport" value="Basic SU5UQVJDQU5BOjU2djM0R3oxL0FfMTgK"/>
+	<property name="messageType" scope="axis2" type="STRING" value="application/xml"/>
+	<property name="ContentType" scope="axis2" type="STRING" value="text/xml"/>
+	<property name="DISABLE_CHUNKING" scope="axis2" type="STRING" value="true"/>
+	<enrich>
+		<source clone="true" type="body"/>
+		<target action="replace" property="IN_PAYLOADRequest" type="property"/>
+	</enrich>
+	<property expression="$ctx:IN_PAYLOADRequest" name="REQUEST" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property name="REQUEST_TIME" expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" scope="default" type="STRING"/>
+	<sequence key="APC_MSA_LOG_REQUEST"/>
+	<property name="NO_KEEPALIVE" scope="axis2" type="STRING" value="true"/>
+	<call>
+		<endpoint key="APC_AIR_EP"/>
+	</call>
+	<property name="ContentType" scope="axis2" type="STRING" value="application/xml"/>
+	<property name="IsClientDoingREST" scope="default" type="BOOLEAN" value="true"/>
+	<enrich>
+		<source clone="true" type="body"/>
+		<target action="replace" property="IN_PAYLOAD" type="property"/>
+	</enrich>
+	<property expression="//methodResponse/params/param/value/struct/member[name='responseCode']/value/i4/text()']" name="Responsecode" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property name="INTERFACE_NAME" value="IN-REFILL"/>
+	<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss')" name="RESPONSE_TIME" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property name="STATUS" scope="default" type="STRING" value="OK"/>
+	<property expression="fn:concat('Responsecode: ',$ctx:Responsecode)" name="RESPONSE" scope="default" type="STRING"/>
+	<sequence key="APC_MSA_LOG_RESPONSE"/>
+	<filter xmlns:ns="http://org.apache.synapse/xsd" xpath="$ctx:Responsecode !=0">
+		<then>
+			<property name="REFILL_CHECK" scope="default" type="STRING" value="1"/>
+		</then>
+	</filter>
+</sequence>

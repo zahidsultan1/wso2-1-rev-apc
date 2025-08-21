@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/jazzChannel" name="ChannelAPIsPBI" xmlns="http://ws.apache.org/ns/synapse">
+    <resource faultSequence="ECARE_FAULTSEQUENCE_BALANCE" inSequence="GENERIC_INSEQUENCE_BALANCE_V1" methods="GET" uri-template="/v1/balance/{msisdn}/{transaction_id}/{operator}/{type}">
+        <outSequence/>
+    </resource>
+    <resource faultSequence="FAULTSEQUENCE_PBI_BUNDLE_SUBSCRIPTION" inSequence="CHANNELAPI_FOR_PARTNERBANK" methods="POST" uri-template="/bundleSubciption">
+        <outSequence/>
+    </resource>
+    <resource faultSequence="GENERIC_FAULTSEQUENCE_CLIENTELE" inSequence="GENERIC_INSEQUENCE_CLIENTELE_V1" methods="GET" uri-template="/v1/clientele/{msisdn}">
+        <outSequence/>
+    </resource>
+    <resource faultSequence="FAULTSEQUENCE_JAZZCASH" inSequence="GENERIC_CHECKMSISDN_INSEQUENCE" methods="GET" uri-template="/checkmsisdn/{msisdn}/{transaction_id}">
+        <outSequence/>
+    </resource>
+</api>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="APC_REFILL_V1_HUB_TRANSACTION_STATUS" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+	<property expression="$ctx:Transaction_Id" name="ID" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:TransactionId" name="TRANSACTION_ID" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:ServiceUser" name="SERVICE_USER" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:Channel_Name" name="CHANNEL_NAME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:Field1" name="RETAILER_NO" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:Amount" name="AMOUNT" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:Msisdn" name="MSISDN" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:Status" name="STATUS" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property name="VERSION" scope="default" type="STRING" value="V1"/>
+	<property expression="$ctx:TIME_IN" name="TIME_IN" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:TIME_OUT" name="TIME_OUT" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:Description" name="DESCRIPTION" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:DBMsisdnValue" name="PARTNER_MSISDN" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property name="PARTNER_DAID" scope="default" type="STRING" value="2094"/>
+	<property expression="$ctx:OPERATOR" name="OPERATOR" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:TYPE" name="TYPE" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:ExternalData" name="EXTERNAL_DATA" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<clone continueParent="true">
+		<target>
+			<sequence>
+				<dbreport>
+					<connection>
+						<pool>
+							<dsName>jdbc/apcrevamp</dsName>
+						</pool>
+					</connection>
+					<statement>
+						<sql><![CDATA[INSERT INTO HUB_TRANSACTION_STATUS (ID, TRANSACTION_ID, SERVICE_USER, CHANNEL_NAME,  RETAILER_NO, AMOUNT, MSISDN, STATUS, VERSION, REQUEST_TIME_IN, RESPONSE_TIME_OUT, DESCRIPTION, PARTNER_MSISDN, PARTNER_DAID, OPERATOR, TYPE, EXTERNAL_DATA) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)]]></sql>
+						<parameter expression="$ctx:ID" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+						<parameter expression="$ctx:TRANSACTION_ID" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+						<parameter expression="$ctx:SERVICE_USER" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+						<parameter expression="$ctx:CHANNEL_NAME" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+						<parameter expression="$ctx:RETAILER_NO" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+						<parameter expression="$ctx:AMOUNT" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+						<parameter expression="$ctx:MSISDN" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+						<parameter expression="$ctx:STATUS" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+						<parameter expression="$ctx:VERSION" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+						<parameter expression="$ctx:TIME_IN" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+						<parameter expression="$ctx:TIME_OUT" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+						<parameter expression="$ctx:DESCRIPTION" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+						<parameter expression="$ctx:PARTNER_MSISDN" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+						<parameter expression="$ctx:PARTNER_DAID" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+						<parameter expression="$ctx:OPERATOR" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+						<parameter expression="$ctx:TYPE" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+						<parameter expression="$ctx:EXTERNAL_DATA" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+					</statement>
+				</dbreport>
+			</sequence>
+		</target>
+	</clone>
+</sequence>

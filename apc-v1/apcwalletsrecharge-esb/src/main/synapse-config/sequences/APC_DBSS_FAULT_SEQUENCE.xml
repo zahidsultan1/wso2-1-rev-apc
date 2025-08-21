@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="APC_DBSS_FAULT_SEQUENCE" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+    <log level="custom">
+        <property name="MESSAGE" value="EXECUTING Refill Prepaid FAULT SEQUENCE"/>
+        <property expression="$ctx:ERROR_MESSAGE" name="ERROR_MESSAGE" xmlns:ns="http://org.apache.synapse/xsd"/>
+        <property expression="$ctx:ERROR_CODE" name="ERROR_CODE" xmlns:ns="http://org.apache.synapse/xsd"/>
+        <property expression="$ctx:ERROR_DETAIL" name="ERROR_DETAIL" xmlns:ns="http://org.apache.synapse/xsd"/>
+        <property expression="$ctx:ERROR_EXCEPTION" name="ERROR_EXCEPTION" xmlns:ns="http://org.apache.synapse/xsd"/>
+    </log>
+    <switch source="$ctx:Case" xmlns:ns="http://org.apache.synapse/xsd">
+        <case regex="TopUpPayment">
+            <log level="custom">
+                <property name="MESSAGE" value="EXECUTING Refill Prepaid FAULT SEQUENCE"/>
+            </log>
+            <property name="Status" scope="default" type="STRING" value="F"/>
+            <property name="Reason" scope="default" type="STRING" value="Failed"/>
+            <filter regex="Refill" source="$ctx:Recon">
+                <then>
+                    <property name="Status" scope="default" type="STRING" value="R"/>
+                    <property name="Reason" scope="default" type="STRING" value="RE-Recon"/>
+                </then>
+                <else/>
+            </filter>
+            <filter regex="RBS" source="$ctx:Recon">
+                <then>
+                    <property name="Status" scope="default" type="STRING" value="R"/>
+                    <property name="Reason" scope="default" type="STRING" value="RB-Recon"/>
+                </then>
+                <else/>
+            </filter>
+            <filter regex="UpdateBalanceAndDate" source="$ctx:Recon">
+                <then>
+                    <property name="Status" scope="default" type="STRING" value="R"/>
+                    <property name="Reason" scope="default" type="STRING" value="WS-Recon"/>
+                </then>
+                <else/>
+            </filter>
+            <filter regex="UpdateBalanceAndDateReversal" source="$ctx:Recon">
+                <then>
+                    <property name="Status" scope="default" type="STRING" value="R"/>
+                    <property name="Reason" scope="default" type="STRING" value="WA-Recon"/>
+                </then>
+                <else/>
+            </filter>
+            <property expression="get-property('SYSTEM_TIME')" name="CURR_TIME" scope="default" type="STRING"/>
+            <property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="SYS_TIME" scope="default" type="STRING"/>
+            <property expression="$ctx:InterfaceName" name="INTERFACE_NAME" scope="default" type="STRING"/>
+            <property name="API_NAME" scope="default" type="STRING" value="APC_REFILL_V1"/>
+            <property expression="$ctx:InterfaceName" name="INTERFACE_NAME" scope="default" type="STRING"/>
+            <property expression="$ctx:Msisdn" name="MSISDN" scope="default" type="STRING"/>
+            <property expression="$ctx:ERROR_CODE" name="Responsecode" scope="default" type="STRING"/>
+            <property expression="$ctx:Reason" name="Status" scope="default" type="STRING"/>
+            <log level="custom">
+                <property name="BEFORE DB DUMP" value="***********STARTED************"/>
+                <property name="API_NAME" value="APC_REFILL_V1"/>
+                <property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="SYS_TIME"/>
+                <property expression="$ctx:InterfaceName" name="INTERFACE_NAME"/>
+                <property expression="$ctx:Transaction_Id" name="TRANSECTIONID"/>
+                <property expression="get-property('ERROR_MESSAGE')" name="Description"/>
+                <property expression="$ctx:Msisdn" name="MSISDN"/>
+                <property expression="$ctx:RECEIPT_NUMBER" name="RECEIPT_NUMBER"/>
+                <property expression="$ctx:ERROR_CODE" name="Responsecode"/>
+                <property expression="$ctx:Reason" name="Reason"/>
+            </log>
+            <property expression="fn:concat('EXCEPTION | ',$ctx:INTERFACE_NAME)" name="INTERFACE_NAME" scope="default" type="STRING"/>
+            <property expression="fn:concat('ERROR_CODE:',$ctx:ERROR_CODE,' | ERROR_MESSAGE:',$ctx:ERROR_MESSAGE,' | ERROR_EXCEPTION:',$ctx:ERROR_EXCEPTION)" name="IN_PAYLOAD" scope="default" type="STRING"/>
+            <sequence key="APC_LOG_RESPONSE"/>
+            <property expression="get-property('ERROR_MESSAGE')" name="Description" scope="default" type="STRING"/>
+            <property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="TIME_OUT" scope="default" type="STRING"/>
+            <sequence key="APC_REFILL_V1_HUB_TRANSACTION_STATUS"/>
+            <payloadFactory media-type="xml">
+                <format>
+                    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/">
+                        <soapenv:Body>
+                            <tem:TopUpPaymentResponse>
+                                <tem:TopUpPaymentResult>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;ACTIVITY&gt;&lt;TransactionId&gt;$1&lt;/TransactionId&gt;&lt;MSISDN&gt;$2&lt;/MSISDN&gt;&lt;Status&gt;$3&lt;/Status&gt;&lt;Reason&gt;$4&lt;/Reason&gt;&lt;Message&gt;Your request has failed due to Timeout issue. Please try again later.&lt;/Message&gt;&lt;ReceiptNo/&gt;&lt;/ACTIVITY&gt;</tem:TopUpPaymentResult>
+                            </tem:TopUpPaymentResponse>
+                        </soapenv:Body>
+                    </soapenv:Envelope>
+                </format>
+                <args>
+                    <arg evaluator="xml" expression="$ctx:TransactionId"/>
+                    <arg evaluator="xml" expression="$ctx:Msisdn"/>
+                    <arg evaluator="xml" expression="$ctx:Status"/>
+                    <arg evaluator="xml" expression="$ctx:Reason"/>
+                </args>
+            </payloadFactory>
+            <enrich>
+                <source clone="true" type="body"/>
+                <target property="IN_PAYLOAD" type="property"/>
+            </enrich>
+            <property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+            <property name="Responsecode" scope="default" type="STRING" value="KO"/>
+            <sequence key="APC_LOG_RESPONSE"/>
+            <property name="HTTP_SC" scope="axis2" type="STRING" value="500"/>
+            <property name="messageType" scope="axis2" type="STRING" value="text/xml"/>
+            <property action="remove" name="NO_ENTITY_BODY" scope="axis2"/>
+            <property name="RESPONSE" scope="default" type="STRING" value="true"/>
+            <header action="remove" name="To" scope="default"/>
+            <property name="IsClientDoingREST" scope="default" type="BOOLEAN" value="false"/>
+            <respond/>
+        </case>
+        <default/>
+    </switch>
+</sequence>

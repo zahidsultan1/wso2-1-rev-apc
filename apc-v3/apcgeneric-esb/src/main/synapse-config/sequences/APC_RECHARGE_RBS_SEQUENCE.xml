@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="APC_RECHARGE_RBS_SEQUENCE" xmlns="http://ws.apache.org/ns/synapse">
+	<property name="RBS_CHECK" scope="default" type="STRING" value="0"/>
+	<property expression="fn:concat($ctx:Amount,'.00')" name="RBS_Amount" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property name="messageType" scope="axis2" value="application/json"/>
+	<property name="ContentType" scope="axis2" value="application/json"/>
+	<payloadFactory media-type="json">
+		<format>{"data":{"type": "invoice-payments","attributes":{"transaction_id": "$1","channel": "BSSAPI","msisdn": "$2","amount": "$3","payment-type": "edr_payment","currency": "PKR","payment-source": "$4"}}}</format>
+		<args>
+			<arg evaluator="xml" expression="$ctx:External_Data" literal="false" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<arg evaluator="xml" expression="$ctx:NORMALIZED_MSISDN_FOR_IN" literal="false" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<arg evaluator="xml" expression="$ctx:RBS_Amount" literal="false" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<arg evaluator="xml" expression="$ctx:External_Data" literal="false" xmlns:ns="http://org.apache.synapse/xsd"/>
+		</args>
+	</payloadFactory>
+	<property expression="json-eval($)" name="IN_PAYLOADRequest" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property name="ContentType" scope="axis2" value="application/vnd.api+json"/>
+	<property name="cachecontrol" scope="axis2" value="nocache"/>
+	<property name="INTERFACE_NAME" scope="default" type="STRING" value="BSSAPIRBS"/>
+	<property expression="json-eval($)" name="REQUEST" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property name="RESOURCE_URI" value="https://bssapi.bss.jazz.com.pk/api/v1/invoice-payments/"/>
+	<property name="REQUEST_TIME" expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" scope="default" type="STRING"/>
+	<sequence key="APC_MSA_LOG_REQUEST"/>
+	<call>
+		<endpoint key="APC_EP_RBS"/>
+	</call>
+	<property expression="$axis2:HTTP_SC" name="StatusCode" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="json-eval($.data[0].id)" name="RBS_SUCCESS" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property name="STATUS" scope="default" type="STRING" value="OK"/>
+	<property expression="$ctx:RBS_SUCCESS" name="RESPONSE" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<sequence key="APC_MSA_LOG_RESPONSE"/>
+	<property expression="json-eval($.errors)" name="RBS_FIELD1" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="json-eval($.errors[0].detail)" name="RBS_FIELD2" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<filter xmlns:ns="http://org.apache.synapse/xsd" xpath="$ctx:RBS_SUCCESS =''">
+		<then>
+			<property name="RBS_CHECK" scope="default" type="STRING" value="1"/>
+		</then>
+	</filter>
+</sequence>

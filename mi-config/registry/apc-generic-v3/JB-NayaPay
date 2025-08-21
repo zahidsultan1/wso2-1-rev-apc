@@ -1,0 +1,16 @@
+<data>
+	<ServiceUser>JB-NayaPayWSO2</ServiceUser>
+	<ServicePassword>TW9iaWxpbmtOUEAxMDA4</ServicePassword>
+	<PartnerMsisdn>03040603178</PartnerMsisdn>
+	<PartnerDAID>2094</PartnerDAID>
+	<PostFix>WSO2</PostFix>
+	<PreMinLimit>10</PreMinLimit>
+	<PreMaxLimit>10001</PreMaxLimit>
+	<PostMinLimit>10</PostMinLimit>
+	<PostMaxLimit>10001</PostMaxLimit>
+	<PaymentCode>JB-NayaPay</PaymentCode>
+	<PostCode>Null</PostCode>
+	<WalletCheck>1</WalletCheck>
+	<ExParam1>Null</ExParam1>
+	<ExParam2>Null</ExParam2>
+</data>

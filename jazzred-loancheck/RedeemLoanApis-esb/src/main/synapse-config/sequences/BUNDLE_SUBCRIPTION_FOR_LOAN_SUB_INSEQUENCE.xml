@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="BUNDLE_SUBCRIPTION_FOR_LOAN_SUB_INSEQUENCE" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+	<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+	<property expression="fn:concat('92',fn:substring(get-property('MSISDN'),2))" name="MSISDN_FOR_BUNDLE" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<log level="custom">
+		<property expression="$ctx:MSISDN_FOR_BUNDLE" name="uri.var.msisdn" xmlns:ns="http://org.apache.synapse/xsd"/>
+	</log>
+	<property action="remove" name="TRANSPORT_HEADERS" scope="axis2"/>
+	<payloadFactory media-type="json">
+		<format>{"data": {"type":"products","id":"$1","meta": {"services":{},"channel":"BSSAPI"}}}</format>
+		<args>
+			<arg evaluator="xml" expression="$ctx:PRODUCT_ID" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<arg evaluator="xml" expression="$ctx:BssApiChannel" xmlns:ns="http://org.apache.synapse/xsd"/>
+		</args>
+	</payloadFactory>
+	<property name="ContentType" scope="axis2" type="STRING" value="application/vnd.api+json"/>
+	<property name="INTERFACE_NAME" scope="default" type="STRING" value="BSSAPIACTIVATION"/>
+	<property expression="json-eval($)" name="REQUEST" scope="default" type="STRING"/>
+	<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property name="RESOURCE_URI" scope="default" type="STRING" value="https://preprod-bssapi.bss.jazz.com.pk/api/v1/subscriptions/msisdn/relationships/products?identifier=msisdn"/>
+	<sequence key="LOYALTY_MSA_LOG_REQUEST"/>
+	<call>
+		<endpoint key="CHANNEL_API_ACTIVATION_EP"/>
+	</call>
+	<log level="full">
+		<property name="AFTER CALLING" value="***** BSSAPI_BUNDLESUB *****"/>
+		<property name="AFTER CALLING" value="***************************** EP-RESPONSE **************************"/>
+		<property expression="json-eval($)" name="RESPONSE"/>
+		<property expression="json-eval($)" name="RESPONSE" scope="default" type="STRING"/>
+		<property expression="json-eval($.data.[0].attributes.href)" name="Account" scope="default" type="STRING"/>
+		<property expression="json-eval($.errors)" name="Fail_detail" scope="default" type="STRING"/>
+		<property expression="json-eval($.errors.[0].detail)" name="ERROR_detail" scope="default" type="STRING"/>
+		<property expression="json-eval($.errors.[0].status)" name="ERROR_status" scope="default" type="STRING"/>
+		<property expression="json-eval($.errors.[0].code)" name="ERROR_code" scope="default" type="STRING"/>
+		<property expression="json-eval($.data.[0].attributes.href)" name="Response_URL" scope="default" type="STRING"/>
+		<property expression="fn:substring-after($ctx:Account,'/api/v1/requests/')" name="Response_URL" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	</log>
+	<property expression="json-eval($)" name="RESPONSE" scope="default" type="STRING"/>
+	<property expression="json-eval($.data.[0].attributes.href)" name="Account" scope="default" type="STRING"/>
+	<property expression="json-eval($.errors)" name="Fail_detail" scope="default" type="STRING"/>
+	<property expression="json-eval($.errors.[0].detail)" name="ERROR_detail" scope="default" type="STRING"/>
+	<property expression="json-eval($.errors.[0].status)" name="ERROR_status" scope="default" type="STRING"/>
+	<property expression="json-eval($.errors.[0].code)" name="ERROR_code" scope="default" type="STRING"/>
+	<property expression="json-eval($.data.[0].attributes.href)" name="Response_URL" scope="default" type="STRING"/>
+	<property expression="fn:substring-after($ctx:Account,'/api/v1/requests/')" name="Response_URL" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<sequence key="LOYALTY_MSA_LOG_RESPONSE"/>
+	<filter regex="true" source="boolean(get-property('ERROR_code'))" xmlns:ns="http://org.apache.synapse/xsd">
+		<then>
+			<property expression="$ctx:ERROR_code" name="ERROR" scope="default" type="STRING"/>
+		</then>
+		<else>
+			<filter regex="false" source="boolean(get-property('ERROR_detail'))">
+				<then>
+					<property expression="$ctx:Fail_detail" name="ERROR" scope="default" type="STRING"/>
+				</then>
+				<else>
+					<property expression="$ctx:ERROR_detail" name="ERROR" scope="default" type="STRING"/>
+				</else>
+			</filter>
+		</else>
+	</filter>
+	<filter regex="true" source="boolean(get-property('Response_URL'))" xmlns:ns="http://org.apache.synapse/xsd">
+		<then/>
+		<else>
+			<property name="BUNDLESUB_RESPONSE" scope="default" type="STRING" value="1"/>
+		</else>
+	</filter>
+</sequence>

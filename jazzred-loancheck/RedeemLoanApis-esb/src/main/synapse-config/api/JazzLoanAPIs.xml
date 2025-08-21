@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/ecare/loan/v1" name="JazzRedLoanAPIs" xmlns="http://ws.apache.org/ns/synapse">
+    <resource faultSequence="LOYALITY_ViewLoyaltyBalanceCS_INSEQUENCE" inSequence="LOYALITY_BALANCES_DADICATESACOUNTS_INSEQUENCE" methods="POST" uri-template="/view">
+        <outSequence/>
+    </resource>
+    <resource faultSequence="LOYALITY_ViewLoyaltyBalanceCS_INSEQUENCE" inSequence="SUBSCRIBE_WITH_LOAN_INSEQUENCE_MSA" methods="POST" uri-template="/subscribe">
+        <outSequence/>
+        <faultSequence/>
+    </resource>
+</api>

@@ -1,0 +1,11 @@
+---
+key: "Jazz_Generic_Bundle_Subscription-1.0.0"
+name : "Jazz_Generic_Bundle_Subscription"
+displayName : "Jazz_Generic_Bundle_Subscription"
+description: "Sample API"
+version: "1.0.0"
+serviceUrl: "https://{MI_HOST}:{MI_PORT}/Jazzchannel/Generic"
+definitionType: "OAS3"
+securityType: "BASIC"
+mutualSSLEnabled: false
+apiId : "null"

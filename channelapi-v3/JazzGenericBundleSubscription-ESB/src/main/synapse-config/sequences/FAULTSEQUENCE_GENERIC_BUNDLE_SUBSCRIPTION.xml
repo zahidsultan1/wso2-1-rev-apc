@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="FAULTSEQUENCE_GENERIC_BUNDLE_SUBSCRIPTION" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+	<property expression="$trp:ApplicationName" name="API_NAME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:INTERFACE_NAME" name="INTERFACE_NAME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:TRANSACTION_ID" name="TRANSACTION_ID" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:ERROR_MESSAGE" name="error_message" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:ERROR_CODE" name="error_code" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:ERROR_EXCEPTION" name="error_exception" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property name="error_detail" scope="default" type="STRING" value="Exception occured"/>
+	<property name="LOG_ERROR_STATUS" scope="default" type="STRING" value="EXCEPTION"/>
+	<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="ERROR_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property expression="fn:concat('ERROR_CODE:',$ctx:error_code,' | ERROR_MESSAGE:',$ctx:error_message,' | ERROR_EXCEPTION:',$ctx:error_exception)" name="ERROR" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<sequence key="CHANNELAPI_LOG_ERROR"/>
+	<payloadFactory media-type="json">
+		<format>{"Success": false,   "Data": { "Code": "$1", "Message": "$2", "Description": "NaN", "Msisdn": "$3", "PartnerBalance": "NaN", "TransactionId": "$4" }}</format>
+		<args>
+			<arg value="00110"/>
+			<arg value="Your request has failed due to some technical problem"/>
+			<arg evaluator="xml" expression="$ctx:MSISDN" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+			<arg evaluator="xml" expression="$ctx:TRANSACTION_ID" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+		</args>
+	</payloadFactory>
+	<property name="SC_ACCEPTED" scope="axis2" type="STRING" value="false"/>
+	<property name="HTTP_SC" scope="axis2" type="STRING" value="500"/>
+	<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+	<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+	<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+	<sequence key="CHANNELAPI_LOG_ERROR"/>
+	<respond/>
+</sequence>

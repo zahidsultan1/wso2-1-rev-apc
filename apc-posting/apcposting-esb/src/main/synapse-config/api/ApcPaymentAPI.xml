@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/creditservices/APCRecharge" name="ApcPaymentAPI" xmlns="http://ws.apache.org/ns/synapse">
+    <resource faultSequence="FAULT_SEQUENCE_APC_POSTING" inSequence="INSEQUENCE_APC_POSTING_v1" methods="POST" uri-template="/v101">
+        <outSequence/>
+    </resource>
+</api>

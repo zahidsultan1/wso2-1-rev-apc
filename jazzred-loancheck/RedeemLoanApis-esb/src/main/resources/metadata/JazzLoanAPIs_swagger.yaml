@@ -1,0 +1,38 @@
+openapi: 3.0.1
+info:
+  title: JazzRedLoanAPIs
+  description: API Definition of JazzRedLoanAPIs
+  version: 1.0.0
+servers:
+- url: http://localhost:8290/ecare/loan/v1
+paths:
+  /view:
+    post:
+      requestBody:
+        description: Sample Payload
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                payload:
+                  type: object
+        required: false
+      responses:
+        default:
+          description: Default response
+  /subscribe:
+    post:
+      requestBody:
+        description: Sample Payload
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                payload:
+                  type: object
+        required: false
+      responses:
+        default:
+          description: Default response

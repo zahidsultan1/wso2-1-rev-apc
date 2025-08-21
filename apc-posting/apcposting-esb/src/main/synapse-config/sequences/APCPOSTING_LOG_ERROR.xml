@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="APCPOSTING_LOG_ERROR" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+	<log level="custom">
+		<property name="LOG_TYPE_APCPOSTING" value="LOG_ERROR_SEQUENCE"/>
+		<property expression="$ctx:TRANSACTION_ID" name="ID" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property expression="$ctx:API_NAME" name="API_NAME" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property expression="$ctx:INTERFACE_NAME" name="INTERFACE_NAME" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property expression="$ctx:ERROR" name="ERROR" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property expression="$ctx:ERROR_TIME" name="ERROR_TIME" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property expression="$ctx:MSISDN" name="MSISDN" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property expression="fn:upper-case($ctx:uri.var.operator)" name="OPERATOR" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property expression="fn:upper-case($ctx:uri.var.type)" name="TYPE" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property expression="$ctx:LOG_ERROR_STATUS" name="STATUS" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property name="LOG_ERROR_ENDED" value="*****"/>
+	</log>
+	<clone continueParent="true">
+		<target sequence="APCPOSTING_DB_ERROR_SEQUENCE"/>
+	</clone>
+</sequence>

@@ -1,0 +1,9 @@
+{
+    "DATA": [
+        {"EasyPaisa": "EasyPaisa"},
+        {"HBL": "HBL"},
+        {"JazzCash": "JazzCashApp"},
+        {"SIMOSA": "JazzWorldApp"},
+        {"Default": "APC"}
+    ]
+}

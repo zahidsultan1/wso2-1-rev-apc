@@ -1,0 +1,11 @@
+---
+key: "Jazz_EasyPaisa-1.0.0"
+name : "Jazz_EasyPaisa"
+displayName : "Jazz_EasyPaisa"
+description: "Sample API"
+version: "1.0.0"
+serviceUrl: "https://{MI_HOST}:{MI_PORT}/jazz_EP"
+definitionType: "OAS3"
+securityType: "BASIC"
+mutualSSLEnabled: false
+apiId : "null"

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="GENERIC_GETCUSTOMERA_SUBCLIENT" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+<property expression="$ctx:msisdn" name="uri.var.msisdn" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+   <property name="API_NAME" scope="default" type="STRING" value="CHANNELAPIsPBI"/>
+	<property expression="$ctx:API_NAME" name="APP_NAME" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:uri.var.transaction_id" name="TRANSACTION_ID" scope="default" type="STRING"/>
+    <property name="INTERFACE_NAME" scope="default" type="STRING" value="GENERICBSSAPICLIENTTEL"/>
+	<property expression="fn:concat('https://bssapi.bss.jazz.com.pk/api/v1/subscriptions/',$ctx:uri.var.msisdn,'?identifier-type=msisdn&amp;include=subscription-type,owner-customer')" name="RESOURCE_URI" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:msisdn" name="uri.var.msisdn" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="fn:concat('msisdn:',$ctx:uri.var.msisdn)" name="REQUEST" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:MSISDN" name="REQUEST" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<sequence key="PARTNERBANK_LOG_REQUEST"/>
+	<call>
+		<endpoint key="GENERIC_BSSAPI_CLIENTTEL"/>
+	</call>
+	<property name="type" expression="json-eval($.included[1].attributes.business-model-type)"/>
+	<property name="network" expression="json-eval($.included[1].attributes.brand)"/>
+	<property expression="boolean(get-property('type'))" name="bool_Chk_type" scope="default" type="STRING"/>
+	<property expression="boolean(get-property('network'))" name="bool_Chk_network" scope="default" type="STRING"/>
+	<property name="API_NAME" scope="default" type="STRING" value="CHANNELAPIsPBI"/>
+	<property name="INTERFACE_NAME" scope="default" type="STRING" value="GENERICBSSAPICLIENTTEL"/>
+	<property expression="fn:concat('type:',$ctx:type,'  | network : ',$ctx:network)" name="JSON_RESPONSE" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+	<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:type" name="TYPE" scope="default" type="STRING"/>
+	<property expression="$ctx:network" name="OPERATOR" scope="default" type="STRING"/>
+	<property expression="$axis2:HTTP_SC" name="StatusCode" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <sequence key="PARTNERBANK_LOG_RESPONSE"/>
+</sequence>

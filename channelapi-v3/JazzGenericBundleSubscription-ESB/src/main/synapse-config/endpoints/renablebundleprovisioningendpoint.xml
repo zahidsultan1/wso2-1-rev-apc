@@ -1,0 +1,12 @@
+<endpoint xmlns="http://ws.apache.org/ns/synapse" name="renablebundleprovisioningendpoint">
+   <http uri-template="http://localhost:8282/ecare/v1/renablebundleprovisioning/{uri.var.msisdn}">
+      <suspendOnFailure>
+         <progressionFactor>1.0</progressionFactor>
+      </suspendOnFailure>
+      <markForSuspension>
+         <retriesBeforeSuspension>0</retriesBeforeSuspension>
+         <retryDelay>0</retryDelay>
+      </markForSuspension>
+   </http>
+</endpoint>
+                        

@@ -1,0 +1,28 @@
+openapi: 3.0.1
+info:
+  title: JazzRedEcareBillDetail
+  description: API Definition of JazzRedEcareBillDetail
+  version: 1.0.0
+servers:
+- url: http://localhost:8290/ecare/subscription/v1/billdetails
+paths:
+  /{msisdn}/{operator}/postpaid:
+    get:
+      parameters:
+      - name: msisdn
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: operator
+        in: path
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        default:
+          description: Default response

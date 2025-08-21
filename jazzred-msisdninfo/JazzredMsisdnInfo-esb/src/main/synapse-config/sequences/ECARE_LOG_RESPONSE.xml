@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="ECARE_LOG_RESPONSE" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+    <log level="custom">
+        <property name="LOG_TYPE_ECARE" value="LOG_RESPONSE_SEQUENCE"/>
+        <property expression="$ctx:TRANSACTION_ID" name="ID" xmlns:ns="http://org.apache.synapse/xsd"/>
+        <property expression="$ctx:API_NAME_LOG" name="API_NAME" xmlns:ns="http://org.apache.synapse/xsd"/>
+        <property expression="$ctx:INTERFACE_NAME" name="INTERFACE_NAME" xmlns:ns="http://org.apache.synapse/xsd"/>
+        <property expression="$ctx:JSON_RESPONSE" name="RESPONSE" xmlns:ns="http://org.apache.synapse/xsd"/>
+        <property expression="$ctx:RESPONSE_TIME" name="RESPONSE_TIME" xmlns:ns="http://org.apache.synapse/xsd"/>
+        <property expression="$ctx:MSISDN" name="MSISDN" xmlns:ns="http://org.apache.synapse/xsd"/>
+        <property expression="fn:upper-case($ctx:uri.var.operator)" name="OPERATOR" xmlns:ns="http://org.apache.synapse/xsd"/>
+        <property expression="fn:upper-case($ctx:uri.var.type)" name="TYPE" xmlns:ns="http://org.apache.synapse/xsd"/>
+        <property expression="$ctx:LOG_RESPONSE_STATUS " name="STATUS" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property expression="get-property('ApplicationName')" name="APP_NAME" xmlns:ns="http://org.apache.synapse/xsd"/>
+        <property name="LOG_RESPONSE_ENDED" value="*****"/>
+    </log>
+    <clone continueParent="true">
+        <target>
+            <sequence>
+          <log level="custom">
+                    <property name="DB LOGGING RESPONSE SEQUENCE" value="****************** RESPONSE STARTED ********************"/>
+                </log>
+                <dbreport>
+                     <connection>
+                        <pool>
+                            <password>Veon@123</password>
+                            <driver>com.mysql.jdbc.Driver</driver>
+                            <url>jdbc:mysql://10.50.13.233:3306/JazzRedGeneric?autoReconnect=true&amp;relaxAutoCommit=true&amp;useSSL=false&amp;failOverReadOnly=FALSE</url>
+                            <user>root</user>
+                        </pool>
+                    </connection>
+                    <statement>
+                        <sql><![CDATA[INSERT INTO JazzRedGeneric.LOG_RESPONSE (ID, API_NAME, INTERFACE_NAME, RESPONSE, RESPONSE_TIME, MSISDN, STATUS, TYPE, OPERATOR, RESPONSETIME) VALUES (?,?,?,?,?,?,?,?,?,?)]]></sql>
+                        <parameter expression="$ctx:TRANSACTION_ID" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+                        <parameter expression="$ctx:API_NAME" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+                        <parameter expression="$ctx:INTERFACE_NAME" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+                        <parameter expression="$ctx:JSON_RESPONSE" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+                        <parameter expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+                        <parameter expression="$ctx:MSISDN" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+                        <parameter expression="$ctx:LOG_RESPONSE_STATUS" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+                        <parameter expression="$ctx:TYPE" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+                        <parameter expression="$ctx:OPERATOR" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+                        <parameter expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss')" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+                    </statement>
+                </dbreport>
+            </sequence>
+        </target>
+    </clone>
+</sequence>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="APC_LOG_ERROR" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+	<log level="custom">
+		<property name="LOG_TYPE_APC" value="LOG_ERROR_SEQUENCE"/>
+		<property expression="$ctx:TRANSACTION_ID" name="ID" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property expression="$ctx:API_NAME" name="API_NAME" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property expression="$ctx:INTERFACE_NAME" name="INTERFACE_NAME" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property expression="$ctx:ERROR" name="ERROR" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property expression="$ctx:ERROR_TIME" name="ERROR_TIME" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property expression="$ctx:MSISDN" name="MSISDN" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property expression="fn:upper-case($ctx:uri.var.operator)" name="OPERATOR" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property expression="fn:upper-case($ctx:uri.var.type)" name="TYPE" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property expression="$ctx:LOG_ERROR_STATUS" name="STATUS" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property expression="$ctx:APP_NAME" name="APP_NAME" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<property name="LOG_ERROR_ENDED" value="*****"/>
+	</log>
+	<clone continueParent="true">
+		<target>
+			<sequence>
+				<property name="LOG_TYPE_APC" scope="default" type="STRING" value="LOG_ERROR_SEQUENCE"/>
+				<property expression="$ctx:TRANSACTION_ID" name="ID" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+				<property expression="$ctx:API_NAME" name="API_NAME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+				<property expression="$ctx:INTERFACE_NAME" name="INTERFACE_NAME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+				<property expression="$ctx:ERROR" name="ERROR" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+				<property expression="$ctx:ERROR_TIME" name="ERROR_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+				<property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+				<property expression="fn:upper-case($ctx:uri.var.operator)" name="OPERATOR" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+				<property expression="fn:upper-case($ctx:uri.var.type)" name="TYPE" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+				<property expression="$ctx:LOG_ERROR_STATUS" name="STATUS" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+				<log level="custom">
+					<property name="DB LOGGING SEQUENCE" value="****************** STARTED ********************"/>
+				</log>
+				<dbreport>
+					<connection>
+						<pool>
+							<dsName>jdbc/apcrevamp</dsName>
+						</pool>
+					</connection>
+					<statement>
+						<sql><![CDATA[INSERT INTO APC_V1.APC_LOG_ERROR (ID, API_NAME, INTERFACE_NAME, ERROR, ERROR_TIME, MSISDN, STATUS, TYPE, OPERATOR) VALUES (?,?,?,?,?,?,?,?,?)]]></sql>
+						<parameter expression="$ctx:TRANSACTION_ID" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd"/>
+						<parameter expression="$ctx:API_NAME" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd"/>
+						<parameter expression="$ctx:INTERFACE_NAME" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd"/>
+						<parameter expression="$ctx:ERROR" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd"/>
+						<parameter expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd"/>
+						<parameter expression="$ctx:MSISDN" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd"/>
+						<parameter expression="$ctx:LOG_ERROR_STATUS" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd"/>
+						<parameter expression="$ctx:TYPE" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd"/>
+						<parameter expression="$ctx:OPERATOR" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd"/>
+					</statement>
+				</dbreport>
+			</sequence>
+		</target>
+	</clone>
+</sequence>

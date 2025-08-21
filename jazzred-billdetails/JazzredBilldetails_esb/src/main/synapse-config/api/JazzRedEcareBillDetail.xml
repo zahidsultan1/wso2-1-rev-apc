@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/ecare/subscription/billdetails/v1" name="JazzRedEcareBillDetail" xmlns="http://ws.apache.org/ns/synapse">
+    <resource faultSequence="ECARE_FAULTSEQUENCE_BILLDETAILS" inSequence="ECARE_DBSS_INSEQUENCE_BILLDETAILS_NEW_V1" methods="GET" uri-template="/{msisdn}/{operator}/postpaid">
+        <outSequence/>
+    </resource>
+</api>
+
+

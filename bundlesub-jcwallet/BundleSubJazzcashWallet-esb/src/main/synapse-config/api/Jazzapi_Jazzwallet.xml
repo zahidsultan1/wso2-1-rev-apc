@@ -1,0 +1,800 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/jazz_api/jazzwallet/v1" name="Jazzapi_Jazzwallet" xmlns="http://ws.apache.org/ns/synapse">
+	<resource faultSequence="FAULTSEQUENCE_JAZZCASHWALLET_SUBSCRIPTION" methods="POST" uri-template="/bundlesubscription">
+		<inSequence>
+			<property expression="$trp:Authorization" name="Authorization" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property name="MI_API_NAME" scope="default" type="STRING" value="BUNDLESUBSCRIPTION-JAZZCASHWALLET"/>
+			<property expression="json-eval($.msisdn)" name="MSISDN" scope="default" type="STRING"/>
+			<property expression="fn:get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="MI_TIME" scope="default" type="STRING"/>
+			<property expression="json-eval($.transaction_id)" name="TRANSACTION_ID" scope="default" type="STRING"/>
+			<property expression="$ctx:TRANSACTION_ID" name="REQUEST_ID" scope="default" type="STRING"/>
+			<sequence key="MIinFlow"/>
+			<property expression="$trp:ApplicationName" name="ApplicationName" scope="default" type="STRING"/>
+			<property expression="fn:concat($trp:X-Forwarded-For,get-property('To'))" name="RESOURCE_URI" scope="default" type="STRING"/>
+			<property action="remove" name="TRANSPORT_HEADERS" scope="axis2"/>
+			<property action="remove" name="EXCESS_TRANSPORT_HEADERS" scope="axis2"/>
+			<sequence key="GenericRemoveHeaders"/>
+			<property name="API_NAME" scope="default" type="STRING" value="BUNDLESUBSCRIPTION-JAZZCASHWALLET"/>
+			<property expression="$ctx:ApplicationName" name="APP_NAME" scope="default" type="STRING"/>
+			<property expression="fn:concat('R',synapse:get-property('SYSTEM_TIME'))" name="RECEIPT_NUMBER" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property expression="fn:concat($ctx:RECEIPT_NUMBER,'|',$ctx:TRANSACTION_ID)" name="Transaction_Id" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property expression="fn:concat($ctx:RECEIPT_NUMBER,'|',$ctx:TRANSACTION_ID)" name="TransactionId" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="TIME_IN" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property expression="fn:concat('R',synapse:get-property('SYSTEM_TIME'))" name="RECEIPT_NUMBER" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property name="PRICE" expression="json-eval($.price)" scope="default" type="STRING"/>
+			<property xmlns:ns="http://org.apache.synapse/xsd" name="SERVICE_CODE" expression="json-eval($.serviceCode)"/>
+			<property expression="json-eval($.msisdn)" name="MSISDN" scope="default" type="STRING"/>
+			<property expression="json-eval($.jcAccount)" name="C_MSISDN" scope="default" type="STRING"/>
+			<property expression="$ctx:PRICE" name="Amount" scope="default" type="STRING"/>
+			<property expression="$ctx:MSISDN" name="Msisdn" scope="default" type="STRING"/>
+			<property expression="$ctx:C_MSISDN" name="DBMsisdnValue" scope="default" type="STRING"/>
+			<property expression="fn:concat('JAZZCASH_APC_',$ctx:TRANSACTION_ID)" name="EXTERNAL_DATA" scope="default" type="STRING"/>
+			<property expression="fn:concat('JAZZCASH_APC_',$ctx:TRANSACTION_ID)" name="RETAILER_NO" scope="default" type="STRING"/>
+			<property name="encryptedMPIN" expression="json-eval($.mpin)" scope="default" type="STRING"/>
+			<property name="encryptionKey" value="arcwso2waleed449genricapikey" scope="default" type="STRING"/>
+			<script language="js">
+			    var SecretKeySpec = Packages.javax.crypto.spec.SecretKeySpec;
+                var Cipher = Packages.javax.crypto.Cipher;
+                var Base64 = Packages.java.util.Base64;
+
+                // Decryption function
+                function decrypt(encryptedText, encryptionKey) {
+                   var keyBytes = encryptionKey.getBytes();
+                   var keySpec = new SecretKeySpec(keyBytes.slice(0, 8), "DES");
+                   var cipher = Cipher.getInstance("DES/ECB/PKCS5Padding");
+                   cipher.init(Cipher.DECRYPT_MODE, keySpec);
+                   try {
+                      var decodedBytes = Base64.getDecoder().decode(encryptedText);
+                      var decryptedBytes = cipher.doFinal(decodedBytes);
+                      return new java.lang.String(decryptedBytes);
+                   } catch (e) {
+                      throw new Error("Failed to decode Base64 or decrypt: " + e.message);
+                   }
+                }
+
+                // Decrypt the input MPIN
+                var encryptedMPIN = mc.getProperty('encryptedMPIN');
+                var encryptionKey = mc.getProperty('encryptionKey');
+                var decryptedMPIN = decrypt(encryptedMPIN, encryptionKey);
+                mc.setProperty('decryptedMPIN', decryptedMPIN);
+			</script>
+			<property name="DecryptedMPIN" expression="$ctx:decryptedMPIN"/>
+			<property expression="$ctx:MSISDN" name="uri.var.msisdn" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="REQUEST"/>
+			<property expression="fn:concat('MSISDN:',$ctx:MSISDN,' | TRANSACTION_ID:',$ctx:TRANSACTION_ID,' | SERVICE_CODE : ',$ctx:SERVICE_CODE,' | PRICE : ',$ctx:PRICE)" name="REQUEST" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING"/>
+			<sequence key="JAZZCASHWALLET_LOG_REQUEST"/>
+			<filter regex="Bearer SmF6eldhbGxldEFyY2FuYUluZm86V3NvMg" source="$ctx:Authorization" xmlns:ns="http://org.apache.synapse/xsd">
+				<then/>
+				<else>
+					<payloadFactory media-type="json">
+						<format>{"Success": false,   "Data": { "Code": "$1", "Message": "$2", "Description": "$5", "Msisdn": "$3", "TransactionId": "$4" }}</format>
+						<args>
+							<arg value="00100"/>
+							<arg value="Missing / Invalid Credentials"/>
+							<arg evaluator="xml" expression="$ctx:MSISDN"/>
+							<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+							<arg value="Your request has been failed due to Missing / Invalid Credentials."/>
+						</args>
+					</payloadFactory>
+					<property name="HTTP_SC" scope="axis2" type="STRING" value="401"/>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+					<property expression="json-eval($)" name="JSON_RESPONSE"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+					<property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+					<property name="LOG_RESPONSE_ENDED" scope="default" type="STRING" value="*****"/>
+					<sequence key="JAZZCASHWALLET_LOG_RESPONSE"/>
+					<respond/>
+				</else>
+			</filter>
+			<filter xpath="fn:boolean(fn:string-length($ctx:ApplicationName) = 0)">
+				<then>
+					<payloadFactory media-type="json">
+						<format>{"Success": false,   "Data": { "Code": "$1", "Message": "$2", "Description": "$5", "Msisdn": "$3", "TransactionId": "$4" }}</format>
+						<args>
+							<arg value="00101"/>
+							<arg value="Your request has failed due to unauthorize channel."/>
+							<arg evaluator="xml" expression="$ctx:MSISDN"/>
+							<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+							<arg value="Application not exist."/>
+						</args>
+					</payloadFactory>
+					<property name="HTTP_SC" scope="axis2" type="STRING" value="401"/>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+					<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+					<sequence key="JAZZCASHWALLET_LOG_RESPONSE"/>
+					<respond/>
+				</then>
+				<else/>
+			</filter>
+			<filter regex="^923\d{9}$" source="$ctx:MSISDN" xmlns:ns="http://org.apache.synapse/xsd">
+				<then/>
+				<else>
+					<payloadFactory media-type="json">
+						<format>{"Success": false,   "Data": { "Code": "$1", "Message": "$2", "Description": "$5", "Msisdn": "$3", "TransactionId": "$4" }}</format>
+						<args>
+							<arg value="00102"/>
+							<arg value="Your request has failed due to invalid msisdn."/>
+							<arg evaluator="xml" expression="$ctx:MSISDN"/>
+							<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+							<arg value="Msisdn must start with 923 and the length of msisdn should be 12 digits."/>
+						</args>
+					</payloadFactory>
+					<property name="HTTP_SC" scope="axis2" type="STRING" value="400"/>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+					<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+					<sequence key="JAZZCASHWALLET_LOG_RESPONSE"/>
+					<respond/>
+				</else>
+			</filter>
+			<filter regex="^[1-9]\d{0,4}$" source="$ctx:PRICE" xmlns:ns="http://org.apache.synapse/xsd">
+				<then/>
+				<else>
+					<payloadFactory media-type="json">
+						<format>{"Success": false,   "Data": { "Code": "$1", "Message": "$2", "Description": "$5", "Msisdn": "$3", "TransactionId": "$4" }}</format>
+						<args>
+							<arg value="00103"/>
+							<arg value="Your request has failed due to invalid price."/>
+							<arg evaluator="xml" expression="$ctx:MSISDN"/>
+							<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+							<arg value="All digits of price must be integers and the length of price should be 1-5 digits."/>
+						</args>
+					</payloadFactory>
+					<property name="HTTP_SC" scope="axis2" type="STRING" value="400"/>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+					<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+					<sequence key="JAZZCASHWALLET_LOG_RESPONSE"/>
+					<respond/>
+				</else>
+			</filter>
+			<filter regex="^\d{1,20}$" source="$ctx:TRANSACTION_ID" xmlns:ns="http://org.apache.synapse/xsd">
+				<then/>
+				<else>
+					<payloadFactory media-type="json">
+						<format>{"Success": false,   "Data": { "Code": "$1", "Message": "$2", "Description": "$5", "Msisdn": "$3", "TransactionId": "$4" }}</format>
+						<args>
+							<arg value="00104"/>
+							<arg value="Your request has failed due to invalid transactionId."/>
+							<arg evaluator="xml" expression="$ctx:MSISDN"/>
+							<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+							<arg value="All digits of transactionId must be integers and the length of transactionId should be 1-20 digits."/>
+						</args>
+					</payloadFactory>
+					<property name="HTTP_SC" scope="axis2" type="STRING" value="400"/>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+					<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+					<sequence key="JAZZCASHWALLET_LOG_RESPONSE"/>
+					<respond/>
+				</else>
+			</filter>
+			<property expression="get-property('registry',fn:concat('conf:/custom/jazzcashwallet/', get-property('ApplicationName')))" name="RegistryData" scope="default" type="OM"/>
+			<property expression="$ctx:RegistryData//*[local-name()='ServicePassword']" name="ServicePassword" scope="default" type="STRING"/>
+			<property expression="$ctx:RegistryData//*[local-name()='ServiceUser']" name="ServiceUser" scope="default" type="STRING"/>
+			<property expression="$ctx:RegistryData//*[local-name()='Model']" name="Model" scope="default" type="STRING"/>
+			<filter xpath="fn:boolean(fn:string-length($ctx:RegistryData) = 0) or  fn:boolean(fn:string-length($ctx:ServicePassword) = 0 )">
+				<then>
+					<payloadFactory media-type="json">
+						<format>{"Success": false,  "Data": { "Code": "$1", "Message": "$2", "Description": "$5", "Msisdn": "$3", "TransactionId": "$4" }}</format>
+						<args>
+							<arg value="00105"/>
+							<arg value="Your request has failed due to unauthorize channel."/>
+							<arg evaluator="xml" expression="$ctx:MSISDN"/>
+							<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+							<arg value="Channel wallet not exist."/>
+						</args>
+					</payloadFactory>
+					<property name="SC_ACCEPTED" scope="axis2" type="STRING" value="false"/>
+					<property name="HTTP_SC" scope="axis2" type="STRING" value="401"/>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+					<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+					<sequence key="JAZZCASHWALLET_LOG_RESPONSE"/>
+					<respond/>
+				</then>
+				<else/>
+			</filter>
+			<property expression="$ctx:MSISDN" name="uri.var.msisdn" scope="default" type="STRING"/>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="BSSAPICLIENTELE"/>
+			<property expression="$ctx:uri.var.msisdn" name="REQUEST" scope="default" type="STRING"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING"/>
+			<property expression="fn:concat('https://bssapi.bss.jazz.com.pk/api/v1/subscriptions/',$ctx:uri.var.msisdn,'?identifier-type=msisdn&amp;include=subscription-typeowner-customer')" name="RESOURCE_URI" scope="default" type="STRING" xmlns:ns3="http://org.apache.synapse/xsd"/>
+			<sequence key="JAZZCASHWALLET_LOG_REQUEST"/>
+			<call>
+				<endpoint key="jcwallet_clientele"/>
+			</call>
+			<property expression="json-eval($.included[1].attributes.business-model-type)" name="TYPE" scope="default" type="STRING"/>
+			<property expression="json-eval($.included[1].attributes.brand)" name="OPERATOR" scope="default" type="STRING"/>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="BSSAPICLIENTELE"/>
+			<property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+			<filter xpath="fn:boolean(fn:string-length($ctx:OPERATOR) = 0 or $ctx:OPERATOR = 'unknown') or fn:boolean(fn:string-length($ctx:TYPE) = 0 or $ctx:TYPE = 'unknown')">
+				<then>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+					<property expression="fn:concat('TYPE:',$ctx:TYPE,' | OPERATOR:',$ctx:OPERATOR)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+					<sequence key="JAZZCASHWALLET_LOG_RESPONSE"/>
+					<payloadFactory media-type="json">
+						<format>{"Success": false,   "Data": { "Code": "$1", "Message": "$2", "Description": "$5", "Msisdn": "$3", "TransactionId": "$4" }}</format>
+						<args>
+							<arg value="00106"/>
+							<arg value="Your request has failed due to other network msisdn."/>
+							<arg evaluator="xml" expression="$ctx:MSISDN"/>
+							<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+							<arg value="Please Use Jazz network MSISDN only."/>
+						</args>
+					</payloadFactory>
+					<property name="SC_ACCEPTED" scope="axis2" type="STRING" value="false"/>
+					<property name="HTTP_SC" scope="axis2" type="STRING" value="201"/>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+					<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+					<sequence key="JAZZCASHWALLET_LOG_RESPONSE"/>
+					<respond/>
+				</then>
+				<else>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+					<property expression="fn:concat('OPERATOR:',$ctx:OPERATOR,' | TYPE:',$ctx:TYPE)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+					<sequence key="JAZZCASHWALLET_LOG_RESPONSE"/>
+				</else>
+			</filter>
+			<property expression="fn:substring($ctx:MSISDN,3)" name="NORMALIZED_MSISDN_FOR_IN" scope="default" type="STRING"/>
+			<property expression="fn:concat(synapse:get-property('SYSTEM_DATE', 'yyyyMMdd'),'T',synapse:get-property('SYSTEM_DATE', 'HH:mm:ss+0500'))" name="CURR_DATE_TIME" scope="default" type="STRING"/>
+			<payloadFactory media-type="xml">
+				<format>
+					<methodCall xmlns="">
+						<methodName>GetBalanceAndDate</methodName>
+						<params>
+							<param>
+								<value>
+									<struct>
+										<member>
+											<name>originTransactionID</name>
+											<value>
+												<string>$2</string>
+											</value>
+										</member>
+										<member>
+											<name>originNodeType</name>
+											<value>
+												<string>EXT</string>
+											</value>
+										</member>
+										<member>
+											<name>originHostName</name>
+											<value>
+												<string>1</string>
+											</value>
+										</member>
+										<member>
+											<name>originTimeStamp</name>
+											<value>
+												<dateTime.iso8601>$3</dateTime.iso8601>
+											</value>
+										</member>
+										<member>
+											<name>subscriberNumber</name>
+											<value>
+												<string>$1</string>
+											</value>
+										</member>
+									</struct>
+								</value>
+							</param>
+						</params>
+					</methodCall>
+				</format>
+				<args>
+					<arg evaluator="xml" expression="$ctx:NORMALIZED_MSISDN_FOR_IN"/>
+					<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+					<arg evaluator="xml" expression="$ctx:CURR_DATE_TIME"/>
+				</args>
+			</payloadFactory>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="GETBALANCEANDDATE"/>
+			<property name="RESOURCE_URI" scope="default" type="STRING" value="http://10.13.32.180:10010/Air"/>
+			<header name="User-Agent" scope="transport" value="UGw Server/4.3/1.0"/>
+			<header name="Authorization" scope="transport" value="Basic SU5UQVJDQU5BOjU2djM0R3oxL0FfMTgK"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING"/>
+			<property expression="fn:concat('NORMALIZED_MSISDN_FOR_IN:',$ctx:NORMALIZED_MSISDN_FOR_IN,' | TRANSACTION_ID_IN:',$ctx:TRANSACTION_ID,' | CURR_DATE_TIME:',$ctx:CURR_DATE_TIME)" name="REQUEST" scope="default" type="STRING"/>
+			<sequence key="JAZZCASHWALLET_LOG_REQUEST"/>
+			<property name="NO_KEEPALIVE" scope="axis2" type="STRING" value="true"/>
+			<property name="messageType" scope="axis2" type="STRING" value="application/xml"/>
+			<property name="ContentType" scope="axis2" type="STRING" value="text/xml"/>
+			<property name="DISABLE_CHUNKING" scope="axis2" type="STRING" value="true"/>
+			<call>
+				<endpoint key="JCWallet_APC_AIR_EP"/>
+			</call>
+			<property name="ContentType" scope="axis2" type="STRING" value="application/xml"/>
+			<property name="IsClientDoingREST" scope="default" type="BOOLEAN" value="true"/>
+			<property expression="//methodResponse/params/param/value/struct/member[name='responseCode']/value/i4/text()']" name="INResponseCode" scope="default" type="STRING"/>
+			<property expression="//methodResponse/params/param/value/struct/member[name='dedicatedAccountInformation']/value/array/data/value/struct/member[name='dedicatedAccountID' and value/i4='16']/value/i4" name="IN_DA_ACCOUNT_ID" scope="default" type="STRING"/>
+			<property expression="//methodResponse/params/param/value/struct/member[name='dedicatedAccountInformation']/value/array/data/value/struct/member[name='dedicatedAccountID' and value/i4='16']/parent::struct/member[name='dedicatedAccountValue1']/value/string" name="IN_DA_ACCOUNT_VALUE" scope="default" type="STRING"/>
+			<property expression="//methodResponse/params/param/value/struct/member[name='dedicatedAccountInformation']/value/array/data/value/struct/member[name='dedicatedAccountID' and value/i4='16']/parent::struct/member[name='dedicatedAccountUnitType']/value/i4" name="IN_DA_ACCOUNT_UNIT" scope="default" type="STRING"/>
+			<property expression="//methodResponse/params/param/value/struct/member[name='dedicatedAccountInformation']/value/array/data/value/struct/member[name='dedicatedAccountID' and value/i4='17']/value/i4" name="IN_DA_ACCOUNT_ID_N" scope="default" type="STRING"/>
+			<property expression="//methodResponse/params/param/value/struct/member[name='dedicatedAccountInformation']/value/array/data/value/struct/member[name='dedicatedAccountID' and value/i4='17']/parent::struct/member[name='dedicatedAccountValue1']/value/string" name="IN_DA_ACCOUNT_VALUE_N" scope="default" type="STRING"/>
+			<property expression="//methodResponse/params/param/value/struct/member[name='dedicatedAccountInformation']/value/array/data/value/struct/member[name='dedicatedAccountID' and value/i4='17']/parent::struct/member[name='dedicatedAccountUnitType']/value/i4" name="IN_DA_ACCOUNT_UNIT_N" scope="default" type="STRING"/>
+			<property expression="$axis2:HTTP_SC" name="StatusCode" scope="default" type="STRING"/>
+			<property expression="//methodResponse/fault/value/struct/member[name='faultCode']/value/i4/text()" name="faultCode" scope="default" type="STRING"/>
+			<property expression="//methodResponse/fault/value/struct/member[name='faultString']/value/i4/text()" name="faultDescription" scope="default" type="STRING"/>
+			<property expression="boolean($ctx:IN_DA_ACCOUNT_ID ='16' and $ctx:IN_DA_ACCOUNT_VALUE > '0')" name="P2" scope="default" type="STRING"/>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="GETBALANCEANDDATE"/>
+			<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+			<property expression="fn:concat('P2:',$ctx:P2,' | faultDescription:',$ctx:faultDescription,' | StatusCode : ',$ctx:StatusCode,' | faultCode : ',$ctx:faultCode)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+			<property name="LOG_RESPONSE_ENDED" scope="default" type="STRING" value="*****"/>
+			<property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+			<filter xpath="not(fn:boolean(fn:string-length($ctx:faultCode) = 0))">
+				<then>
+					<enrich>
+						<source clone="true" type="body"/>
+						<target property="IN_PAYLOAD" type="property"/>
+					</enrich>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+					<property expression="$ctx:IN_PAYLOAD" name="JSON_RESPONSE" scope="default" type="STRING"/>
+					<sequence key="JAZZCASHWALLET_LOG_RESPONSE"/>
+					<payloadFactory media-type="json">
+						<format>{"Success": false,   "Data": { "Code": "$1", "Message": "$2", "Description": "$5", "Msisdn": "$3", "TransactionId": "$4" }}</format>
+						<args>
+							<arg value="00107"/>
+							<arg value="Your request has failed due to loan error."/>
+							<arg evaluator="xml" expression="$ctx:MSISDN"/>
+							<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+							<arg value="Loan visibility does not exist for this msisdn."/>
+						</args>
+					</payloadFactory>
+					<property name="SC_ACCEPTED" scope="axis2" type="STRING" value="false"/>
+					<property name="HTTP_SC" scope="axis2" type="STRING" value="201"/>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+					<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+					<sequence key="JAZZCASHWALLET_LOG_RESPONSE"/>
+					<respond/>
+				</then>
+				<else/>
+			</filter>
+			<filter regex="true" source="boolean($ctx:INResponseCode = '0' and $ctx:IN_DA_ACCOUNT_ID ='16' and $ctx:IN_DA_ACCOUNT_VALUE > '0')">
+				<then>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+					<property expression="fn:concat('ResponseCode:',$ctx:INResponseCode,'| Loan_Check:',$ctx:P2,' | DA_ID:',$ctx:IN_DA_ACCOUNT_ID,'&amp; DA_VALUE:',$ctx:IN_DA_ACCOUNT_VALUE,' | DA_ID:',$ctx:IN_DA_ACCOUNT_ID_N,'&amp; DA_VALUE:',$ctx:IN_DA_ACCOUNT_VALUE_N)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+					<sequence key="JAZZCASHWALLET_LOG_RESPONSE"/>
+					<property name="R_Amount" scope="default" type="STRING" value="1.15"/>
+					<filter xpath="fn:boolean(fn:string-length($ctx:IN_DA_ACCOUNT_VALUE_N) = 0)">
+						<then>
+							<property name="IN_DA_ACCOUNT_VALUE_N" scope="default" type="INTEGER" value="0"/>
+						</then>
+						<else/>
+					</filter>
+					<script language="js"><![CDATA[var log = mc.getServiceLog();     var DA_ID16=parseInt(mc.getProperty("IN_DA_ACCOUNT_VALUE"));          var DA_ID17=parseInt(mc.getProperty("IN_DA_ACCOUNT_VALUE_N"));      var r_amount=parseFloat(mc.getProperty("R_Amount"));     log.info(parseFloat(mc.getProperty("R_Amount")));     var add = DA_ID16 + DA_ID17;        var result1 = add/100;         var result2 = result1 * r_amount;        mc.setProperty("Result1",result1);        mc.setProperty("Result2",result2);]]></script>
+					<property expression="fn:ceiling($ctx:Result2)" name="RechargeAmount" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+					<property expression="$ctx:RechargeAmount" name="RechargeAmount" scope="default" type="STRING"/>
+					<filter xmlns:ns="http://org.apache.synapse/xsd" xpath="$ctx:SERVICE_CODE='FBO5' or $ctx:SERVICE_CODE='FBO6' or $ctx:SERVICE_CODE='FBO9'">
+						<then>
+							<payloadFactory media-type="json">
+								<format>{"Success": false,   "Data": { "Code": "$1", "Message": "$2", "Description": "$5", "Msisdn": "$3", "LoanBalance": "$6", "TransactionId": "$4" }}</format>
+								<args>
+									<arg value="00108"/>
+									<arg value="Your request has failed due to availed loan."/>
+									<arg evaluator="xml" expression="$ctx:MSISDN"/>
+									<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+									<arg value="Please recharge minimum LoanBalance field amount"/>
+									<arg evaluator="xml" expression="$ctx:RechargeAmount"/>
+								</args>
+							</payloadFactory>
+							<property name="HTTP_SC" value="201" scope="axis2" type="STRING"/>
+							<property name="INTERFACE_NAME" value="RESPONSE" scope="default" type="STRING"/>
+							<property name="RESPONSE_TIME" expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" scope="default" type="STRING"/>
+							<property name="LOG_RESPONSE_STATUS" value="KO" scope="default" type="STRING"/>
+							<property name="JSON_RESPONSE" expression="json-eval($)" scope="default" type="STRING"/>
+							<sequence key="JAZZCASHWALLET_LOG_RESPONSE"/>
+							<respond/>
+						</then>
+					</filter>
+					<filter xpath="boolean($ctx:RechargeAmount >= $ctx:PRICE)">
+						<then>
+							<payloadFactory media-type="json">
+								<format>{"Success": false,   "Data": { "Code": "$1", "Message": "$2", "Description": "$5", "Msisdn": "$3", "LoanBalance": "$6", "TransactionId": "$4" }}</format>
+								<args>
+									<arg value="00108"/>
+									<arg value="Your request has failed due to availed loan."/>
+									<arg evaluator="xml" expression="$ctx:MSISDN"/>
+									<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+									<arg value="Please recharge minimum LoanBalance field amount"/>
+									<arg evaluator="xml" expression="$ctx:RechargeAmount"/>
+								</args>
+							</payloadFactory>
+							<property name="HTTP_SC" scope="axis2" type="STRING" value="201"/>
+							<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+							<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+							<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+							<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+							<sequence key="JAZZCASHWALLET_LOG_RESPONSE"/>
+							<respond/>
+						</then>
+						<else>
+							<property name="uri.var.qvCode" expression="$ctx:SERVICE_CODE"/>
+							<property name="INTERFACE_NAME" value="GET_BundlePrice" scope="default" type="STRING"/>
+							<property name="REQUEST" expression="$ctx:SERVICE_CODE" scope="default" type="STRING"/>
+							<property name="REQUEST_TIME" expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" scope="default" type="STRING"/>
+							<property name="RESOURCE_URI" expression="fn:concat('https://bssapi.bss.jazz.com.pk/api/v1/products?filter[code]=',$ctx:uri.var.qvCode)" scope="default" type="STRING"/>
+							<sequence key="JAZZCASHWALLET_LOG_REQUEST"/>
+							<call>
+								<endpoint key="JcWallet_Get_BundlePrice_EP"/>
+							</call>
+							<property name="BundlePrice" expression="json-eval($.data[0].attributes.price)"/>
+							<filter xpath="fn:boolean(fn:string-length($ctx:BundlePrice) = 0) or $ctx:BundlePrice = 'null'">
+								<then>
+									<property name="JSON_RESPONSE" expression="json-eval($)" scope="default" type="STRING"/>
+									<property name="INTERFACE_NAME" value="GET_BundlePrice" scope="default" type="STRING"/>
+									<property name="RESPONSE_TIME" expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" scope="default" type="STRING"/>
+									<property name="LOG_RESPONSE_STATUS" value="KO" scope="default" type="STRING"/>
+									<sequence key="JAZZCASHWALLET_LOG_RESPONSE"/>
+									<payloadFactory media-type="json">
+										<format>{"Success": false,   "Data": { "Code": "$1", "Message": "$2", "Description": "$5", "Msisdn": "$3", "LoanBalance": "$6", "TransactionId": "$4" }}</format>
+										<args>
+											<arg value="00108"/>
+											<arg value="Your request has failed due to availed loan."/>
+											<arg evaluator="xml" expression="$ctx:MSISDN"/>
+											<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+											<arg value="Please recharge minimum LoanBalance field amount"/>
+											<arg evaluator="xml" expression="$ctx:RechargeAmount"/>
+										</args>
+									</payloadFactory>
+									<property name="HTTP_SC" value="201" scope="axis2" type="STRING"/>
+									<property name="INTERFACE_NAME" value="RESPONSE" scope="default" type="STRING"/>
+									<property name="RESPONSE_TIME" expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" scope="default" type="STRING"/>
+									<property name="LOG_RESPONSE_STATUS" value="KO" scope="default" type="STRING"/>
+									<property name="JSON_RESPONSE" expression="json-eval($)" scope="default" type="STRING"/>
+									<sequence key="JAZZCASHWALLET_LOG_RESPONSE"/>
+									<respond/>
+								</then>
+								<else>
+									<property name="JSON_RESPONSE" expression="$ctx:BundlePrice" scope="default" type="STRING"/>
+									<property name="INTERFACE_NAME" value="GET_BundlePrice" scope="default" type="STRING"/>
+									<property name="RESPONSE_TIME" expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" scope="default" type="STRING"/>
+									<property name="LOG_RESPONSE_STATUS" value="OK" scope="default" type="STRING"/>
+									<sequence key="JAZZCASHWALLET_LOG_RESPONSE"/>
+								</else>
+							</filter>
+							<property name="R_Amount" value="1.15"/>
+							<script language="js">var log = mc.getServiceLog();     var BUNDLE_PRICE = parseInt(mc.getProperty("BundlePrice"));     var r_amount = parseFloat(mc.getProperty("R_Amount"));     var RechargeAmount = parseFloat(mc.getProperty("RechargeAmount"));         log.info(r_amount);         var Count = BUNDLE_PRICE * r_amount;     var result1 = RechargeAmount + Count;         mc.setProperty("Result", result1);</script>
+							<property name="GrossCost" expression="fn:ceiling($ctx:Result)"/>
+							<property name="GrossCost" expression="$ctx:GrossCost" scope="default" type="STRING"/>
+							<log level="custom">
+								<property name="CUSTOM_Logging" value="*********************************"/>
+								<property name="RechargeAmount" expression="$ctx:RechargeAmount"/>
+								<property name="GrossCost" expression="$ctx:GrossCost"/>
+							</log>
+							<filter xpath="boolean($ctx:GrossCost > $ctx:PRICE)">
+								<then>
+									<payloadFactory media-type="json">
+										<format>{"Success": false,   "Data": { "Code": "$1", "Message": "$2", "Description": "$5", "Msisdn": "$3", "LoanBalance": "$6", "TransactionId": "$4" }}</format>
+										<args>
+											<arg value="00108"/>
+											<arg value="Your request has failed due to availed loan."/>
+											<arg evaluator="xml" expression="$ctx:MSISDN"/>
+											<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+											<arg value="Please recharge minimum LoanBalance field amount"/>
+											<arg evaluator="xml" expression="$ctx:RechargeAmount"/>
+										</args>
+									</payloadFactory>
+									<property name="HTTP_SC" value="201" scope="axis2" type="STRING"/>
+									<property name="INTERFACE_NAME" value="RESPONSE" scope="default" type="STRING"/>
+									<property name="RESPONSE_TIME" expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" scope="default" type="STRING"/>
+									<property name="LOG_RESPONSE_STATUS" value="KO" scope="default" type="STRING"/>
+									<property name="JSON_RESPONSE" expression="json-eval($)" scope="default" type="STRING"/>
+									<sequence key="JAZZCASHWALLET_LOG_RESPONSE"/>
+									<respond/>
+								</then>
+								<else/>
+							</filter>
+						</else>
+					</filter>
+				</then>
+				<else>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+					<property expression="fn:concat('ResponseCode:',$ctx:INResponseCode,'| Loan_Check:',$ctx:P2,' | DA_ID:',$ctx:IN_DA_ACCOUNT_ID,'&amp; DA_VALUE:',$ctx:IN_DA_ACCOUNT_VALUE,' | DA_ID:',$ctx:IN_DA_ACCOUNT_ID_N,'&amp; DA_VALUE:',$ctx:IN_DA_ACCOUNT_VALUE_N)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_ENDED" scope="default" type="STRING" value="*****"/>
+					<sequence key="JAZZCASHWALLET_LOG_RESPONSE"/>
+				</else>
+			</filter>
+			<property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+			<property name="ContentType" scope="axis2" type="STRING" value="application/json"/>
+			<property expression="$ctx:MSISDN" name="uri.var.msisdn" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property expression="$ctx:OPERATOR" name="uri.var.operator" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property expression="$ctx:TYPE" name="uri.var.type" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<payloadFactory media-type="json">
+				<format>{"MSISDN": "$1","JazzCashAccount": "$2","SubscriberType": "$3","Amount": "$4","TransactionId": "$5", "MPIN": "$6"} </format>
+				<args>
+					<arg evaluator="xml" expression="$ctx:MSISDN"/>
+					<arg evaluator="xml" expression="$ctx:C_MSISDN"/>
+					<arg evaluator="xml" expression="$ctx:uri.var.type"/>
+					<arg evaluator="xml" expression="$ctx:PRICE"/>
+					<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+					<arg evaluator="xml" expression="$ctx:DecryptedMPIN"/>
+				</args>
+			</payloadFactory>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="JAZZCASH-TOPUP"/>
+			<property expression="fn:concat('MSISDN:',$ctx:MSISDN,' | C_MSISDN:',$ctx:C_MSISDN,' | SubscriberType : ',$ctx:uri.var.type,' | PRICE : ',$ctx:PRICE,' | TRANSACTION_ID : ',$ctx:TRANSACTION_ID)" name="REQUEST" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING"/>
+			<property expression="fn:concat('http://microservices.jazz.com.pk/ecarelive/topup/',$ctx:uri.var.msisdn,$ctx:uri.var.operator,$ctx:uri.var.type)" name="RESOURCE_URI" scope="default" type="STRING" xmlns:ns3="http://org.apache.synapse/xsd"/>
+			<property name="LOG_REQUEST_ENDED" scope="default" type="STRING" value="*****"/>
+			<sequence key="JAZZCASHWALLET_LOG_REQUEST"/>
+			<call>
+				<endpoint key="Ecare_Topup_Ep"/>
+			</call>
+			<property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+			<property name="ContentType" scope="axis2" type="STRING" value="application/json"/>
+			<property expression="json-eval($.error.description)" name="TopupErrorDescription" scope="default" type="STRING"/>
+			<property expression="json-eval($.transactionId)" name="TopupSuccessTID" scope="default" type="STRING"/>
+			<property expression="json-eval($.error.errorCode)" name="errorCode" scope="default" type="STRING"/>
+			<property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+			<filter xpath="fn:boolean(fn:string-length($ctx:TopupSuccessTID) != 0)">
+				<then>
+					<property name="Status" value="Success" scope="default" type="STRING"/>
+					<property name="Description" value="Successfull Transaction" scope="default" type="STRING"/>
+					<property name="RECEIPT_NUMBER" expression="fn:concat('JAZZCASH_APC_',$ctx:TRANSACTION_ID)" scope="default" type="STRING"/>
+					<property name="Msisdn" expression="$ctx:MSISDN"/>
+					<property name="Amount" expression="$ctx:PRICE"/>
+					<sequence key="APC_JazzCash_DB_STATUS_SEQUENCE"/>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="JAZZCASH-TOPUP"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+					<property name="RESPONSE_TIME" expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_STATUS" value="OK" scope="default" type="STRING"/>
+					<property name="JSON_RESPONSE" expression="json-eval($)" scope="default" type="STRING"/>
+					<sequence key="JAZZCASHWALLET_LOG_RESPONSE"/>
+					<payloadFactory media-type="json">
+						<format key="conf:/custom/jazzcashwallet/ChannelNameSetter"/>
+						<args/>
+					</payloadFactory>
+					<property name="DefaultValue" expression="json-eval($.DATA[-1].Default)" scope="default"/>
+					<filter xpath="boolean(//*[name() = get-property('ApplicationName')])">
+						<then>
+							<property name="MatchedValue" expression="//*[name() = get-property('ApplicationName')]" scope="default"/>
+							<property name="KeyFound" value="2025" scope="default"/>
+						</then>
+					</filter>
+					<filter xpath="$ctx:KeyFound = '2025'">
+						<then>
+							<property name="BssApiChannel" expression="get-property('MatchedValue')" scope="default"/>
+						</then>
+						<else>
+							<property name="BssApiChannel" expression="get-property('DefaultValue')" scope="default"/>
+						</else>
+					</filter>
+					<filter xmlns:ns="http://org.apache.synapse/xsd" xpath="$ctx:SERVICE_CODE='FBO5' or $ctx:SERVICE_CODE='FBO6' or $ctx:SERVICE_CODE='FBO9'">
+						<then>
+							<payloadFactory media-type="json">
+								<format>{"Success": true,   "Data": { "Code": "$1", "Message": "$2", "Description": "$5", "Msisdn": "$3", "TransactionId": "$4" }}</format>
+								<args>
+									<arg value="00000"/>
+									<arg value="Successfull transaction."/>
+									<arg evaluator="xml" expression="$ctx:MSISDN"/>
+									<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+									<arg value="Successfull transaction."/>
+								</args>
+							</payloadFactory>
+							<property name="SC_ACCEPTED" value="false" scope="axis2" type="STRING"/>
+							<property name="HTTP_SC" value="200" scope="axis2" type="STRING"/>
+							<property name="INTERFACE_NAME" value="RESPONSE" scope="default" type="STRING"/>
+							<property name="RESPONSE_TIME" expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" scope="default" type="STRING"/>
+							<property name="LOG_RESPONSE_STATUS" value="OK" scope="default" type="STRING"/>
+							<property name="JSON_RESPONSE" expression="json-eval($)" scope="default" type="STRING"/>
+							<sequence key="JAZZCASHWALLET_LOG_RESPONSE"/>
+							<clone continueParent="true">
+								<target>
+									<sequence>
+										<header expression="$ctx:BssApiChannel" name="ApplicationName" scope="transport"/>
+										<property name="callback_url" scope="default" type="STRING" value="NA"/>
+										<property name="INTERFACE_NAME" scope="default" type="STRING" value="RENABLEBUNDLE_PROVISIONING"/>
+										<property expression="fn:concat('http://microservices.jazz.com.pk/ecare/v1/renablebundleprovisioning/',$ctx:uri.var.msisdn)" name="RESOURCE_URI" scope="default" type="STRING"/>
+										<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING"/>
+										<property expression="$ctx:uri.var.msisdn" name="msisdn" scope="default" type="STRING"/>
+										<property expression="$ctx:TRANSACTION_ID" name="TRANSACTION_ID" scope="default" type="STRING"/>
+										<property expression="fn:concat('TRANSACTION_ID:',$ctx:TRANSACTION_ID,' | callback_url : ',$ctx:callback_url,' | PRODUCT_ID : ',$ctx:PRODUCT_ID)" name="REQUEST" scope="default" type="STRING"/>
+										<property name="ContentType" scope="axis2" type="STRING" value="application/json"/>
+										<property name="DISABLE_CHUNKING" scope="axis2" type="STRING" value="true"/>
+										<property name="FORCE_HTTP_1.0" scope="axis2" type="STRING" value="true"/>
+										<sequence key="JAZZCASHWALLET_LOG_REQUEST"/>
+										<payloadFactory media-type="json">
+											<format>{"requestuuid": "$1", "callback_url": "$2", "productId": "$3"}</format>
+											<args>
+												<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+												<arg evaluator="xml" expression="$ctx:callback_url"/>
+												<arg evaluator="xml" expression="$ctx:SERVICE_CODE"/>
+											</args>
+										</payloadFactory>
+										<call>
+											<endpoint key="JCWallet_renablebundleprovisioningendpoint"/>
+										</call>
+										<property name="INTERFACE_NAME" scope="default" type="STRING" value="RENABLEBUNDLE_PROVISIONING"/>
+										<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+										<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+										<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+										<property name="LOG_RESPONSE_ENDED" scope="default" type="STRING" value="*****"/>
+										<sequence key="JAZZCASHWALLET_LOG_RESPONSE"/>
+									</sequence>
+								</target>
+							</clone>
+							<respond/>
+						</then>
+						<else>
+							<property expression="$ctx:MSISDN" name="uri.var.msisdn" scope="default" type="STRING"/>
+							<property action="remove" name="TRANSPORT_HEADERS" scope="axis2"/>
+							<payloadFactory media-type="json">
+								<format>{"data": {"type":"products","id":"$1","meta": {"services":{},"channel":"$2"}}}</format>
+								<args>
+									<arg evaluator="xml" expression="$ctx:SERVICE_CODE"/>
+									<arg evaluator="xml" expression="$ctx:BssApiChannel"/>
+								</args>
+							</payloadFactory>
+							<property name="ContentType" scope="axis2" type="STRING" value="application/vnd.api+json"/>
+							<property name="INTERFACE_NAME" scope="default" type="STRING" value="BSSAPIACTIVATION"/>
+							<property expression="json-eval($)" name="REQUEST" scope="default" type="STRING"/>
+							<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING"/>
+							<property expression="fn:concat('https://bssapi.bss.jazz.com.pk/api/v1/subscriptions/',$ctx:uri.var.msisdn,'/relationships/products?identifier=msisdn')" name="RESOURCE_URI" scope="default" type="STRING" xmlns:ns3="http://org.apache.synapse/xsd"/>
+							<sequence key="JAZZCASHWALLET_LOG_REQUEST"/>
+							<call>
+								<endpoint key="JCWallet_CHANNEL_API_ACTIVATION_EP"/>
+							</call>
+							<property expression="json-eval($.data.[0].attributes.href)" name="Account" scope="default" type="STRING"/>
+							<property expression="json-eval($.errors)" name="Fail_detail" scope="default" type="STRING"/>
+							<property expression="json-eval($.errors.[0].detail)" name="ERROR_detail" scope="default" type="STRING"/>
+							<property expression="json-eval($.errors.[0].status)" name="ERROR_status" scope="default" type="STRING"/>
+							<property expression="json-eval($.data.[0].attributes.href)" name="Response_URL" scope="default" type="STRING"/>
+							<property expression="fn:substring-after($ctx:Account,'/api/v1/requests/')" name="Response_URL" scope="default" type="STRING"/>
+							<property name="INTERFACE_NAME" scope="default" type="STRING" value="BSSAPIACTIVATION"/>
+							<property expression="fn:concat('Response_URL : ',$ctx:Response_URL,' | ERROR_status : ',$ctx:ERROR_status)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+							<property name="LOG_RESPONSE_ENDED" scope="default" type="STRING" value="*****"/>
+							<property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+							<filter regex="false" source="boolean(get-property('ERROR_detail'))">
+								<then>
+									<property expression="$ctx:Fail_detail" name="ERROR_detail" scope="default" type="STRING"/>
+								</then>
+								<else/>
+							</filter>
+							<filter regex="true" source="boolean(get-property('Response_URL'))">
+								<then>
+									<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+									<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+									<sequence key="JAZZCASHWALLET_LOG_RESPONSE"/>
+									<property name="LOG_REQUEST" scope="default" type="STRING" value="********** STARTED **********"/>
+									<property expression="$ctx:Response_URL" name="uri.var.Response_URL" scope="default" type="STRING"/>
+									<property name="INTERFACE_NAME" scope="default" type="STRING" value="BSSAPIMEMOSTATUS"/>
+									<property expression="fn:concat('MEMO_ID: ',$ctx:Response_URL)" name="REQUEST" scope="default" type="STRING"/>
+									<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING"/>
+									<property expression="fn:concat('https://bssapi.bss.jazz.com.pk/api/v1/requests/',$ctx:uri.var.Response_URL)" name="RESOURCE_URI" scope="default" type="STRING" xmlns:ns3="http://org.apache.synapse/xsd"/>
+									<sequence key="JAZZCASHWALLET_LOG_REQUEST"/>
+									<script language="js"><![CDATA[java.lang.Thread.sleep(0500);]]></script>
+									<call>
+										<endpoint key="JCWallet_CHANNEL_API_MEMO_STATUS_EP"/>
+									</call>
+									<property expression="json-eval($.data.attributes.status)" name="Response_STATUS" scope="default" type="STRING"/>
+									<property name="INTERFACE_NAME" scope="default" type="STRING" value="BSSAPIMEMOSTATUS"/>
+									<property expression="fn:concat('Response_STATUS:',$ctx:Response_STATUS)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+									<property name="LOG_RESPONSE_ENDED" scope="default" type="STRING" value="*****"/>
+									<property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+									<filter xpath="$ctx:Response_STATUS = 'done' or  $ctx:Response_STATUS = 'requested' or  $ctx:Response_STATUS = 'new'">
+										<then>
+											<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+											<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+											<sequence key="JAZZCASHWALLET_LOG_RESPONSE"/>
+											<payloadFactory media-type="json">
+												<format>{"Success": true,   "Data": { "Code": "$1", "Message": "$2", "Description": "$5", "Msisdn": "$3", "TransactionId": "$4" }}</format>
+												<args>
+													<arg value="00000"/>
+													<arg value="Successfull transaction."/>
+													<arg evaluator="xml" expression="$ctx:MSISDN"/>
+													<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+													<arg value="Successfull transaction."/>
+												</args>
+											</payloadFactory>
+											<property name="SC_ACCEPTED" value="false" scope="axis2" type="STRING"/>
+											<property name="HTTP_SC" value="200" scope="axis2" type="STRING"/>
+											<property name="INTERFACE_NAME" value="RESPONSE" scope="default" type="STRING"/>
+											<property name="RESPONSE_TIME" expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" scope="default" type="STRING"/>
+											<property name="LOG_RESPONSE_STATUS" value="OK" scope="default" type="STRING"/>
+											<property name="JSON_RESPONSE" expression="json-eval($)" scope="default" type="STRING"/>
+											<sequence key="JAZZCASHWALLET_LOG_RESPONSE"/>
+											<respond/>
+										</then>
+										<else>
+											<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+											<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+											<sequence key="JAZZCASHWALLET_LOG_RESPONSE"/>
+											<payloadFactory media-type="json">
+												<format>{"Success": true,   "Data": { "Code": "$1", "Message": "$2", "Description": "MemoID: $5", "Msisdn": "$3", "TransactionId": "$4" }}</format>
+												<args>
+													<arg value="000"/>
+													<arg value="Successful transaction, Recharge is success but bundle activation failed from backend system."/>
+													<arg evaluator="xml" expression="$ctx:MSISDN"/>
+													<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+													<arg evaluator="xml" expression="$ctx:Response_URL"/>
+												</args>
+											</payloadFactory>
+											<property name="SC_ACCEPTED" value="false" scope="axis2" type="STRING"/>
+											<property name="HTTP_SC" value="200" scope="axis2" type="STRING"/>
+											<property name="INTERFACE_NAME" value="RESPONSE" scope="default" type="STRING"/>
+											<property name="RESPONSE_TIME" expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" scope="default" type="STRING"/>
+											<property name="LOG_RESPONSE_STATUS" value="KO" scope="default" type="STRING"/>
+											<property name="JSON_RESPONSE" expression="json-eval($)" scope="default" type="STRING"/>
+											<sequence key="JAZZCASHWALLET_LOG_RESPONSE"/>
+											<respond/>
+										</else>
+									</filter>
+								</then>
+								<else>
+									<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+									<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+									<sequence key="JAZZCASHWALLET_LOG_RESPONSE"/>
+									<payloadFactory media-type="json">
+										<format>{"Success": true,   "Data": { "Code": "$1", "Message": "$2", "Description": "$5", "Msisdn": "$3", "TransactionId": "$4" }}</format>
+										<args>
+											<arg value="000"/>
+											<arg value="Successful transaction, Recharge is success but bundle activation failed due to below reason."/>
+											<arg evaluator="xml" expression="$ctx:MSISDN"/>
+											<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+											<arg evaluator="xml" expression="$ctx:ERROR_detail"/>
+										</args>
+									</payloadFactory>
+									<property name="SC_ACCEPTED" value="false" scope="axis2" type="STRING"/>
+									<property name="HTTP_SC" value="200" scope="axis2" type="STRING"/>
+									<property name="INTERFACE_NAME" value="RESPONSE" scope="default" type="STRING"/>
+									<property name="RESPONSE_TIME" expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" scope="default" type="STRING"/>
+									<property name="LOG_RESPONSE_STATUS" value="KO" scope="default" type="STRING"/>
+									<property name="JSON_RESPONSE" expression="json-eval($)" scope="default" type="STRING"/>
+									<sequence key="JAZZCASHWALLET_LOG_RESPONSE"/>
+									<respond/>
+								</else>
+							</filter>
+						</else>
+					</filter>
+				</then>
+				<else>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="JAZZCASH-TOPUP"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+					<property expression="fn:concat('TopupSuccessTID:',$ctx:TopupSuccessTID,'| TopupErrorDescription:',$ctx:TopupErrorDescription)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+					<sequence key="JAZZCASHWALLET_LOG_RESPONSE"/>
+					<property name="Status" scope="default" type="STRING" value="Failed"/>
+					<property expression="$ctx:TopupErrorDescription" name="Description" scope="default" type="STRING"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="TIME_OUT" scope="default" type="STRING"/>
+					<property expression="fn:substring-before($ctx:ServiceUser,'WSO2')" name="Channel_Name" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+					<sequence key="APC_JazzCash_DB_STATUS_SEQUENCE"/>
+					<payloadFactory media-type="json">
+						<format>{"Success": false,   "Data": { "Code": "$1", "Message": "$2", "Description": "$5", "Msisdn": "$3", "TransactionId": "$4" }}</format>
+						<args>
+							<arg value="00109"/>
+							<arg evaluator="xml" expression="$ctx:TopupErrorDescription"/>
+							<arg evaluator="xml" expression="$ctx:MSISDN"/>
+							<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+							<arg evaluator="xml" expression="fn:concat('Recharge Failed and Error Code is ',$ctx:errorCode,'.')"/>
+						</args>
+					</payloadFactory>
+					<property name="SC_ACCEPTED" scope="axis2" type="STRING" value="false"/>
+					<property name="HTTP_SC" scope="axis2" type="STRING" value="201"/>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+					<property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+					<sequence key="JAZZCASHWALLET_LOG_RESPONSE"/>
+					<respond/>
+				</else>
+			</filter>
+		</inSequence>
+		<outSequence/>
+	</resource>
+</api>

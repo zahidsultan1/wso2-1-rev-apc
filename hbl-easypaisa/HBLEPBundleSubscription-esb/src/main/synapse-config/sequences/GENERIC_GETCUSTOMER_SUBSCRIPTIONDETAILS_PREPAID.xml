@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="GENERIC_GETCUSTOMER_SUBSCRIPTIONDETAILS_PREPAID" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+    <property name="API_NAME" scope="default" type="STRING" value="Jazz-EPHBL"/>
+    <property name="INTERFACE_NAME" scope="default" type="STRING" value="GENERICGETSUBSCRIPTIONOFFER"/>
+    <property expression="fn:concat('https://bssapi.bss.jazz.com.pk/api/v1/subscriptions/',$ctx:MSISDN,'?identifier-type=msisdn')" name="RESOURCE_URI" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property expression="$ctx:msisdn" name="MSISDN" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property expression="fn:concat('NORMALIZED_MSISDN_FOR_GETCUSTOMERANDSUBSCRIPTIONDETAILS:',$ctx:MSISDN)" name="REQUEST" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <sequence key="BUNDLE_LOG_REQUEST"/>
+    <header name="User-Agent" scope="transport" value="Apache-HttpClient/4.1.1 (java 1.5)"/>
+    <property action="remove" name="Accept-Encoding" scope="transport"/>
+    <property action="remove" name="Content-Encoding" scope="transport"/>
+    <property expression="$ctx:msisdn" name="uri.var.msisdn" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <call>
+        <endpoint key="GENERIC_GETSUBSCRIPTIONOFFER"/>
+    </call>
+    <property expression="json-eval($.data.id)" name="ID_DATA" scope="default" type="STRING"/>
+    <header name="User-Agent" scope="transport" value="Apache-HttpClient/4.1.1 (java 1.5)"/>
+    <property action="remove" name="Accept-Encoding" scope="transport"/>
+    <property action="remove" name="Content-Encoding" scope="transport"/>
+    <property expression="$ctx:ID_DATA" name="uri.var.id" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property name="API_NAME" scope="default" type="STRING" value="Jazz-EPHBL"/>
+    <property name="INTERFACE_NAME" scope="default" type="STRING" value="GENERICGETSUBSCRIPTIONOFFER"/>
+    <property expression="$ctx:msisdn" name="uri.var.msisdn" scope="default" type="STRING"/>
+    <property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+    <property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING"/>
+    <property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+    <property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+    <sequence key="BUNDLE_LOG_RESPONSE"/>
+    <property name="API_NAME" scope="default" type="STRING" value="Jazz-EPHBL"/>
+    <property name="INTERFACE_NAME" scope="default" type="STRING" value="GENERICGETPREPAIDBALANCE"/>
+    <property expression="fn:substring-after(get-property('MessageID'),'urn:uuid:')" name="TRANSACTION_ID" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property expression="json-eval($.data.id)" name="ID_DATA" scope="default" type="STRING"/>
+	<property expression="$ctx:ID_DATA" name="uri.var.id" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property name="REQUEST" scope="default" type="STRING" expression="$ctx:uri.var.id"/>
+	<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property expression="fn:concat('https://bssapi.bss.jazz.com.pk/api/v1/subscriptions/',$ctx:ID_DATA,'/balances')" name="RESOURCE_URI" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property name="LOG_REQUEST_ENDED" scope="default" type="STRING" value="*****"/>
+    <sequence key="BUNDLE_LOG_REQUEST"/>
+    <call>
+        <endpoint key="GENERIC_GETPREPAIDBALANCE"/>
+    </call>
+    <property name="API_NAME" scope="default" type="STRING" value="Jazz-EPHBL"/>
+    <property name="INTERFACE_NAME" scope="default" type="STRING" value="GENERICGETPREPAIDBALANCE"/>
+    <property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+    <property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING"/>
+    <property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+    <property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+    <sequence key="BUNDLE_LOG_RESPONSE"/>
+    <foreach expression="//jsonObject/data">
+        <sequence>
+            <property expression="//attributes/is-main-balance" name="is_main_balance" scope="default" type="STRING"/>
+            <filter xpath="$ctx:is_main_balance ='true'">
+                <then>
+                    <property expression="//attributes/amount" name="amount" scope="default" type="STRING"/>
+                </then>
+                <else/>
+            </filter>
+        </sequence>
+    </foreach>
+</sequence>

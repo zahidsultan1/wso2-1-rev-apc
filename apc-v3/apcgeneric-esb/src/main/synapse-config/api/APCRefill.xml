@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/apcrefill/TopUp" name="APCRefill" xmlns="http://ws.apache.org/ns/synapse">
+    <resource faultSequence="APC_RECHARGE_FAULT_SEQUENCE_MSA" inSequence="APC_RECHARGE_INSEQUENCE_MSA_v1" methods="POST" uri-template="/refill">
+        <outSequence/>
+    </resource>
+</api>

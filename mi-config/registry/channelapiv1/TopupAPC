@@ -1,0 +1,12 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"  xmlns:tem="http://tempuri.org/">
+         <soapenv:Header/>
+         <soapenv:Body>
+           <tem:TopUpPayment>
+            <tem:input><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<ACTIVITY xmlns="">
+    <ServiceUser>Nayapay</ServiceUser>
+    <ServicePassword>Mobilink@2211</ServicePassword>
+</ACTIVITY>]]></tem:input>
+           </tem:TopUpPayment>
+         </soapenv:Body>
+        </soapenv:Envelope>

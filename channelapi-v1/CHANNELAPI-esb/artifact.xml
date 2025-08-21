@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<artifacts>
+	<artifact name="ChannelAPIsPBI" groupId="com.jazz.channelapi.subscription.api" version="1.0.0" type="synapse/api" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/api/ChannelAPIsPBI.xml</file>
+	</artifact>
+	<artifact name="ChannelAPIsPBI_swagger" groupId="com.jazz.channelapi.subscription.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+		<file>src/main/resources/metadata/ChannelAPIsPBI_swagger.yaml</file>
+	</artifact>
+	<artifact name="ChannelAPIsPBI_metadata" groupId="com.jazz.channelapi.subscription.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+		<file>src/main/resources/metadata/ChannelAPIsPBI_metadata.yaml</file>
+	</artifact>
+	<artifact name="AIR_EP" groupId="com.jazz.channelapi.subscription.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/endpoints/AIR_EP.xml</file>
+	</artifact>
+	<artifact name="APC_EP_RBS" groupId="com.jazz.channelapi.subscription.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/endpoints/APC_EP_RBS.xml</file>
+	</artifact>
+	<artifact name="CHANNEL_IN_GETEP" groupId="com.jazz.channelapi.subscription.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/endpoints/CHANNEL_IN_GETEP.xml</file>
+	</artifact>
+	<artifact name="CHANNEL_OFFER_ACTIVATION_DBSS_EP" groupId="com.jazz.channelapi.subscription.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/endpoints/CHANNEL_OFFER_ACTIVATION_DBSS_EP.xml</file>
+	</artifact>
+	<artifact name="CHANNEL_OFFER_ACTIVATION_DBSS_GET_EP" groupId="com.jazz.channelapi.subscription.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/endpoints/CHANNEL_OFFER_ACTIVATION_DBSS_GET_EP.xml</file>
+	</artifact>
+	<artifact name="GENERIC_BSSAPI_CLIENTTEL" groupId="com.jazz.channelapi.subscription.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/endpoints/GENERIC_BSSAPI_CLIENTTEL.xml</file>
+	</artifact>
+	<artifact name="GENERIC_GETPREPAIDBALANCE" groupId="com.jazz.channelapi.subscription.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/endpoints/GENERIC_GETPREPAIDBALANCE.xml</file>
+	</artifact>
+	<artifact name="GENERIC_GETSUBSCRIPTIONOFFER" groupId="com.jazz.channelapi.subscription.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/endpoints/GENERIC_GETSUBSCRIPTIONOFFER.xml</file>
+	</artifact>
+	<artifact name="genericbalancepostpaid" groupId="com.jazz.channelapi.subscription.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/endpoints/genericbalancepostpaid.xml</file>
+	</artifact>
+	<artifact name="GenericCheckLoan" groupId="com.jazz.channelapi.subscription.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/endpoints/GenericCheckLoan.xml</file>
+	</artifact>
+	<artifact name="GenericClientele" groupId="com.jazz.channelapi.subscription.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/endpoints/GenericClientele.xml</file>
+	</artifact>
+	<artifact name="IN_EP_DBSS_APC" groupId="com.jazz.channelapi.subscription.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/endpoints/IN_EP_DBSS_APC.xml</file>
+	</artifact>
+	<artifact name="IN_EP_PRD" groupId="com.jazz.channelapi.subscription.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/endpoints/IN_EP_PRD.xml</file>
+	</artifact>
+	<artifact name="WSO2APCEndpoint" groupId="com.jazz.channelapi.subscription.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/endpoints/WSO2APCEndpoint.xml</file>
+	</artifact>
+	<artifact name="APC_DBSS_FAULT_SEQUENCE" groupId="com.jazz.channelapi.subscription.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/sequences/APC_DBSS_FAULT_SEQUENCE.xml</file>
+	</artifact>
+	<artifact name="CHANNELAPI_FOR_PARTNERBANK" groupId="com.jazz.channelapi.subscription.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/sequences/CHANNELAPI_FOR_PARTNERBANK.xml</file>
+	</artifact>
+	<artifact name="GENERIC_CHECKMSISDN_INSEQUENCE" groupId="com.jazz.channelapi.subscription.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/sequences/GENERIC_CHECKMSISDN_INSEQUENCE.xml</file>
+	</artifact>
+	<artifact name="GENERIC_FAULTSEQUENCE_BALANCE_V1" groupId="com.jazz.channelapi.subscription.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/sequences/GENERIC_FAULTSEQUENCE_BALANCE_V1.xml</file>
+	</artifact>
+	<artifact name="GENERIC_FAULTSEQUENCE_CLIENTELE_V1" groupId="com.jazz.channelapi.subscription.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/sequences/GENERIC_FAULTSEQUENCE_CLIENTELE_V1.xml</file>
+	</artifact>
+	<artifact name="GENERIC_GETCUSTOMERA_SUBCLIENT" groupId="com.jazz.channelapi.subscription.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/sequences/GENERIC_GETCUSTOMERA_SUBCLIENT.xml</file>
+	</artifact>
+	<artifact name="GENERIC_INSEQUENCE_BALANCE_V1" groupId="com.jazz.channelapi.subscription.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/sequences/GENERIC_INSEQUENCE_BALANCE_V1.xml</file>
+	</artifact>
+	<artifact name="GENERIC_INSEQUENCE_CLIENTELE_V1" groupId="com.jazz.channelapi.subscription.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/sequences/GENERIC_INSEQUENCE_CLIENTELE_V1.xml</file>
+	</artifact>
+	<artifact name="RemoveHeaders" groupId="com.jazz.channelapi.subscription.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/sequences/RemoveHeaders.xml</file>
+	</artifact>
+	<artifact name="PARTNERBANK_LOG_RESPONSE" groupId="com.jazz.channelapi.subscription.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/sequences/PARTNERBANK_LOG_RESPONSE.xml</file>
+	</artifact>
+	<artifact name="PARTNERBANK_LOG_REQUEST" groupId="com.jazz.channelapi.subscription.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/sequences/PARTNERBANK_LOG_REQUEST.xml</file>
+	</artifact>
+	<artifact name="PARTNERBANK_LOG_ERROR" groupId="com.jazz.channelapi.subscription.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+		<file>src/main/synapse-config/sequences/PARTNERBANK_LOG_ERROR.xml</file>
+	</artifact>
+</artifacts>

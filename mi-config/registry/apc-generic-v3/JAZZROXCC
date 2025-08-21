@@ -1,0 +1,16 @@
+<data>
+	<ServiceUser>JAZZROXCCWSO2</ServiceUser>
+	<ServicePassword>TW9iaWxpbmtAMDAxMQ==</ServicePassword>
+	<PartnerMsisdn>Null</PartnerMsisdn>
+	<PartnerDAID>Null</PartnerDAID>
+	<PostFix>WSO2</PostFix>
+	<PreMinLimit>1</PreMinLimit>
+	<PreMaxLimit>10001</PreMaxLimit>
+	<PostMinLimit>1</PostMinLimit>
+	<PostMaxLimit>10001</PostMaxLimit>
+	<PaymentCode>JAZZROXCC</PaymentCode>
+	<PostCode>UEw=</PostCode>
+	<WalletCheck>0</WalletCheck>
+	<ExParam1>Null</ExParam1>
+	<ExParam2>Null</ExParam2>
+</data>

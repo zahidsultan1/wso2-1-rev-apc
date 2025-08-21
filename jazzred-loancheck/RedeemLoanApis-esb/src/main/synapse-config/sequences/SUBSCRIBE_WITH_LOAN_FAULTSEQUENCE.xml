@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="SUBSCRIBE_WITH_LOAN_FAULTSEQUENCE" statistics="enable" trace="enable" xmlns="http://ws.apache.org/ns/synapse">
+    <property expression="substring(get-property('ERROR_MESSAGE'), 0, 50)" name="error_message" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property expression="$ctx:ERROR_CODE" name="error_code" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property expression="substring(get-property('ERROR_DETAIL'), 0, 200)" name="error_detail" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property expression="substring(get-property('ERROR_EXCEPTION'), 0, 10)" name="error_exception" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property expression="fn:concat($ctx:error_code,' | ',$ctx:error_detail)" name="ERROR" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property name="LOG_ERROR_STATUS" scope="default" type="STRING" value="EXCEPTION"/>
+    <property expression="$ctx:API_NAME" name="API_NAME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property expression="$ctx:INTERFACE_NAME" name="INTERFACE_NAME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property expression="$ctx:ERROR" name="ERROR" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="ERROR_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <sequence key="LOYALTY_MSA_LOG_ERROR"/>
+    <payloadFactory media-type="json">
+        <format>{ "Message": { "transactionId": "$1", "timeStamp": "$2","result": "error", "statusCode": "$3", "message": "$4", "detail": "$5"}}</format>
+        <args>
+            <arg evaluator="xml" expression="$ctx:TRANSACTION_ID" xmlns:ns="http://org.apache.synapse/xsd"/>
+            <arg evaluator="xml" expression="$ctx:ERROR_TIME" xmlns:ns="http://org.apache.synapse/xsd"/>
+            <arg evaluator="xml" expression="$ctx:error_code" xmlns:ns="http://org.apache.synapse/xsd"/>
+            <arg evaluator="xml" expression="$ctx:error_message" xmlns:ns="http://org.apache.synapse/xsd"/>
+            <arg evaluator="xml" expression="$ctx:error_detail" xmlns:ns="http://org.apache.synapse/xsd"/>
+        </args>
+    </payloadFactory>
+    <property name="HTTP_SC" scope="axis2" type="STRING" value="500"/>
+    <property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+    <property name="LOG_ERROR_STATUS" scope="default" type="STRING" value="EXCEPTION"/>
+    <property expression="$ctx:API_NAME" name="API_NAME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+    <property expression="json-eval($)" name="ERROR" scope="default" type="STRING"/>
+    <property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="ERROR_TIME" scope="default" type="STRING"/>
+    <sequence key="LOYALTY_MSA_LOG_ERROR"/>
+    <respond/>
+</sequence>

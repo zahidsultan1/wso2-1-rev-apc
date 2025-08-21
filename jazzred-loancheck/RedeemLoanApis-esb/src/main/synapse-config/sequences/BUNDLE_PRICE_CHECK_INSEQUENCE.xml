@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="BUNDLE_PRICE_CHECK_INSEQUENCE" xmlns="http://ws.apache.org/ns/synapse">
+	<property expression="get-property('PRODUCT_ID')" name="uri.var.bundleId" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property name="INTERFACE_NAME" scope="default" type="STRING" value="BUNDLE_CHECKPRICE"/>
+	<property name="RESOURCE_URI" scope="default" type="STRING" value="https://bssapi.bss.jazz.com.pk/api/v1/products?filter[code]={uri.var.bundleId}"/>
+	<property expression="$ctx:uri.var.bundleId" name="REQUEST" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<sequence key="LOYALTY_MSA_LOG_REQUEST"/>
+	<call>
+		<endpoint key="BundlePriceCheckGETEP"/>
+	</call>
+	<property expression="json-eval($.data[0])" name="PRICE_CHECK" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="json-eval($.data[0].attributes.price)" name="BundlePrice" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<log level="custom">
+		<property name="AFTER CALLING" value="***** BSSAPI_BUNDPRICEGET *****"/>
+	</log>
+	<property name="STATUS" scope="default" type="STRING" value="OK"/>
+	<property expression="fn:concat('BundlePrice:',$ctx:BundlePrice)" name="RESPONSE" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<sequence key="LOYALTY_MSA_LOG_RESPONSE"/>
+	<filter regex="true" source="boolean(get-property('ERROR_code'))" xmlns:ns="http://org.apache.synapse/xsd">
+		<then>
+			<property expression="$ctx:ERROR_code" name="ERROR" scope="default" type="STRING"/>
+		</then>
+		<else>
+			<filter regex="false" source="boolean(get-property('ERROR_detail'))">
+				<then>
+					<property expression="$ctx:Fail_detail" name="ERROR" scope="default" type="STRING"/>
+				</then>
+				<else>
+					<property expression="$ctx:ERROR_detail" name="ERROR" scope="default" type="STRING"/>
+				</else>
+			</filter>
+		</else>
+	</filter>
+	<property expression="json-eval($.data[0])" name="PRICE_CHECK" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="json-eval($.data[0].attributes.price)" name="BundlePrice" xmlns:ns="http://org.apache.synapse/xsd"/>
+</sequence>

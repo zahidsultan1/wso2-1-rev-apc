@@ -1,0 +1,16 @@
+<data>
+	<ServiceUser>JB-ROXREFFERALWSO2</ServiceUser>
+	<ServicePassword>TW9iaWxpbmtAMTE5OQ==</ServicePassword>
+	<PartnerMsisdn>03040636278</PartnerMsisdn>
+	<PartnerDAID>2094</PartnerDAID>
+	<PostFix>WSO2</PostFix>
+	<PreMinLimit>9</PreMinLimit>
+	<PreMaxLimit>10001</PreMaxLimit>
+	<PostMinLimit>9</PostMinLimit>
+	<PostMaxLimit>10001</PostMaxLimit>
+	<PaymentCode>JB-ROXREFFERAL</PaymentCode>
+	<PostCode>Null</PostCode>
+	<WalletCheck>1</WalletCheck>
+	<ExParam1>Null</ExParam1>
+	<ExParam2>Null</ExParam2>
+</data>

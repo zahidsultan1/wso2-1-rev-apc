@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="GENERIC_LOAN_BALANCE" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+<header name="User-Agent" scope="transport" value="UGw Server/4.3/1.0"/>
+<header name="Authorization" scope="transport" value="Basic SU5UQUNBR0Q6UGF0Y2gjMTIz"/>
+<property name="messageType" scope="axis2" type="STRING" value="text/XML"/>
+<property name="ContentType" scope="axis2" type="STRING" value="text/xml"/>
+<property name="DISABLE_CHUNKING" scope="axis2" type="STRING" value="true"/>
+<property expression="$ctx:TRANSACTION_ID" name="TRANSACTION_ID" scope="default" type="STRING"/>
+<property expression="fn:substring($ctx:msisdn,3)" name="NORMALIZED_MSISDN_FOR_IN" scope="default" type="STRING"/>
+<payloadFactory media-type="xml">
+	<format key="conf:/custom/channelapiv2/INreq"/>
+	<args>
+		<arg evaluator="xml" expression="$ctx:NORMALIZED_MSISDN_FOR_IN" xmlns:ns="http://org.apache.synapse/xsd"/>
+		<arg evaluator="xml" expression="$ctx:TRANSACTION_ID" xmlns:ns="http://org.apache.synapse/xsd"/>
+	</args>
+</payloadFactory>
+<property name="RESOURCE_URI" scope="default" type="STRING" value="http://10.13.32.179:10010/Air"/>
+<property name="INTERFACE_NAME" scope="default" type="STRING" value="GETBALANCEANDDATE"/>
+<property expression="fn:concat('NORMALIZED_MSISDN_FOR_IN:',$ctx:NORMALIZED_MSISDN_FOR_IN,' | TRANSACTION_ID:',$ctx:TRANSACTION_ID)" name="REQUEST" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+<sequence key="PARTNERBANK_LOG_REQUEST"/>
+<header name="User-Agent" scope="transport" value="UGw Server/4.3/1.0"/>
+<header name="Authorization" scope="transport" value="Basic SU5UQUNBR0Q6UGF0Y2gjMTIz"/>
+<property name="messageType" scope="axis2" type="STRING" value="text/xml"/>
+<property name="DISABLE_CHUNKING" scope="axis2" type="STRING" value="true"/>
+<call>
+	<endpoint key="AIR_EP"/>
+</call>
+<property name="After Calling" scope="default" type="STRING" value="IN"/>
+<property expression="//methodResponse/params/param/value/struct/member[name='dedicatedAccountInformation']/value/array/data/value/struct/member[name='dedicatedAccountID' and value/i4='16']/value/i4" name="IN_DA_ACCOUNT_ID" scope="default" type="STRING"/>
+<property expression="//methodResponse/params/param/value/struct/member[name='dedicatedAccountInformation']/value/array/data/value/struct/member[name='dedicatedAccountID' and value/i4='16']/parent::struct/member[name='dedicatedAccountValue1']/value/string" name="IN_DA_ACCOUNT_VALUE" scope="default" type="STRING"/>
+<property expression="//methodResponse/params/param/value/struct/member[name='dedicatedAccountInformation']/value/array/data/value/struct/member[name='dedicatedAccountID' and value/i4='16']/parent::struct/member[name='dedicatedAccountUnitType']/value/i4" name="IN_DA_ACCOUNT_UNIT" scope="default" type="STRING"/>
+<property expression="//methodResponse/params/param/value/struct/member[name='responseCode']/value/i4/text()']" name="INResponseCode" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+<property expression="$axis2:HTTP_SC" name="StatusCode" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+<property expression="//methodResponse/fault/value/struct/member[name='faultCode']/value/i4/text()" name="faultCode" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+<property expression="//methodResponse/fault/value/struct/member[name='faultString']/value/i4/text()" name="faultDescription" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+<property expression="boolean($ctx:IN_DA_ACCOUNT_ID ='16' and $ctx:IN_DA_ACCOUNT_VALUE > '0')" name="P2" scope="default" type="STRING"/>
+<property name="INTERFACE_NAME" scope="default" type="STRING" value="GETBALANCEANDDATE"/>
+<property expression="fn:concat('IN_DA_ACCOUNT_ID:',$ctx:IN_DA_ACCOUNT_ID,'  | IN_DA_ACCOUNT_VALUE : ',$ctx:IN_DA_ACCOUNT_VALUE,'  | IN_DA_ACCOUNT_UNIT : ',$ctx:IN_DA_ACCOUNT_UNIT,'  | INResponseCode : ',$ctx:INResponseCode,'  | faultCode : ',$ctx:faultCode,'  | faultDescription : ',$ctx:faultDescription)" name="JSON_RESPONSE" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+<sequence key="PARTNERBANK_LOG_RESPONSE"/>
+<filter regex="true" source="boolean($ctx:IN_DA_ACCOUNT_ID ='16' and $ctx:IN_DA_ACCOUNT_VALUE > '0')">
+	<then>
+<property name="loan" value="yes" scope="default" type="STRING"/>
+	</then>
+	<else>
+<property name="loan" value="no" scope="default" type="STRING"/>
+	</else>
+</filter>
+</sequence>

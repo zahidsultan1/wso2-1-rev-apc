@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="APCPOSTING_DB_ERROR_SEQUENCE" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+    <dbreport>
+        <connection>
+            <pool>
+                <dsName>jdbc/APCpostingLog</dsName>
+            </pool>
+        </connection>
+        <statement>
+            <sql><![CDATA[INSERT INTO MEAI_EXCEPTION (ID, API_NAME, INTERFACE_NAME, ERROR, ERROR_TIME, MSISDN, STATUS, ERRORTIME) VALUES (?,?,?,?,?,?,?,?)]]></sql>
+            <parameter expression="$ctx:TRANSACTION_ID" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd"/>
+            <parameter expression="$ctx:API_NAME" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd"/>
+            <parameter expression="$ctx:INTERFACE_NAME" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd"/>
+            <parameter expression="$ctx:ERROR" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd"/>
+            <parameter expression="$ctx:ERROR_TIME" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd"/>
+            <parameter expression="$ctx:MSISDN" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd"/>
+            <parameter expression="$ctx:LOG_ERROR_STATUS" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd"/>
+            <parameter expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss')" type="VARCHAR" xmlns:ns="http://org.apache.synapse/xsd"/>
+        </statement>
+    </dbreport>
+</sequence>

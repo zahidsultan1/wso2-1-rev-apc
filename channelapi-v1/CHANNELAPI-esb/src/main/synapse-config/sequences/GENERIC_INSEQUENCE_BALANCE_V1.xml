@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="GENERIC_INSEQUENCE_BALANCE_V1" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+    <property expression="fn:substring-after(get-property('MessageID'),'urn:uuid:')" name="TRANSACTION_ID" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property name="API_NAME" scope="default" type="STRING" value="CHANNELAPIsPBI"/>
+	<property expression="$ctx:API_NAME" name="APP_NAME" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property name="INTERFACE_NAME" scope="default" type="STRING" value="REQUEST"/>
+    <property expression="$ctx:uri.var.msisdn" name="MSISDN" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<log level="custom">
+                       <property expression="$ctx:uri.var.transaction_id" name="TRANSACTION_ID" scope="default" type="STRING"/>
+					  
+                    </log>
+	<property expression="$ctx:uri.var.transaction_id" name="TRANSACTION_ID" scope="default" type="STRING"/>
+    <property expression="$ctx:uri.var.type" name="TYPE" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property expression="$ctx:uri.var.operator" name="OPERATOR" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="fn:concat('TYPE:',$ctx:TYPE,' | OPERATOR:',$ctx:OPERATOR,' | MSISDN : ',$ctx:MSISDN,' | TRANSACTION_ID : ',$ctx:TRANSACTION_ID)" name="REQUEST" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property expression="fn:concat($trp:X-Forwarded-For,get-property('To'))" name="RESOURCE_URI" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <sequence key="PARTNERBANK_LOG_REQUEST"/>
+    <filter regex="jazz" source="$ctx:OPERATOR" xmlns:ns="http://org.apache.synapse/xsd">
+        <then>
+            <filter regex="postpaid" source="$ctx:TYPE">
+                <then>
+                    <sequence key="GENERIC_GETCUSTOMER_SUBSCRIPTIONDETAILS_POSTPAID"/>
+                    <property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+                    <property expression="json-eval($.included[0].attributes.total-current-charges)" name="total-current-charges" scope="default" type="STRING"/>
+                    <property expression="json-eval($.included[0].attributes.credit-limit)" name="credit-limit" scope="default" type="STRING"/>
+                    <property expression="json-eval($.included[0].attributes.unbilled-total)" name="unbilled-total" scope="default" type="STRING"/>
+                    <property expression="json-eval($.included[0].attributes.adjustments)" name="adjustments" scope="default" type="STRING"/>
+                    <property expression="json-eval($.error)" name="ERROR" scope="default" type="STRING"/>
+                    <filter regex="true" source="boolean($ctx:credit-limit)">
+                        <then>
+                            <payloadFactory media-type="json">
+                                <format>   {"totalBill":$1,"currentMonth":$2,"creditLimit":$3,"lastRefresh":$4}</format>
+                                <args>
+                                    <arg evaluator="xml" expression="$ctx:total-current-charges"/>
+                                    <arg evaluator="xml" expression="$ctx:unbilled-total"/>
+                                    <arg evaluator="xml" expression="$ctx:credit-limit"/>
+                                    <arg evaluator="xml" expression="$ctx:adjustments"/>
+                                </args>
+                            </payloadFactory>
+                            <property name="SC_ACCEPTED" scope="axis2" type="STRING" value="false"/>
+                            <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+                            <property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+                            <property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+                            <property name="API_NAME" scope="default" type="STRING" value="CHANNELAPIsPBI"/>
+                            <property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+                            <property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+                            <sequence key="PARTNERBANK_LOG_RESPONSE"/>
+                        </then>
+                        <else>
+                            <payloadFactory media-type="json">
+                                <format>  {"error":{"errorCode": 404,"description": "Balance is not avalible"}}</format>
+                                <args>
+                                    <arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+                                </args>
+                            </payloadFactory>
+                            <property name="SC_ACCEPTED" scope="axis2" type="STRING" value="false"/>
+                            <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+                            <property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+                            <property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+                            <property name="API_NAME" scope="default" type="STRING" value="CHANNELAPIsPBI"/>
+                            <property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+                            <property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+                            <sequence key="PARTNERBANK_LOG_RESPONSE"/>
+                        </else>
+                    </filter>
+                </then>
+                <else>
+                    <sequence key="GENERIC_GETCUSTOMER_SUBSCRIPTIONDETAILS_PREPAID"/>
+                    <payloadFactory media-type="json">
+                        <format>{"balance":"$1"}</format>
+                        <args>
+                            <arg evaluator="xml" expression="$ctx:amount"/>
+                        </args>
+                    </payloadFactory>
+                    <property name="SC_ACCEPTED" scope="axis2" type="STRING" value="false"/>
+                    <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+                    <property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+                    <property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+                    <property name="API_NAME" scope="default" type="STRING" value="CHANNELAPIsPBI"/>
+                    <property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+                    <property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+                    <sequence key="PARTNERBANK_LOG_RESPONSE"/>
+                </else>
+            </filter>
+        </then>
+        <else>
+            <filter regex="postpaid" source="$ctx:TYPE">
+                <then>
+                    <sequence key="GENERIC_GETCUSTOMER_SUBSCRIPTIONDETAILS_POSTPAID"/>
+                    <property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+                    <property expression="json-eval($.included[0].attributes.amount)" name="amount" scope="default" type="STRING"/>
+                    <property expression="json-eval($.error)" name="ERROR" scope="default" type="STRING"/>
+                    <filter regex="true" source="boolean($ctx:amount)">
+                        <then>
+                            <property expression="fn:concat('Balance:',$ctx:amount)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+                            <payloadFactory media-type="json">
+                                <format>{"balance": "$1"}</format>
+                                <args>
+                                    <arg evaluator="xml" expression="$ctx:amount"/>
+                                </args>
+                            </payloadFactory>
+                            <property name="SC_ACCEPTED" scope="axis2" type="STRING" value="false"/>
+                            <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+                            <property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+                            <property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+                            <property name="API_NAME" scope="default" type="STRING" value="CHANNELAPIsPBI"/>
+                            <property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+                            <property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+                            <sequence key="PARTNERBANK_LOG_RESPONSE"/>
+                        </then>
+                        <else>
+                            <payloadFactory media-type="json">
+                                <format>{"error":{"errorCode": 404,"description":"Balance is not avalible"}}</format>
+                                <args>
+                                    <arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+                                </args>
+                            </payloadFactory>
+                            <property name="SC_ACCEPTED" scope="axis2" type="STRING" value="false"/>
+                            <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+                            <property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+                            <property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+                            <property name="API_NAME" scope="default" type="STRING" value="CHANNELAPIsPBI"/>
+                            <property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+                            <property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+                            <sequence key="PARTNERBANK_LOG_RESPONSE"/>
+                        </else>
+                    </filter>
+                </then>
+                <else>
+                    <sequence key="GENERIC_GETCUSTOMER_SUBSCRIPTIONDETAILS_PREPAID"/>
+                    <property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+                    <property expression="json-eval($.included[0].attributes.amount)" name="amount" scope="default" type="STRING"/>
+                    <property expression="fn:count(//jsonObject/included)" name="COUNT" scope="default" type="STRING"/>
+                    <foreach expression="//jsonObject/included">
+                        <sequence>
+                            <property expression="//attributes/is-main-balance/text()" name="ismainbalance" scope="default" type="STRING"/>
+                            <property expression="//attributes/amount/text()" name="amount" scope="default" type="STRING"/>
+                            <filter regex="true" source="$ctx:ismainbalance">
+                                <then>
+                                    <property expression="//attributes/amount/text()" name="ismainbalanceData" scope="default" type="STRING"/>
+                                </then>
+                                <else>
+                                    <property name="IN_FOREACH Jazz prepaid else" scope="default" type="STRING" value="***********"/>
+                                </else>
+                            </filter>
+                        </sequence>
+                    </foreach>
+                    <payloadFactory media-type="json">
+                        <format>{"balance":"$1"}</format>
+                        <args>
+                            <arg evaluator="xml" expression="$ctx:ismainbalanceData"/>
+                        </args>
+                    </payloadFactory>
+                    <property name="SC_ACCEPTED" scope="axis2" type="STRING" value="false"/>
+                    <property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+                    <property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+                    <property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+                    <property name="API_NAME" scope="default" type="STRING" value="CHANNELAPIsPBI"/>
+                    <property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+                    <property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+                    <sequence key="PARTNERBANK_LOG_RESPONSE"/>
+                    <respond/>
+                </else>
+            </filter>
+        </else>
+    </filter>
+    <property expression="json-eval($)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+    <property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+    <property name="API_NAME" scope="default" type="STRING" value="CHANNELAPIsPBI"/>
+    <property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+    <property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+    <sequence key="PARTNERBANK_LOG_RESPONSE"/>
+    <respond/>
+</sequence>

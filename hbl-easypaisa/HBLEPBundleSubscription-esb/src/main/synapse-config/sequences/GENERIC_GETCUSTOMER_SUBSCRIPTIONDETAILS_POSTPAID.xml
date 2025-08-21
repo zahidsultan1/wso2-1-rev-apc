@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="GENERIC_GETCUSTOMER_SUBSCRIPTIONDETAILS_POSTPAID" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+    <property name="API_NAME" scope="default" type="STRING" value="Jazz-EPHBL"/>
+    <property name="INTERFACE_NAME" scope="default" type="STRING" value="GENERICBALANCEPOSTPAID"/>
+    <property expression="fn:concat('https://bssapi.bss.jazz.com.pk/api/v1/subscriptions/',$ctx:msisdn,'?identifier-type=msisdn&amp;include=subscription-type,owner-customer')" name="RESOURCE_URI" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property expression="$ctx:msisdn" name="MSISDN" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property expression="fn:concat('NORMALIZED_MSISDN_FOR_GETCUSTOMERANDSUBSCRIPTIONDETAILS:',$ctx:MSISDN)" name="REQUEST" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <sequence key="BUNDLE_LOG_REQUEST"/>
+    <header name="User-Agent" scope="transport" value="Apache-HttpClient/4.1.1 (java 1.5)"/>
+    <property action="remove" name="Accept-Encoding" scope="transport"/>
+    <property action="remove" name="Content-Encoding" scope="transport"/>
+    <property expression="$ctx:msisdn" name="uri.var.msisdn" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property action="remove" name="TRANSPORT_HEADERS" scope="axis2"/>
+    <call>
+        <endpoint key="genericbalancepostpaid"/>
+    </call>
+    <property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property name="API_NAME" scope="default" type="STRING" value="Jazz-EPHBL"/>
+    <property name="INTERFACE_NAME" scope="default" type="STRING" value="GENERICBALANCEPOSTPAID"/>
+    <property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+    <property expression="fn:concat('https://bssapi.bss.jazz.com.pk/api/v1/subscriptions/',$ctx:msisdn,'?identifier-type=msisdn&amp;include=combined-usage-reports')" name="RESOURCE_URI" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property expression="$ctx:msisdn" name="MSISDN" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <property expression="$axis2:HTTP_SC" name="StatusCode" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+    <sequence key="BUNDLE_LOG_RESPONSE"/>
+</sequence>

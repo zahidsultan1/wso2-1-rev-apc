@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<api context="/jazzChannel/v2/balance" name="GENERIC_Balance" xmlns="http://ws.apache.org/ns/synapse">
+    <resource faultSequence="FAULTSEQUENCE_PBI_BUNDLE_SUBSCRIPTION" inSequence="GENERIC_INSEQUENCE_BALANCE_V1" methods="GET" uri-template="/{msisdn}/{operator}/{type}/{transactionId}">
+        <outSequence/>
+    </resource>
+</api>

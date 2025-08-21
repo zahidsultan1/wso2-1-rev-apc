@@ -1,0 +1,16 @@
+<data>
+	<ServiceUser>PREPAYNATIONWSO2</ServiceUser>
+	<ServicePassword>TW9iaWxpbmtQUE5AMTAxMA==</ServicePassword>
+	<PartnerMsisdn>NULL</PartnerMsisdn>
+	<PartnerDAID>NULL</PartnerDAID>
+	<PostFix>WSO2</PostFix>
+	<PreMinLimit>99</PreMinLimit>
+	<PreMaxLimit>10001</PreMaxLimit>
+	<PostMinLimit>99</PostMinLimit>
+	<PostMaxLimit>10001</PostMaxLimit>
+	<PaymentCode>PREPAYNATION</PaymentCode>
+	<PostCode>UEw=</PostCode>
+	<WalletCheck>0</WalletCheck>
+	<ExParam1>Null</ExParam1>
+	<ExParam2>Null</ExParam2>
+</data>

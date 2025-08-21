@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?><artifacts>
+    <artifact name="GENERIC_INSEQUENCE_CLIENTELE_V1" groupId="com.jazz.HBLEPBundleSubscription.api" version="1.0.0" type="synapse/api" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/api/GENERIC_INSEQUENCE_CLIENTELE_V1.xml</file>
+    </artifact>
+    <artifact name="GENERIC_INSEQUENCE_CLIENTELE_V1_swagger" groupId="com.jazz.HBLEPBundleSubscription.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/GENERIC_INSEQUENCE_CLIENTELE_V1_swagger.yaml</file>
+    </artifact>
+    <artifact name="GENERIC_INSEQUENCE_CLIENTELE_V1_metadata" groupId="com.jazz.HBLEPBundleSubscription.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/GENERIC_INSEQUENCE_CLIENTELE_V1_metadata.yaml</file>
+    </artifact>
+    <artifact name="Jazz" groupId="com.jazz.HBLEPBundleSubscription.api" version="1.0.0" type="synapse/api" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/api/Jazz.xml</file>
+    </artifact>
+    <artifact name="Jazz_swagger" groupId="com.jazz.HBLEPBundleSubscription.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/Jazz_swagger.yaml</file>
+    </artifact>
+    <artifact name="Jazz_metadata" groupId="com.jazz.HBLEPBundleSubscription.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/Jazz_metadata.yaml</file>
+    </artifact>
+    <artifact name="Jazz_EasyPaisa" groupId="com.jazz.HBLEPBundleSubscription.api" version="1.0.0" type="synapse/api" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/api/Jazz_EasyPaisa.xml</file>
+    </artifact>
+    <artifact name="Jazz_EasyPaisa_swagger" groupId="com.jazz.HBLEPBundleSubscription.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/Jazz_EasyPaisa_swagger.yaml</file>
+    </artifact>
+    <artifact name="Jazz_EasyPaisa_metadata" groupId="com.jazz.HBLEPBundleSubscription.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/Jazz_EasyPaisa_metadata.yaml</file>
+    </artifact>
+    <artifact name="Jazz_HBL" groupId="com.jazz.HBLEPBundleSubscription.api" version="1.0.0" type="synapse/api" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/api/Jazz_HBL.xml</file>
+    </artifact>
+    <artifact name="Jazz_HBL_swagger" groupId="com.jazz.HBLEPBundleSubscription.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/Jazz_HBL_swagger.yaml</file>
+    </artifact>
+    <artifact name="Jazz_HBL_metadata" groupId="com.jazz.HBLEPBundleSubscription.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/Jazz_HBL_metadata.yaml</file>
+    </artifact>
+    <artifact name="ClientTell" groupId="com.jazz.HBLEPBundleSubscription.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/ClientTell.xml</file>
+    </artifact>
+    <artifact name="EasypaisaHBL_OFFER_ACTIVATION_DBSS_EP" groupId="com.jazz.HBLEPBundleSubscription.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/EasypaisaHBL_OFFER_ACTIVATION_DBSS_EP.xml</file>
+    </artifact>
+    <artifact name="EasypaisaHBL_OFFER_ACTIVATION_DBSS_GET_EP" groupId="com.jazz.HBLEPBundleSubscription.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/EasypaisaHBL_OFFER_ACTIVATION_DBSS_GET_EP.xml</file>
+    </artifact>
+    <artifact name="genericbalancepostpaid" groupId="com.jazz.HBLEPBundleSubscription.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/genericbalancepostpaid.xml</file>
+    </artifact>
+    <artifact name="HBL_IN_GETEP" groupId="com.jazz.HBLEPBundleSubscription.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/HBL_IN_GETEP.xml</file>
+    </artifact>
+	 <artifact name="GENERIC_BSSAPI_CLIENTTEL" groupId="com.jazz.HBLEPBundleSubscription.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/GENERIC_BSSAPI_CLIENTTEL.xml</file>
+    </artifact>
+    <artifact name="APCEndpoint" groupId="com.jazz.HBLEPBundleSubscription.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/APCEndpoint.xml</file>
+    </artifact>
+    <artifact name="GENERIC_GETPREPAIDBALANCE" groupId="com.jazz.HBLEPBundleSubscription.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/GENERIC_GETPREPAIDBALANCE.xml</file>
+    </artifact>
+    <artifact name="GENERIC_GETSUBSCRIPTIONOFFER" groupId="com.jazz.HBLEPBundleSubscription.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/GENERIC_GETSUBSCRIPTIONOFFER.xml</file>
+    </artifact>
+    <artifact name="Check_loan_EP_DBSS" groupId="com.jazz.HBLEPBundleSubscription.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/Check_loan_EP_DBSS.xml</file>
+    </artifact>
+    <artifact name="BUNDLE_LOG_REQUEST" groupId="com.jazz.HBLEPBundleSubscription.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/BUNDLE_LOG_REQUEST.xml</file>
+    </artifact>
+	<artifact name="BUNDLE_LOG_ERROR" groupId="com.jazz.HBLEPBundleSubscription.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/BUNDLE_LOG_ERROR.xml</file>
+    </artifact>
+    <artifact name="BUNDLE_LOG_RESPONSE" groupId="com.jazz.HBLEPBundleSubscription.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/BUNDLE_LOG_RESPONSE.xml</file>
+    </artifact>
+    <artifact name="GENERIC_GETCUSTOMER_SUBSCRIPTIONDETAILS_POSTPAID" groupId="com.jazz.HBLEPBundleSubscription.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/GENERIC_GETCUSTOMER_SUBSCRIPTIONDETAILS_POSTPAID.xml</file>
+    </artifact>
+    <artifact name="GENERIC_GETCUSTOMER_SUBSCRIPTIONDETAILS_PREPAID" groupId="com.jazz.HBLEPBundleSubscription.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/GENERIC_GETCUSTOMER_SUBSCRIPTIONDETAILS_PREPAID.xml</file>
+    </artifact>
+    <artifact name="LOAN_CHECK" groupId="com.jazz.HBLEPBundleSubscription.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/LOAN_CHECK.xml</file>
+    </artifact>
+    <artifact name="AIR_EP_HBL" groupId="com.jazz.HBLEPBundleSubscription.endpoint" version="1.0.0" type="synapse/endpoint" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/endpoints/AIR_EP_HBL.xml</file>
+    </artifact>
+	<artifact name="HBLBUNDLESUBSCRIPTION_INSEQUENCE" groupId="com.jazz.HBLEPBundleSubscription.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/HBLBUNDLESUBSCRIPTION_INSEQUENCE.xml</file>
+    </artifact>
+    <artifact name="FAULTSEQUENCE_BUNDLE_SUBSCRIPTION" groupId="com.jazz.HBLEPBundleSubscription.sequence" version="1.0.0" type="synapse/sequence" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/sequences/FAULTSEQUENCE_BUNDLE_SUBSCRIPTION.xml</file>
+    </artifact>
+    <artifact name="GENERIC_INSEQUENCE_BALANCE_V1" groupId="com.jazz.HBLEPBundleSubscription.api" version="1.0.0" type="synapse/api" serverRole="EnterpriseServiceBus">
+        <file>src/main/synapse-config/api/GENERIC_INSEQUENCE_BALANCE_V1.xml</file>
+    </artifact>
+    <artifact name="GENERIC_INSEQUENCE_BALANCE_V1_swagger" groupId="com.jazz.HBLEPBundleSubscription.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/GENERIC_INSEQUENCE_BALANCE_V1_swagger.yaml</file>
+    </artifact>
+    <artifact name="GENERIC_INSEQUENCE_BALANCE_V1_metadata" groupId="com.jazz.HBLEPBundleSubscription.metadata" version="1.0.0" type="synapse/metadata" serverRole="EnterpriseServiceBus">
+        <file>src/main/resources/metadata/GENERIC_INSEQUENCE_BALANCE_V1_metadata.yaml</file>
+    </artifact>
+</artifacts>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<endpoint name="Check_loan_EP_DBSS" xmlns="http://ws.apache.org/ns/synapse">
+    <http method="get" uri-template="http://localhost:8290/jazzcash/checkmsisdn/{uri.var.msisdn}/{uri.var.transactionId}/{uri.var.API_NAME}/{uri.var.APP_NAME}">
+        <timeout>
+            <duration>10000</duration>
+            <responseAction>fault</responseAction>
+        </timeout>
+        <suspendOnFailure>
+            <errorCodes>-1</errorCodes>
+            <initialDuration>-1</initialDuration>
+            <progressionFactor>1.0</progressionFactor>
+        </suspendOnFailure>
+        <markForSuspension>
+            <errorCodes>-1</errorCodes>
+            <retriesBeforeSuspension>0</retriesBeforeSuspension>
+        </markForSuspension>
+    </http>
+</endpoint>

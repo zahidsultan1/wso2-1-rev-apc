@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="REQUEST_PAYLOAD_EP" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+    <property expression="fn:substring($ctx:MSISDN,3)" name="NORMALIZED_MSISDN_FOR_IN" scope="default" type="STRING"/>
+    <property expression="get-property('SYSTEM_TIME')" name="TRANSACTION_ID_IN" scope="default" type="STRING"/>
+    <property expression="get-property('SYSTEM_TIME')" name="TRANSACTION_ID" scope="default" type="STRING"/>
+    <property expression="fn:concat(synapse:get-property('SYSTEM_DATE', 'yyyyMMdd'),'T',synapse:get-property('SYSTEM_DATE', 'HH:mm:ss+0500'))" name="CURR_DATE_TIME" scope="default" type="STRING"/>
+    <payloadFactory media-type="xml">
+        <format>
+            <methodCall xmlns="">
+                <methodName>GetBalanceAndDate</methodName>
+                <params>
+                    <param>
+                        <value>
+                            <struct>
+                                <member>
+                                    <name>originTransactionID</name>
+                                    <value>
+                                        <string>$2</string>
+                                    </value>
+                                </member>
+                                <member>
+                                    <name>originNodeType</name>
+                                    <value>
+                                        <string>EXT</string>
+                                    </value>
+                                </member>
+                                <member>
+                                    <name>originHostName</name>
+                                    <value>
+                                        <string>1</string>
+                                    </value>
+                                </member>
+                                <member>
+                                    <name>originTimeStamp</name>
+                                    <value>
+                                        <dateTime.iso8601>$3</dateTime.iso8601>
+                                    </value>
+                                </member>
+                                <member>
+                                    <name>subscriberNumber</name>
+                                    <value>
+                                        <string>$1</string>
+                                    </value>
+                                </member>
+                            </struct>
+                        </value>
+                    </param>
+                </params>
+            </methodCall>
+        </format>
+        <args>
+            <arg evaluator="xml" expression="$ctx:NORMALIZED_MSISDN_FOR_IN"/>
+            <arg evaluator="xml" expression="$ctx:TRANSACTION_ID_IN"/>
+            <arg evaluator="xml" expression="$ctx:CURR_DATE_TIME"/>
+        </args>
+    </payloadFactory>
+    <header name="User-Agent" scope="transport" value="UGw Server/5.0/1.0"/>
+    <header name="Authorization" scope="transport" value="Basic ZmRzdXNlcjpmZHN1c2Vy="/>
+    <property name="messageType" scope="axis2" type="STRING" value="application/xml"/>
+    <property name="ContentType" scope="axis2" type="STRING" value="text/xml"/>
+    <property name="DISABLE_CHUNKING" scope="axis2" type="STRING" value="true"/>
+    <enrich>
+        <source clone="true" type="body"/>
+        <target property="IN_PAYLOADRequest" type="property"/>
+    </enrich>
+    <property expression="$ctx:TRANSACTION_id" name="ID" scope="default" type="STRING"/>
+    <property expression="fn:concat('DADICATESACOUNTS | ',get-property('ApplicationName'))" name="API_NAME" scope="default" type="STRING"/>
+    <property name="INTERFACE_NAME" scope="default" type="STRING" value="GetBalanceAndDate"/>
+    <property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING"/>
+    <property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING"/>
+    <property expression="fn:concat($trp:X-Forwarded-For,get-property('To'),', REMOTE_SERVER:',get-property('axis2','REMOTE_ADDR'))" name="RESOURCE_URI" scope="default" type="STRING"/>
+    <property expression="$ctx:IN_PAYLOADRequest" name="REQUEST" scope="default" type="STRING"/>
+    <sequence key="LOYALTY_MSA_LOG_REQUEST"/>
+    <property name="NO_KEEPALIVE" scope="axis2" type="STRING" value="true"/>
+    <call>
+        <endpoint key="APC_AIR_EP"/>
+    </call>
+    <property name="ContentType" scope="axis2" type="STRING" value="application/xml"/>
+    <property name="IsClientDoingREST" scope="default" type="BOOLEAN" value="true"/>
+    <enrich>
+        <source clone="true" type="body"/>
+        <target property="IN_PAYLOAD" type="property"/>
+    </enrich>
+    <property expression="//methodResponse/params/param/value/struct/member[name='responseCode']/value/i4/text()']" name="Responsecode" scope="default" type="STRING"/>
+    <property expression="$ctx:Responsecode" name="STATUS" scope="default" type="STRING"/>
+    <property expression="$ctx:IN_PAYLOAD" name="RESPONSE" scope="default" type="STRING"/>
+    <property expression="$ctx:TRANSACTION_id" name="ID" scope="default" type="STRING"/>
+    <property expression="fn:concat('DADICATESACOUNTS | ',get-property('ApplicationName'))" name="API_NAME" scope="default" type="STRING"/>
+    <property name="INTERFACE_NAME" scope="default" type="STRING" value="GetBalanceAndDate"/>
+    <property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING"/>
+    <property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSETIME" scope="default" type="STRING"/>
+    <property name="STATUS" scope="default" type="STRING" value="OK"/>
+    <property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+    <sequence key="LOYALTY_MSA_LOG_RESPONSE"/>
+    <property expression="//methodResponse/fault/value/struct/member[name='faultCode']/value/i4/text()" name="faultCode" scope="default" type="STRING"/>
+    <property expression="//methodResponse/fault/value/struct/member[name='faultString']/value/i4/text()" name="faultDescription" scope="default" type="STRING"/>
+    <log level="custom">
+        <property name="After " value="Calling IN"/>
+        <property name="ViewLoyaltyBalance " value="*********ViewLoyaltyBalance*********"/>
+        <property expression="//methodResponse/fault/value/struct/member[name='faultCode']/value/i4/text()" name="faultCode"/>
+        <property expression="//methodResponse/fault/value/struct/member[name='faultString']/value/i4/text()" name="faultDescription"/>
+    </log>
+    <property expression="//methodResponse/params/param/value/struct/member[name='responseCode']/value/i4/text()']" name="INResponseCode" scope="default" type="STRING"/>
+    <property expression="//methodResponse/params/param/value/struct/member[name='offerInformationList']/value/array/data/value/struct/member[name='offerID']" name="INResponse" scope="default" type="STRING"/>
+    <filter regex="true" source="boolean($ctx:INResponse)">
+        <then>
+            <property expression="//methodResponse/params/param/value/struct/member[name='responseCode']/value/i4/text()']" name="INResponseCode" scope="default" type="STRING"/>
+            <property expression="//methodResponse/params/param/value/struct/member[name='offerInformationList']/value/array/data/value/struct/member[name='offerID']" name="INResponse" scope="default" type="STRING"/>
+            <property expression="//methodResponse/params/param/value/struct/member[name='accountValue1']/value/string  div 100" name="balanceinrupees" scope="default" type="STRING"/>
+            <property name="STATUS" scope="default" type="STRING" value="OK"/>
+        </then>
+        <else>
+            <property expression="//methodResponse/fault/value/struct/member[name='faultCode']/value/i4/text()" name="faultCode" scope="default" type="STRING"/>
+            <property expression="//methodResponse/fault/value/struct/member[name='faultString']/value/i4/text()" name="faultDescription" scope="default" type="STRING"/>
+            <property name="STATUS" scope="default" type="STRING" value="KO"/>
+            <property expression="//methodResponse/params/param/value/struct/member[name='responseCode']/value/i4/text()']" name="INResponseCode" scope="default" type="STRING"/>
+        </else>
+    </filter>
+    <property expression="$axis2:HTTP_SC" name="StatusCode" scope="default" type="STRING"/>
+    <foreach expression="//methodResponse/params/param/value/struct/member[name='dedicatedAccountInformation']/value/array/data/value">
+        <sequence>
+            <property name="IN_FOREACH" scope="default" type="STRING" value="***********"/>
+            <property expression="//struct/member[name='dedicatedAccountActiveValue1']/value/string/text()" name="dedicatedAccountActiveValue1" scope="default" type="STRING"/>
+            <property expression="//struct/member[name='dedicatedAccountID']/value/i4/text()" name="dedicatedAccountID" scope="default" type="STRING"/>
+            <filter xpath="$ctx:dedicatedAccountID = $ctx:daid1">
+                <then>
+                    <property expression="//struct/member[name='dedicatedAccountActiveValue1']/value/string/text()" name="dedicated_active_value1" scope="default" type="STRING"/>
+                    <property expression="//struct/member[name='dedicatedAccountValue1']/value/string/text()" name="dedicated_value1" scope="default" type="STRING"/>
+                    <property expression="//struct/member[name='dedicatedAccountUnitType']/value/i4/text()" name="dedicated_unit_type1" scope="default" type="STRING"/>
+                    <property expression="//struct/member[name='expiryDate']/value/dateTime.iso8601/text()" name="expiryDate1" scope="default" type="STRING"/>
+                    <property name="CheckDaID" scope="default" type="STRING" value="True"/>
+                </then>
+                <else/>
+            </filter>
+            <filter xpath="$ctx:dedicatedAccountID = $ctx:daid2">
+                <then>
+                    <property expression="//struct/member[name='dedicatedAccountActiveValue1']/value/string/text()" name="dedicated_active_value2" scope="default" type="STRING"/>
+                    <property expression="//struct/member[name='dedicatedAccountValue1']/value/string/text()" name="dedicated_value2" scope="default" type="STRING"/>
+                    <property expression="//struct/member[name='dedicatedAccountUnitType']/value/i4/text()" name="dedicated_unit_type2" scope="default" type="STRING"/>
+                    <property expression="//struct/member[name='expiryDate']/value/dateTime.iso8601/text()" name="expiryDate2" scope="default" type="STRING"/>
+                    <property name="CheckDaID" scope="default" type="STRING" value="True"/>
+                </then>
+                <else/>
+            </filter>
+        </sequence>
+    </foreach>
+</sequence>

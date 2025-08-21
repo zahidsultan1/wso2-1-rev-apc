@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="FAULT_SEQUENCE_APC_POSTING" xmlns="http://ws.apache.org/ns/synapse">
+	<property expression="$ctx:ERROR_MESSAGE" name="error_message" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:ERROR_CODE" name="error_code" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property name="error_detail" value="Exception from downstream"/>
+	<property expression="$ctx:ERROR_EXCEPTION" name="error_exception" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<payloadFactory media-type="json">
+		<format> {"error":{ "errorCode": $1, "description": "$2", "message": "", "status":"KO", "transaction": { "transactionId": "$3" } }}</format>
+		<args>
+			<arg evaluator="xml" expression="$ctx:error_code" literal="false" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+			<arg evaluator="xml" expression="$ctx:error_detail" literal="false" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+			<arg evaluator="xml" expression="$ctx:TRANSACTION_ID" literal="false" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+		</args>
+	</payloadFactory>
+	<property name="HTTP_SC" scope="axis2" type="STRING" value="500"/>
+	<property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+	<property name="LOG_ERROR_STATUS" value="EXCEPTION"/>
+	<property name="API_NAME" value="APC_POSTING"/>
+	<property name="INTERFACE_NAME" value="RESPONSE"/>
+	<property expression="$ctx:uri.var.msisdn" name="MSISDN" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property expression="json-eval($)" name="ERROR" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="ERROR_TIME" scope="default" xmlns:ns="http://org.apache.synapse/xsd" xmlns:ns3="http://org.apache.synapse/xsd"/>
+	<sequence key="APCPOSTING_LOG_ERROR"/>
+	<respond/>
+</sequence>

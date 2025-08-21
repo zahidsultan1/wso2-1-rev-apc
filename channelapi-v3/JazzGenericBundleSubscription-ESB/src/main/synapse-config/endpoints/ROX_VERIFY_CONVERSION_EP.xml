@@ -1,0 +1,18 @@
+<endpoint xmlns="http://ws.apache.org/ns/synapse" name="ROX_VERIFY_CONVERSION_EP">
+   <http uri-template="http://localhost:8282/ecare/v1/verifyconversion/{uri.var.msisdn}" method="post">
+      <suspendOnFailure>
+         <errorCodes>-1</errorCodes>
+         <progressionFactor>1.0</progressionFactor>
+      </suspendOnFailure>
+      <markForSuspension>
+         <errorCodes>-1</errorCodes>
+         <retriesBeforeSuspension>0</retriesBeforeSuspension>
+         <retryDelay>0</retryDelay>
+      </markForSuspension>
+      <timeout>
+         <duration>10000</duration>
+         <responseAction>fault</responseAction>
+      </timeout>
+   </http>
+</endpoint>
+                        

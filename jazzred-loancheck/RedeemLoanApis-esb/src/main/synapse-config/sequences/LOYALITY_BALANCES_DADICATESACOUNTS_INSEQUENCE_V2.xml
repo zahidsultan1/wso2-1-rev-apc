@@ -1,0 +1,427 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sequence name="LOYALITY_BALANCES_DADICATESACOUNTS_INSEQUENCE_V2" trace="disable" xmlns="http://ws.apache.org/ns/synapse">
+	<property name="MI_API_NAME" value="JAZZRED-LOANAPI" scope="default" type="STRING"/>
+	<property name="MSISDN" expression="json-eval($.msisdn)" scope="default" type="STRING"/>
+	<property name="MI_TIME" expression="fn:get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" scope="default"/>
+	<property xmlns:ns="http://org.apache.synapse/xsd" expression="json-eval($.transaction_id)" name="TRANSACTION_ID" scope="default" type="STRING"/>
+	<property name="REQUEST_ID" expression="$ctx:TRANSACTION_ID" scope="default" type="STRING"/>
+	<sequence key="MIinFlow"/>
+	<sequence key="GenericRemoveHeaders"/>
+	<property expression="json-eval($.productName)" name="productName" scope="default" type="STRING"/>
+	<property expression="json-eval($.partnerName)" name="partnerName" scope="default" type="STRING"/>
+	<property expression="json-eval($.ID)" name="TRANSACTION_ID" scope="default" type="STRING"/>
+	<property expression="json-eval($.MSISDN)" name="MSISDN" scope="default" type="STRING"/>
+	<property expression="json-eval($.DAID1)" name="daid1" scope="default" type="STRING"/>
+	<property expression="json-eval($.DAID2)" name="daid2" scope="default" type="STRING"/>
+	<property expression="$trp:ApplicationName" name="ApplicationName" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property name="AuthorizationHeader" scope="default" type="STRING" expression="$trp:AuthorizationHeader"/>
+	<property name="AutoMode" scope="default" type="STRING" value="true"/>
+	<log level="custom">
+		<property expression="fn:concat('JAZZ_ADVANCE_VIEW | ',get-property('ApplicationName'))" name="API_NAME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	</log>
+	<property expression="$ctx:TRANSACTION_ID" name="TRANSACTION_ID" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="fn:concat('JAZZ_ADVANCE_VIEW | ',get-property('ApplicationName'))" name="API_NAME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property value="JAZZ_ADVANCE_VIEW" name="API_NAME_LOG" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:ApplicationName" name="APP_NAME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property name="INTERFACE_NAME" scope="default" type="STRING" value="REQUEST"/>
+	<property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="fn:concat($trp:X-Forwarded-For,get-property('To'))" name="RESOURCE_URI" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="fn:concat('ProductName: ',$ctx:productName,' | PartnerName: ',$ctx:partnerName,' | TRANSACTION_ID: ',$ctx:TRANSACTION_ID,' | MSISDN: ',$ctx:MSISDN,' | daid1: ',$ctx:daid1,' | daid2: ',$ctx:daid2)" name="REQUEST" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<sequence key="LOYALTY_MSA_LOG_REQUEST"/>
+	<filter regex="^\d{1,20}$" source="$ctx:TRANSACTION_ID" xmlns:ns="http://org.apache.synapse/xsd">
+		<then/>
+		<else>
+			<payloadFactory media-type="json">
+				<format>{"error":{ "errorCode": "$1", "description": "Ensure that the transaction id must not be empty or less than 20 digits.", "message": "Invalid transaction Id.", "transaction": { "transactionId": "$2" } }}</format>
+				<args>
+					<arg evaluator="xml" value="1001" literal="false"/>
+					<arg evaluator="xml" expression="$ctx:TRANSACTION_ID" literal="false"/>
+				</args>
+			</payloadFactory>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSETIME" scope="default" type="STRING"/>
+			<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+			<property expression="json-eval($)" name="RESPONSE" scope="default" type="STRING"/>
+			<sequence key="LOYALTY_MSA_LOG_RESPONSE"/>
+			<respond/>
+		</else>
+	</filter>
+	<filter xmlns:ns="http://org.apache.synapse/xsd" xpath="fn:boolean(fn:string-length($ctx:daid1) = 0) or $ctx:AutoMode='false'">
+		<then>
+			<property name="daid1" scope="default" type="STRING" value="16"/>
+		</then>
+		<else/>
+	</filter>
+	<filter xmlns:ns="http://org.apache.synapse/xsd" xpath="fn:boolean(fn:string-length($ctx:daid2) = 0) or $ctx:AutoMode='false'">
+		<then>
+			<property name="daid2" scope="default" type="STRING" value="17"/>
+		</then>
+		<else/>
+	</filter>
+	<property expression="$ctx:MSISDN" name="uri.var.msisdn" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="$ctx:uri.var.msisdn" name="REQUEST" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+	<filter regex="Basic SU5UQUNBR0Q6UGF0Y2gjMTIz" source="$ctx:AuthorizationHeader" xmlns:ns="http://org.apache.synapse/xsd">
+		<then>
+			<property expression="$ctx:uri.var.msisdn" name="MSISDN" scope="default" type="STRING"/>
+			<property expression="get-property('SYSTEM_TIME')" name="TRANSACTION_ID_IN" scope="default" type="STRING"/>
+			<filter regex="^923\d{9}$" source="$ctx:MSISDN" xmlns:ns="http://org.apache.synapse/xsd">
+				<then/>
+				<else>
+					<payloadFactory media-type="json">
+						<format>{"error":{ "errorCode": $1, "description": "$2", "message": "$3", "transaction": { "transactionId": "$4" } }}</format>
+						<args>
+							<arg value="1002"/>
+							<arg value="Ensure that MSISDN must start with 92 and length should be 12 digit."/>
+							<arg value="Invalid MSISDN"/>
+							<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+						</args>
+					</payloadFactory>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSETIME" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+					<property expression="json-eval($)" name="RESPONSE" scope="default" type="STRING"/>
+					<sequence key="LOYALTY_MSA_LOG_RESPONSE"/>
+					<respond/>
+				</else>
+			</filter>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="CLIENTELE"/>
+			<property expression="$ctx:MSISDN" name="REQUEST" scope="default" type="STRING"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING"/>
+			<property expression="fn:concat('https://bssapi.bss.jazz.com.pk/api/v1/subscriptions/',$ctx:uri.var.msisdn,'?identifier-type=msisdn&amp;include=subscription-type,owner-customer')" name="RESOURCE_URI" scope="default" type="STRING"/>
+			<sequence key="LOYALTY_MSA_LOG_REQUEST"/>
+			<call>
+				<endpoint key="apc_clientele_preprod"/>
+			</call>
+			<property expression="json-eval($.included[1].attributes.business-model-type)" name="type" scope="default" type="STRING"/>
+			<property expression="json-eval($.included[1].attributes.brand)" name="OPERATOR" scope="default" type="STRING"/>
+			<property expression="$ctx:type" name="uri.var.type"/>
+			<property expression="$ctx:OPERATOR" name="uri.var.operator"/>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="CLIENTELE"/>
+			<property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSETIME" scope="default" type="STRING"/>
+			<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+			<property expression="json-eval($.included[1].attributes.business-model-type)" name="TYPE" scope="default" type="STRING"/>
+			<property expression="json-eval($.included[1].attributes.business-model-type)" name="RESPONSE" scope="default" type="STRING"/>
+			<sequence key="LOYALTY_MSA_LOG_RESPONSE"/>
+			<property expression="boolean(get-property('type'))" name="bool_Chk_type" scope="default" type="STRING"/>
+			<filter xpath="fn:boolean(fn:string-length($ctx:uri.var.operator) = 0 or $ctx:uri.var.operator = 'unknown') or fn:boolean(fn:string-length($ctx:uri.var.type) = 0 or $ctx:uri.var.type = 'unknown')">
+				<then>
+					<payloadFactory media-type="json">
+						<format>{"error":{ "errorCode": "$1", "description": "$2", "message": "$3", "transaction": { "transactionId": "$4" } }}</format>
+						<args>
+							<arg value="1003"/>
+							<arg value="MSISDN Type Is Unknown"/>
+							<arg value="Please Enter Other Prepaid MSISDN"/>
+							<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+						</args>
+					</payloadFactory>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSETIME" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+					<property expression="json-eval($)" name="RESPONSE" scope="default" type="STRING"/>
+					<sequence key="LOYALTY_MSA_LOG_RESPONSE"/>
+					<respond/>
+				</then>
+				<else/>
+			</filter>
+			<sequence key="GenericRemoveHeaders"/>
+			<property expression="fn:substring($ctx:MSISDN,3)" name="NORMALIZED_MSISDN_FOR_IN" scope="default" type="STRING"/>
+			<property expression="get-property('SYSTEM_TIME')" name="TRANSACTION_ID_IN" scope="default" type="STRING"/>
+			<property expression="fn:concat(synapse:get-property('SYSTEM_DATE', 'yyyyMMdd'),'T',synapse:get-property('SYSTEM_DATE', 'HH:mm:ss+0500'))" name="CURR_DATE_TIME" scope="default" type="STRING"/>
+			<payloadFactory media-type="xml">
+				<format>
+					<methodCall xmlns="">
+						<methodName>GetBalanceAndDate</methodName>
+						<params>
+							<param>
+								<value>
+									<struct>
+										<member>
+											<name>originTransactionID</name>
+											<value>
+												<string>$2</string>
+											</value>
+										</member>
+										<member>
+											<name>originNodeType</name>
+											<value>
+												<string>EXT</string>
+											</value>
+										</member>
+										<member>
+											<name>originHostName</name>
+											<value>
+												<string>1</string>
+											</value>
+										</member>
+										<member>
+											<name>originTimeStamp</name>
+											<value>
+												<dateTime.iso8601>$3</dateTime.iso8601>
+											</value>
+										</member>
+										<member>
+											<name>subscriberNumber</name>
+											<value>
+												<string>$1</string>
+											</value>
+										</member>
+									</struct>
+								</value>
+							</param>
+						</params>
+					</methodCall>
+				</format>
+				<args>
+					<arg evaluator="xml" expression="$ctx:NORMALIZED_MSISDN_FOR_IN"/>
+					<arg evaluator="xml" expression="$ctx:TRANSACTION_ID_IN"/>
+					<arg evaluator="xml" expression="$ctx:CURR_DATE_TIME"/>
+				</args>
+			</payloadFactory>
+			<header name="User-Agent" scope="transport" value="UGw Server/4.3/1.0"/>
+			<header name="Authorization" scope="transport" value="Basic SU5UQVJDQU5BOjU2djM0R3oxL0FfMTgK"/>
+			<property name="messageType" scope="axis2" type="STRING" value="application/xml"/>
+			<property name="ContentType" scope="axis2" type="STRING" value="text/xml"/>
+			<property name="DISABLE_CHUNKING" scope="axis2" type="STRING" value="true"/>
+			<enrich>
+				<source clone="true" type="body"/>
+				<target property="IN_PAYLOADRequest" type="property"/>
+			</enrich>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="GETBALANCEANDDATE"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="REQUEST_TIME" scope="default" type="STRING"/>
+			<property name="RESOURCE_URI" scope="default" type="STRING" value="http://10.13.32.180:10010"/>
+			<property expression="$ctx:IN_PAYLOADRequest" name="REQUEST" scope="default" type="STRING"/>
+			<sequence key="LOYALTY_MSA_LOG_REQUEST"/>
+			<property name="NO_KEEPALIVE" scope="axis2" type="STRING" value="true"/>
+			<call>
+				<endpoint key="APC_AIR_EP"/>
+			</call>
+			<property name="ContentType" scope="axis2" type="STRING" value="application/xml"/>
+			<property name="IsClientDoingREST" scope="default" type="BOOLEAN" value="true"/>
+			<property name="ContentType" scope="axis2" type="STRING" value="application/xml"/>
+			<property name="IsClientDoingREST" scope="default" type="BOOLEAN" value="true"/>
+			<enrich>
+				<source clone="true" type="body"/>
+				<target property="IN_PAYLOAD" type="property"/>
+			</enrich>
+			<property expression="$ctx:IN_PAYLOAD" name="IN_PAYLOAD" scope="default" type="STRING" xmlns:ns="http://org.apache.synapse/xsd"/>
+			<property name="IN_PAYLOAD" expression="fn:replace($ctx:IN_PAYLOAD, '\n', '')" scope="default" type="STRING" xmlns:fn="http://www.w3.org/2005/xpath-functions"/>
+			<property expression="//methodResponse/params/param/value/struct/member[name='responseCode']/value/i4/text()']" name="Responsecode" scope="default" type="STRING"/>
+			<property expression="$ctx:Responsecode" name="STATUS" scope="default" type="STRING"/>
+			<property expression="$ctx:IN_PAYLOAD" name="RESPONSE" scope="default" type="STRING"/>
+			<property expression="fn:concat('DADICATESACOUNTS | ',get-property('ApplicationName'))" name="API_NAME" scope="default" type="STRING"/>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="GETBALANCEANDDATE"/>
+			<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+			<sequence key="LOYALTY_MSA_LOG_RESPONSE"/>
+			<property expression="//methodResponse/fault/value/struct/member[name='faultCode']/value/i4/text()" name="faultCode" scope="default" type="STRING"/>
+			<property expression="//methodResponse/fault/value/struct/member[name='faultString']/value/i4/text()" name="faultDescription" scope="default" type="STRING"/>
+			<property expression="//methodResponse/params/param/value/struct/member[name='responseCode']/value/i4/text()']" name="INResponseCode" scope="default" type="STRING"/>
+			<property expression="//methodResponse/params/param/value/struct/member[name='offerInformationList']/value/array/data/value/struct/member[name='offerID']" name="INResponse" scope="default" type="STRING"/>
+			<filter regex="true" source="boolean($ctx:INResponse)">
+				<then>
+					<property expression="//methodResponse/params/param/value/struct/member[name='responseCode']/value/i4/text()']" name="INResponseCode" scope="default" type="STRING"/>
+					<property expression="//methodResponse/params/param/value/struct/member[name='offerInformationList']/value/array/data/value/struct/member[name='offerID']" name="INResponse" scope="default" type="STRING"/>
+					<property expression="//methodResponse/params/param/value/struct/member[name='accountValue1']/value/string  div 100" name="balanceinrupees" scope="default" type="STRING"/>
+					<property name="STATUS" scope="default" type="STRING" value="OK"/>
+				</then>
+				<else>
+					<property expression="//methodResponse/fault/value/struct/member[name='faultCode']/value/i4/text()" name="faultCode" scope="default" type="STRING"/>
+					<property expression="//methodResponse/fault/value/struct/member[name='faultString']/value/i4/text()" name="faultDescription" scope="default" type="STRING"/>
+					<property name="STATUS" scope="default" type="STRING" value="KO"/>
+					<property expression="//methodResponse/params/param/value/struct/member[name='responseCode']/value/i4/text()']" name="INResponseCode" scope="default" type="STRING"/>
+				</else>
+			</filter>
+			<property expression="$axis2:HTTP_SC" name="StatusCode" scope="default" type="STRING"/>
+			<filter xpath="$ctx:INResponseCode = '0'">
+				<then/>
+				<else>
+					<payloadFactory media-type="json">
+						<format>{"error":{ "errorCode": "$1", "description": "$2", "message": "", "transaction": { "transactionId": "$3" } }}</format>
+						<args>
+							<arg evaluator="xml" expression="$ctx:faultCode"/>
+							<arg evaluator="xml" expression="$ctx:faultDescription"/>
+							<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+						</args>
+					</payloadFactory>
+					<property name="SC_ACCEPTED" scope="axis2" type="STRING" value="false"/>
+					<property name="HTTP_SC" scope="axis2" type="STRING" value="200"/>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+					<property expression="$ctx:MSISDN" name="MSISDN" scope="default" type="STRING"/>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+					<property expression="json-eval($)" name="RESPONSE" scope="default" type="STRING"/>
+					<sequence key="LOYALTY_MSA_LOG_RESPONSE"/>
+					<respond/>
+				</else>
+			</filter>
+			<foreach expression="//methodResponse/params/param/value/struct/member[name='dedicatedAccountInformation']/value/array/data/value">
+				<sequence>
+					<property name="IN_FOREACH" scope="default" type="STRING" value="***********"/>
+					<property expression="//struct/member[name='dedicatedAccountActiveValue1']/value/string/text()" name="dedicatedAccountActiveValue1" scope="default" type="STRING"/>
+					<property expression="//struct/member[name='dedicatedAccountID']/value/i4/text()" name="dedicatedAccountID" scope="default" type="STRING"/>
+					<filter xpath="$ctx:dedicatedAccountID = $ctx:daid1">
+						<then>
+							<property expression="//struct/member[name='dedicatedAccountActiveValue1']/value/string/text()" name="dedicated_active_value1" scope="default" type="STRING"/>
+							<property expression="//struct/member[name='dedicatedAccountValue1']/value/string/text()" name="dedicated_value1" scope="default" type="STRING"/>
+							<property expression="//struct/member[name='dedicatedAccountUnitType']/value/i4/text()" name="dedicated_unit_type1" scope="default" type="STRING"/>
+							<property expression="//struct/member[name='expiryDate']/value/dateTime.iso8601/text()" name="expiryDate1" scope="default" type="STRING"/>
+							<property name="CheckDaID" scope="default" type="STRING" value="True"/>
+						</then>
+						<else/>
+					</filter>
+					<filter xpath="$ctx:dedicatedAccountID = $ctx:daid2">
+						<then>
+							<property expression="//struct/member[name='dedicatedAccountActiveValue1']/value/string/text()" name="dedicated_active_value2" scope="default" type="STRING"/>
+							<property expression="//struct/member[name='dedicatedAccountValue1']/value/string/text()" name="dedicated_value2" scope="default" type="STRING"/>
+							<property expression="//struct/member[name='dedicatedAccountUnitType']/value/i4/text()" name="dedicated_unit_type2" scope="default" type="STRING"/>
+							<property expression="//struct/member[name='expiryDate']/value/dateTime.iso8601/text()" name="expiryDate2" scope="default" type="STRING"/>
+							<property name="CheckDaID" scope="default" type="STRING" value="True"/>
+						</then>
+						<else/>
+					</filter>
+				</sequence>
+			</foreach>
+			<filter xpath="fn:boolean(fn:string-length($ctx:dedicated_value1) = 0) or $ctx:dedicated_value1 = 0">
+				<then>
+					<property name="dedicated_value1" scope="default" type="STRING" value="0.0"/>
+				</then>
+				<else>
+					<script language="js"><![CDATA[var no1= parseFloat(mc.getProperty('dedicated_value1')); var division = no1 / 100;         mc.setProperty("Result", division);]]></script>
+					<property expression="$ctx:Result" name="dedicated_value1" scope="default" type="STRING"/>
+				</else>
+			</filter>
+			<filter xpath="fn:boolean(fn:string-length($ctx:dedicated_value2) = 0) or $ctx:dedicated_value2 = 0">
+				<then>
+					<property name="dedicated_value2" scope="default" type="STRING" value="0.0"/>
+				</then>
+				<else>
+					<script language="js"><![CDATA[var no2= parseFloat(mc.getProperty('dedicated_value2')); var division = no2 / 100;         mc.setProperty("Result", division);]]></script>
+					<property expression="$ctx:Result" name="dedicated_value2" scope="default" type="STRING"/>
+				</else>
+			</filter>
+			<property name="R_Amount" scope="default" type="STRING" value="1.15"/>
+			<script language="js"><![CDATA[var value1 = parseFloat(mc.getProperty('dedicated_value1'));
+				var value2 = parseFloat(mc.getProperty('dedicated_value2'));
+				var r_amount = parseFloat(mc.getProperty('R_Amount'));
+				var sum = value1 + value2;
+				var sumTax = (sum * r_amount).toFixed(2);
+				mc.setProperty('dedicated_ids_sum', sum);
+				mc.setProperty('dedicated_ids_sum_Tax', sumTax);]]></script>
+			<property expression="fn:ceiling($ctx:dedicated_ids_sum)" name="RechargeAmount" scope="default" type="STRING"/>
+			<property expression="$ctx:dedicated_ids_sum_Tax" name="RechargeAmountTax" scope="default" type="STRING"/>
+			<property expression="$ctx:RechargeAmount" name="RechargeAmount" scope="default" type="STRING"/>
+			<property expression="$ctx:RechargeAmountTax" name="RechargeAmountTax" scope="default" type="STRING"/>
+			<filter regex="200" source="$ctx:StatusCode">
+				<then>
+					<filter regex="0" source="$ctx:INResponseCode">
+						<then>
+							<filter regex="True" source="$ctx:CheckDaID">
+								<then>
+									<property name="messageType" scope="axis2" type="STRING" value="application/json"/>
+									<property expression="fn:concat('Balance:',$ctx:balanceinrupees)" name="JSON_RESPONSE" scope="default" type="STRING"/>
+									<payloadFactory media-type="json">
+										<format>{"Dedicated_Account_Informations" : [{"Dedicated_Account_ID" :"$1", "Dedicated_Account_Unit" : "$2", "Dedicated_Account_Value":"$3", "Dedicated_Account_ExpiryDate" : "$4"}, {"Dedicated_Account_ID" :"$5", "Dedicated_Account_Unit" : "$6", "Dedicated_Account_Value":"$7", "Dedicated_Account_ExpiryDate" : "$8"}],"Total_Dedicated_Accounts_Value":"$9", "Total_Dedicated_Accounts_InclTax_Value":"$10"}</format>
+										<args>
+											<arg evaluator="xml" expression="$ctx:daid1"/>
+											<arg evaluator="xml" expression="$ctx:dedicated_unit_type1"/>
+											<arg evaluator="xml" expression="$ctx:dedicated_value1"/>
+											<arg evaluator="xml" expression="$ctx:expiryDate1"/>
+											<arg evaluator="xml" expression="$ctx:daid2"/>
+											<arg evaluator="xml" expression="$ctx:dedicated_unit_type2"/>
+											<arg evaluator="xml" expression="$ctx:dedicated_value2"/>
+											<arg evaluator="xml" expression="$ctx:expiryDate2"/>
+											<arg evaluator="xml" expression="$ctx:RechargeAmount"/>
+											<arg evaluator="xml" expression="$ctx:RechargeAmountTax"/>
+										</args>
+									</payloadFactory>
+									<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+									<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="OK"/>
+									<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+									<property expression="json-eval($)" name="RESPONSE" scope="default" type="STRING"/>
+									<sequence key="LOYALTY_MSA_LOG_RESPONSE"/>
+									<respond/>
+								</then>
+								<else>
+								
+								<payloadFactory media-type="json">
+										<format>{"Dedicated_Account_Informations" : [{"Dedicated_Account_ID" :"$1", "Dedicated_Account_Unit" : "$2", "Dedicated_Account_Value":"$3", "Dedicated_Account_ExpiryDate" : "$4"}, {"Dedicated_Account_ID" :"$5", "Dedicated_Account_Unit" : "$6", "Dedicated_Account_Value":"$7", "Dedicated_Account_ExpiryDate" : "$8"}],"Total_Dedicated_Accounts_Value":"$9", "Total_Dedicated_Accounts_InclTax_Value":"$10"}</format>
+										<args>
+											<arg value="0"/>
+											<arg value="0"/>
+											<arg value="0"/>
+											<arg value="0"/>
+											<arg value="0"/>
+											<arg value="0"/>
+											<arg value="0"/>
+											<arg value="0"/>
+											<arg value="0"/>
+											<arg value="0"/>
+										</args>
+									</payloadFactory>
+									<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+									<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+									<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+									<property expression="json-eval($)" name="RESPONSE" scope="default" type="STRING"/>
+									<sequence key="LOYALTY_MSA_LOG_RESPONSE"/>
+									<respond/>
+								</else>
+							</filter>
+						</then>
+						<else>
+							<payloadFactory media-type="json">
+								<format>{"error":{ "errorCode": "$1", "description": "", "message": "", "transaction": { "transactionId": "$2" } }}</format>
+								<args>
+									<arg evaluator="xml" expression="$ctx:INResponseCode"/>
+									<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+								</args>
+							</payloadFactory>
+							<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+							<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+							<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+							<property expression="json-eval($)" name="RESPONSE" scope="default" type="STRING"/>
+							<sequence key="LOYALTY_MSA_LOG_RESPONSE"/>
+							<respond/>
+						</else>
+					</filter>
+				</then>
+				<else>
+					<payloadFactory media-type="json">
+						<format>{"error":{ "errorCode": "$1", "description": "$2", "message": "", "transaction": { "transactionId": "$3" } }}</format>
+						<args>
+							<arg evaluator="xml" expression="$ctx:faultCode"/>
+							<arg evaluator="xml" expression="$ctx:faultDescription"/>
+							<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+						</args>
+					</payloadFactory>
+					<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+					<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+					<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+					<property expression="json-eval($)" name="RESPONSE" scope="default" type="STRING"/>
+					<sequence key="LOYALTY_MSA_LOG_RESPONSE"/>
+					<respond/>
+				</else>
+			</filter>
+		</then>
+		<else>
+			<property name="HTTP_SC" scope="axis2" type="STRING" value="401"/>
+			<payloadFactory media-type="json">
+				<format>{"error":{ "errorCode": "$1", "description": "$2", "message": "", "transaction": { "transactionId": "$3" } }}</format>
+				<args>
+					<arg value="1005"/>
+					<arg value="Invalid Token"/>
+					<arg evaluator="xml" expression="$ctx:TRANSACTION_ID"/>
+				</args>
+			</payloadFactory>
+			<property name="INTERFACE_NAME" scope="default" type="STRING" value="RESPONSE"/>
+			<property name="LOG_RESPONSE_STATUS" scope="default" type="STRING" value="KO"/>
+			<property expression="get-property('SYSTEM_DATE', 'yyyy-MM-dd HH:mm:ss.SSS')" name="RESPONSE_TIME" scope="default" type="STRING"/>
+			<property expression="json-eval($)" name="RESPONSE" scope="default" type="STRING"/>
+			<sequence key="LOYALTY_MSA_LOG_RESPONSE"/>
+			<respond/>
+		</else>
+	</filter>
+</sequence>

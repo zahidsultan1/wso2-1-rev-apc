@@ -1,0 +1,20 @@
+<endpoint xmlns="http://ws.apache.org/ns/synapse" name="JcWallet_Get_BundlePrice_EP">
+   <http uri-template="https://bssapi.bss.jazz.com.pk/api/v1/products?filter%5Bcode%5D={uri.var.qvCode}" method="get">
+       <suspendOnFailure>
+         <errorCodes>-1</errorCodes>
+         <progressionFactor>1.0</progressionFactor>
+      </suspendOnFailure>
+      <markForSuspension>
+         <errorCodes>-1</errorCodes>
+         <retriesBeforeSuspension>0</retriesBeforeSuspension>
+         <retryDelay>0</retryDelay>
+      </markForSuspension>
+      <timeout>
+         <duration>10000</duration>
+         <responseAction>fault</responseAction>
+      </timeout>
+    </http>
+
+
+</endpoint>
+                        
