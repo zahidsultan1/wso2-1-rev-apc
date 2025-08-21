@@ -4,26 +4,25 @@ pipeline {
     agent any
 
     environment {
-        REGISTRY_PREFIX = "ghcr.io/zahidsultan1/wso2mi-staging"
-        DEFAULT_IMAGE   = "wso2mi"
+        REGISTRY_PREFIX   = "ghcr.io/zahidsultan1/wso2mi-staging"
+        DEFAULT_IMAGE     = "wso2mi"
         DEFAULT_IMAGE_TAG = "4.4.0"
 
-        IMAGE_NAME = "mi-services"
-        REGISTRY   = "ghcr.io/zahidsultan1/wso2-mi-services"
-        IMAGE_TAG  = "${BUILD_NUMBER}"   // auto-increment tag
-        DOCKERFILE_PATH = "mi-config/Dockerfile"
-        BUILD_CONTEXT   = "mi-config"
+        IMAGE_NAME        = "mi-services"
+        REGISTRY          = "ghcr.io/zahidsultan1/wso2-mi-services"
+        IMAGE_TAG         = "${BUILD_NUMBER}"
+        DOCKERFILE_PATH   = "mi-config/Dockerfile"
+        BUILD_CONTEXT     = "mi-config"
     }
 
     stages {
-        // select base image
+        // Select base image
         stage('Base Image') {
             steps {
                 script {
                     if (params.CLEAN_BASE) {
                         BASE_IMAGE = "${REGISTRY_PREFIX}/${DEFAULT_IMAGE}:${DEFAULT_IMAGE_TAG}"
                         echo "Using clean base image: ${BASE_IMAGE}"
-                        echo "WARN: This will include only the selected code"
                     } else {
                         def lastSuccessfulBuild = currentBuild.previousSuccessfulBuild
                         if (lastSuccessfulBuild) {
@@ -39,7 +38,7 @@ pipeline {
             }
         }
 
-        // create car files (your parallel API builds)
+        // Parallel Maven module builds (same as before)
         stage('Parallel') {
             parallel {
                 stage('JC Bundle Sub') {
@@ -164,8 +163,8 @@ pipeline {
             }
         }
 
-        // build & push final image with Podman
-        stage('Build & Push') {
+        // Image Build
+        stage('Image Build') {
             steps {
                 script {
                     sh """
@@ -175,17 +174,22 @@ pipeline {
                           -t $REGISTRY/$IMAGE_NAME:$IMAGE_TAG \
                           $BUILD_CONTEXT
                     """
+                }
+            }
+        }
 
-                    withCredentials([usernamePassword(credentialsId: 'ghcr-creds', usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')]) {
-                        sh """
-                            echo $GITHUB_TOKEN | podman login ghcr.io -u $GITHUB_USER --password-stdin
-                            podman push $REGISTRY/$IMAGE_NAME:$IMAGE_TAG
-                            podman rmi  $REGISTRY/$IMAGE_NAME:$IMAGE_TAG || true
-                        """
-                    }
+        // Image Push
+        stage('Image Push') {
+            steps {
+                //withCredentials([usernamePassword(credentialsId: 'ghcr-creds', usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')]) 
+                {
+                    sh """
+                        echo $GITHUB_TOKEN | podman login ghcr.io -u $GITHUB_USER --password-stdin
+                        podman push $REGISTRY/$IMAGE_NAME:$IMAGE_TAG
+                        podman rmi  $REGISTRY/$IMAGE_NAME:$IMAGE_TAG || true
+                    """
                 }
             }
         }
     }
 }
-
