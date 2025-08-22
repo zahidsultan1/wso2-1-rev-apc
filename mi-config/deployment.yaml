@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: test-arc
-  name: <WS02_APP_NAME>-mi
+  namespace: wso2
+  name: wso2-rev-test-mi
   annotations:
     kubernetes.io/change-cause: "init deploy"
   labels:
-    app: <WS02_APP_NAME>-mi
+    app: wso2-rev-test-mi
 spec:
   selector:
     matchLabels:
-      app: <WS02_APP_NAME>-mi
+      app: wso2-rev-test-mi
   replicas: 1
   strategy:
     type: RollingUpdate
@@ -20,10 +20,10 @@ spec:
   template:
     metadata:
       labels:
-        app: <WS02_APP_NAME>-mi
+        app: wso2-rev-test-mi
     spec:
       containers:
-        - name: <WS02_APP_NAME>-mi
+        - name: wso2-rev-test-mi
           image: internal-registry.tkg.mobilink.net.pk/wso2-prod/wso2/mi-services/<WS02_APP_NAME>:<WS02_APP_TAG>
           imagePullPolicy: IfNotPresent
           env:
@@ -96,11 +96,11 @@ spec:
 apiVersion: v1 
 kind: Service
 metadata:
-  namespace: test-arc
-  name: <WS02_APP_NAME>-svc-ci-mi
+  namespace: wso2
+  name: wso2-rev-test-mi
 spec:
   selector:
-    app: <WS02_APP_NAME>-mi
+    app: wso2-rev-test-svc-mi
   ports:
     - protocol: "TCP"
       name: "http"
