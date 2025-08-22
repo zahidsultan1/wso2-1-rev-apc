@@ -2,15 +2,15 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: wso2
-  name: wso2-rev-test-mi
+  name: <WS02_APP_NAME>   # replaced by Jenkins
   annotations:
     kubernetes.io/change-cause: "init deploy"
   labels:
-    app: wso2-rev-test-mi
+    app: <WS02_APP_NAME>
 spec:
   selector:
     matchLabels:
-      app: wso2-rev-test-mi
+      app: <WS02_APP_NAME>
   replicas: 1
   strategy:
     type: RollingUpdate
@@ -20,10 +20,10 @@ spec:
   template:
     metadata:
       labels:
-        app: wso2-rev-test-mi
+        app: <WS02_APP_NAME>
     spec:
       containers:
-        - name: wso2-rev-test-mi
+        - name: <WS02_APP_NAME>
           image: default-route-openshift-image-registry.apps.stgocpv1.jazz.com.pk/wso2/<WS02_APP_NAME>:<WS02_APP_TAG>
           imagePullPolicy: IfNotPresent
           env:
@@ -41,66 +41,19 @@ spec:
              memory: "4Gi"
              cpu: "2"
           ports:
-            - containerPort: 8290 # HTTP port
-            - containerPort: 8253 # HTTPs port
-            - containerPort: 9201 # MI_INTERNAL_HTTP
-            - containerPort: 9164 # MI_INTERNAL_HTTPS
-      #     lifecycle:
-      #       preStop:
-      #         exec:
-      #           command:
-      #           - sh
-      #           - -c
-      #           - ${WSO2_SERVER_HOME}/bin/micro-integrator.sh stop
-      #     livenessProbe:
-      #         exec:
-      #             command:
-      #             - /bin/sh
-      #             - -c
-      #             - nc -z localhost 8290
-      #         failureThreshold: 3
-      #         initialDelaySeconds: 20
-      #         periodSeconds: 10
-      #         successThreshold: 1
-      #         timeoutSeconds: 3
-      #     readinessProbe:
-      #         httpGet:
-      #             path: /healthz
-      #             port: 9201
-      #         failureThreshold: 3
-      #         initialDelaySeconds: 20
-      #         periodSeconds: 10
-      #         successThreshold: 1
-      #         timeoutSeconds: 3
-      #     volumeMounts:
-      #       - name: mi-truststore-volume
-      #         mountPath: "/home/wso2carbon/wso2mi-4.1.0/repository/resources/security/client-truststore.jks"
-      #         subPath: client-truststore.jks
-      #       - name: mi-log4j2-volume
-      #         mountPath: /home/wso2carbon/wso2mi-4.1.0/conf/log4j2.properties
-      #         subPath: log4j2.properties
-      #       - name: wso2-logs-volume
-      #         mountPath: /home/wso2carbon/wso2mi-4.1.0/repository/logs
-      # volumes:
-      #   - name: mi-truststore-volume
-      #     secret:
-      #       secretName: mi-client-truststore
-      #   - name: mi-log4j2-volume
-      #     configMap:
-      #       name: wso2-mi-log4j2
-      #   - name: wso2-logs-volume
-      #     hostPath:
-      #       path: /wso2-logs/<WS02_APP_NAME>
-      #       type: DirectoryOrCreate
+            - containerPort: 8290
+            - containerPort: 8253
+            - containerPort: 9201
+            - containerPort: 9164
 ---
 apiVersion: v1 
 kind: Service
 metadata:
   namespace: wso2
-  name: wso2-rev-test-svc-mi
+  name: <WS02_APP_NAME>-svc
 spec:
   selector:
-    app: wso2-rev-test-mi
+    app: <WS02_APP_NAME>
   ports:
     - protocol: "TCP"
       name: "http"
@@ -114,185 +67,7 @@ spec:
       name: "mi-internal-http"
       port: 9201 
       targetPort: 9201
-    - protocol: "TCP"
-      name: "mi-internal-https"
+    - protocol: "mi-internal-https"
       port: 9164 
       targetPort: 9164 
-  type: ClusterIP 
-# ---  
-# apiVersion: networking.k8s.io/v1
-# kind: Ingress
-# metadata:
-#   name: <WS02_APP_NAME>-ing-mi
-#   namespace: wso2
-#   annotations:
-#    projectcontour.io/response-timeout: 90s
-#    nginx.ingress.kubernetes.io/ssl-redirect: "false"
-# spec:
-#   tls:
-#     - hosts:
-#         - microservices.jazz.com.pk
-#       secretName: microservices.jazz.com.pk-tls
-#   ingressClassName: internal-contour
-#   rules:
-#     - host: microservices.jazz.com.pk
-#       http:
-#         paths:
-#           - path: /jazz_api/jazzwallet/v1
-#             pathType: Prefix
-#             backend:
-#               service:
-#                 name: <WS02_APP_NAME>-svc-ci-mi
-#                 port:
-#                   number: 8290
-#           - path: /jazz_HBL
-#             pathType: Prefix
-#             backend:
-#               service:
-#                 name: <WS02_APP_NAME>-svc-ci-mi
-#                 port:
-#                   number: 8290 
-#           - path: /apcBalance/check/
-#             pathType: Prefix
-#             backend:
-#               service:
-#                 name: <WS02_APP_NAME>-svc-ci-mi
-#                 port:
-#                   number: 8290
-#           - path: /creditservices/APCRecharge/v101
-#             pathType: Prefix
-#             backend:
-#               service:
-#                 name: <WS02_APP_NAME>-svc-ci-mi
-#                 port:
-#                   number: 8290                  
-#           - path: /jazzChannel/bundleSubciption
-#             pathType: Prefix
-#             backend:
-#               service:
-#                 name: <WS02_APP_NAME>-svc-ci-mi
-#                 port:
-#                   number: 8290  
-#           - path: /jazzChannel/V2/bundleSubciption
-#             pathType: Prefix
-#             backend:
-#               service:
-#                 name: <WS02_APP_NAME>-svc-ci-mi
-#                 port:
-#                   number: 8290                  
-#           - path: /Jazzchannel/Generic/bundle
-#             pathType: Prefix
-#             backend:
-#               service:
-#                 name: <WS02_APP_NAME>-svc-ci-mi
-#                 port:
-#                   number: 8290 
-#           - path: /services/APCRecharge.APCRechargeHttpSoap11Endpoint
-#             pathType: Prefix
-#             backend:
-#               service:
-#                 name: <WS02_APP_NAME>-svc-ci-mi
-#                 port:
-#                   number: 8290                   
-#           - path: /services/APCRechargeV2DBSS.APCRechargeV2DBSSHttpSoap11Endpoint
-#             pathType: Prefix
-#             backend:
-#               service:
-#                 name: <WS02_APP_NAME>-svc-ci-mi
-#                 port:
-#                   number: 8290 
-#           - path: /apcrefill
-#             pathType: Prefix
-#             backend:
-#               service:
-#                 name: <WS02_APP_NAME>-svc-ci-mi
-#                 port:
-#                   number: 8290
-#           - path: /ecare/subscription/billdetails/v1
-#             pathType: Prefix
-#             backend:
-#               service:
-#                 name: <WS02_APP_NAME>-svc-ci-mi
-#                 port:
-#                   number: 8290 
-#           - path: /ecare/subscription/info/v1
-#             pathType: Prefix
-#             backend:
-#               service:
-#                 name: <WS02_APP_NAME>-svc-ci-mi
-#                 port:
-#                   number: 8290   
-#           - path: /ecare/loan/v1
-#             pathType: Prefix
-#             backend:
-#               service:
-#                 name: <WS02_APP_NAME>-svc-ci-mi
-#                 port:
-#                   number: 8290 
-#           - path: /jazz_EP
-#             pathType: Prefix
-#             backend:
-#               service:
-#                 name: <WS02_APP_NAME>-svc-ci-mi
-#                 port:
-#                   number: 8290   
-#           - path: /jazz_HBL
-#             pathType: Prefix
-#             backend:
-#               service:
-#                 name: <WS02_APP_NAME>-svc-ci-mi
-#                 port:
-#                   number: 8290  
-#           - path: /jazz_api/jazzwallet/v1
-#             pathType: Prefix
-#             backend:
-#               service:
-#                 name: <WS02_APP_NAME>-svc-ci-mi
-#                 port:
-#                   number: 8290                               
-          # - path: /jazzapi/apcwallet/msisdn_verification
-          #   pathType: Prefix
-          #   backend:
-          #     service:
-          #       name: <WS02_APP_NAME>-svc-ci-mi
-          #       port:
-          #         number: 8290                  
-# ---
-# apiVersion: autoscaling/v2
-# kind: HorizontalPodAutoscaler
-# metadata:
-#   name: <WS02_APP_NAME>-mi
-#   namespace: wso2
-# spec:
-#   scaleTargetRef:
-#     apiVersion: apps/v1
-#     kind: Deployment
-#     name: <WS02_APP_NAME>-mi
-#   minReplicas: 2
-#   maxReplicas: 4
-#   metrics:
-#     - type: Resource
-#       resource:
-#         name: cpu
-#         target:
-#           type: Utilization
-#           averageUtilization: 70
-#     - type: Resource
-#       resource:
-#         name: memory
-#         target:
-#           type: Utilization
-#           averageUtilization: 70
-#   behavior:
-#     scaleDown:
-#       stabilizationWindowSeconds: 180
-#       policies:
-#       - type: Percent
-#         value: 100
-#         periodSeconds: 10
-#     scaleUp:
-#       stabilizationWindowSeconds: 0
-#       policies:
-#       - type: Percent
-#         value: 100
-#         periodSeconds: 5
+  type: ClusterIP
