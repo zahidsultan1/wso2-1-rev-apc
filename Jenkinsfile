@@ -13,12 +13,11 @@ pipeline {
         OCP_REGISTRY_HOST = "default-route-openshift-image-registry.apps.stgocpv1.jazz.com.pk"
         OCP_NAMESPACE     = "wso2"
 
-        IMAGE_NAME        = "mi-services" // base prefix
-        PIPELINE_APP_NAME = "${JOB_NAME}" // unique app name from job
+        PIPELINE_APP_NAME = "${JOB_NAME}"      // unique app name from job
         IMAGE_TAG         = "${BUILD_NUMBER}"
 
-        // ✅ Flattened, valid image name
-        FULL_IMAGE_NAME   = "${OCP_REGISTRY_HOST}/${OCP_NAMESPACE}/${IMAGE_NAME}-${PIPELINE_APP_NAME}:${IMAGE_TAG}"
+        // ✅ Image name format = namespace/job:build
+        FULL_IMAGE_NAME   = "${OCP_REGISTRY_HOST}/${OCP_NAMESPACE}/${PIPELINE_APP_NAME}:${IMAGE_TAG}"
 
         DOCKERFILE_PATH   = "mi-config/Dockerfile"
         BUILD_CONTEXT     = "mi-config"
@@ -36,7 +35,7 @@ pipeline {
                         def lastSuccessfulBuild = currentBuild.previousSuccessfulBuild
                         if (lastSuccessfulBuild) {
                             def lastSuccessfulBuildNumber = lastSuccessfulBuild.number
-                            BASE_IMAGE = "${OCP_REGISTRY_HOST}/${OCP_NAMESPACE}/${IMAGE_NAME}:${lastSuccessfulBuildNumber}"
+                            BASE_IMAGE = "${OCP_REGISTRY_HOST}/${OCP_NAMESPACE}/${PIPELINE_APP_NAME}:${lastSuccessfulBuildNumber}"
                             echo "Using last successful build image: ${BASE_IMAGE}"
                         } else {
                             BASE_IMAGE = "${REGISTRY_PREFIX}/${DEFAULT_IMAGE}:${DEFAULT_IMAGE_TAG}"
@@ -99,10 +98,10 @@ pipeline {
                         oc project $OCP_NAMESPACE
 
                         # Replace placeholders in deployment.yaml with actual values
-                        sed 's|<WS02_APP_NAME>|${IMAGE_NAME}-${PIPELINE_APP_NAME}|g; s|<WS02_APP_TAG>|$IMAGE_TAG|g' mi-config/deployment.yaml > mi-config/deployment-ci.yaml
+                        sed "s|<WS02_APP_NAME>|${PIPELINE_APP_NAME}|g; s|<WS02_APP_TAG>|$IMAGE_TAG|g" mi-config/deployment.yaml > mi-config/deployment-ci.yaml
 
                         # Annotate deployment for traceability
-                        oc -n $OCP_NAMESPACE annotate --overwrite deployment ${IMAGE_NAME}-${PIPELINE_APP_NAME} kubernetes.io/change-cause="Deployed build $BUILD_NUMBER" || true
+                        oc -n $OCP_NAMESPACE annotate --overwrite deployment ${PIPELINE_APP_NAME} kubernetes.io/change-cause="Deployed build $BUILD_NUMBER" || true
 
                         # Apply manifest
                         oc -n $OCP_NAMESPACE apply -f mi-config/deployment-ci.yaml
