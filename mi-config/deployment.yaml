@@ -97,10 +97,10 @@ apiVersion: v1
 kind: Service
 metadata:
   namespace: wso2
-  name: wso2-rev-test-mi
+  name: wso2-rev-test-svc-mi
 spec:
   selector:
-    app: wso2-rev-test-svc-mi
+    app: wso2-rev-test-mi
   ports:
     - protocol: "TCP"
       name: "http"
