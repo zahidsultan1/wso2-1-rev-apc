@@ -13,7 +13,7 @@ pipeline {
         OCP_REGISTRY_HOST = "default-route-openshift-image-registry.apps.stgocpv1.jazz.com.pk"
         OCP_NAMESPACE     = "wso2"
 
-        PIPELINE_APP_NAME = "${JOB_NAME}"
+        PIPELINE_APP_NAME = "${JOB_NAME}"      // unique app name from job
         IMAGE_TAG         = "${BUILD_NUMBER}"
 
         FULL_IMAGE_NAME   = "${OCP_REGISTRY_HOST}/${OCP_NAMESPACE}/${PIPELINE_APP_NAME}:${IMAGE_TAG}"
@@ -36,7 +36,7 @@ pipeline {
                             BASE_IMAGE = "${REGISTRY_PREFIX}/${DEFAULT_IMAGE}:${DEFAULT_IMAGE_TAG}"
                         }
                     }
-                    echo "Base image: ${BASE_IMAGE}"
+                    echo "Using base image: ${BASE_IMAGE}"
                 }
             }
         }
@@ -52,7 +52,6 @@ pipeline {
                         '''
                     }
                 }
-                // ... other microservices
             }
         }
 
@@ -86,13 +85,15 @@ pipeline {
                         echo \$OCP_TOKEN | oc login --token=\$OCP_TOKEN --server=https://api.stgocpv1.jazz.com.pk:6443 --insecure-skip-tls-verify=true
                         oc project $OCP_NAMESPACE
 
-                        # Replace placeholders
                         sed "s|<WS02_APP_NAME>|${PIPELINE_APP_NAME}|g; s|<WS02_APP_TAG>|$IMAGE_TAG|g" \
                             mi-config/deployment.yaml > mi-config/deployment-ci.yaml
 
-                        # ✅ Apply first, then annotate
+                        # Apply manifest first (create or update)
                         oc -n $OCP_NAMESPACE apply -f mi-config/deployment-ci.yaml
-                        oc -n $OCP_NAMESPACE annotate --overwrite deployment ${PIPELINE_APP_NAME} kubernetes.io/change-cause="Deployed build $BUILD_NUMBER" || true
+
+                        # Annotate deployment for traceability (safe after apply)
+                        oc -n $OCP_NAMESPACE annotate --overwrite deployment ${PIPELINE_APP_NAME} \
+                          kubernetes.io/change-cause="Deployed build $BUILD_NUMBER" || true
                     """
                 }
             }
