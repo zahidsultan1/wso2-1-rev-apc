@@ -196,7 +196,7 @@ pipeline {
         // Deploy latest image to OpenShift
         stage('Deploy to OpenShift') {
             steps {
-                withCredentials([string(credentialsId: 'ocp-sa-token', variable: 'OCP_TOKEN')]) {
+                withCredentials([string(credentialsId: 'ocp-registry-sa-token', variable: 'OCP_TOKEN')]) {
                     sh """
                         echo $OCP_TOKEN | oc login --token=$OCP_TOKEN --server=https://api.stgocpv1.jazz.com.pk:6443 --insecure-skip-tls-verify=true
                         # Replace placeholders in deployment.yaml with actual image values
