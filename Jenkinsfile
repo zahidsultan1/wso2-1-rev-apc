@@ -188,11 +188,36 @@ pipeline {
                 withCredentials([string(credentialsId: 'ocp-registry-sa-token', variable: 'OCP_TOKEN')]) {
                     sh """
                         echo $OCP_TOKEN | podman login $OCP_REGISTRY_HOST --username serviceaccount --password-stdin --tls-verify=false
-                        podman push --tls-verify=false $OCP_REGISTRY_HOST/$OCP_NAMESPACE/$IMAGE_NAME:$IMAGE_TAG
-                        podman rmi  $OCP_REGISTRY_HOST/$OCP_NAMESPACE/$IMAGE_NAME:$IMAGE_TAG || true
+                        podman push --tls-verify=false $OCP_REGISTRY_HOST/$OCP_NAMESPACE/$IMAGE_NAME:$IMAGE_TAG                        
                     """
                 }
             }
         }
+        // Deploy latest image to OpenShift
+        stage('Deploy to OpenShift') {
+            steps {
+                withCredentials([string(credentialsId: 'ocp-sa-token', variable: 'OCP_TOKEN')]) {
+                    sh """
+                        echo $OCP_TOKEN | oc login --token=$OCP_TOKEN --server=https://api.stgocpv1.jazz.com.pk:6443 --insecure-skip-tls-verify=true
+                        # Replace placeholders in deployment.yaml with actual image values
+                        sed 's|<WS02_APP_NAME>|$IMAGE_NAME|g; s|<WS02_APP_TAG>|$IMAGE_TAG|g' mi-config/deployment.yaml > mi-config/deployment-ci.yaml
+                        # Add build number for traceability
+                        oc -n $OCP_NAMESPACE annotate --overwrite deployment wso2-rev-mi-test kubernetes.io/change-cause="Deployed build $BUILD_NUMBER"
+                        # Apply updated manifest
+                        oc -n $OCP_NAMESPACE apply -f mi-config/deployment-ci.yaml
+                    """
+                }
+            }
+        }
+
+      // Cleanup local image (after successful deploy)
+        stage('Cleanup') {
+            steps {
+                sh """
+                    podman rmi $OCP_REGISTRY_HOST/$OCP_NAMESPACE/$IMAGE_NAME:$IMAGE_TAG || true
+                """
+            }
+        }
+
     }
 }
