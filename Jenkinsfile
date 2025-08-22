@@ -13,7 +13,10 @@ pipeline {
         OCP_REGISTRY_HOST = "default-route-openshift-image-registry.apps.stgocpv1.jazz.com.pk" // OpenShift registry host (no namespace)
         OCP_NAMESPACE     = "wso2" // namespace/project in OpenShift
 
-        IMAGE_NAME        = "mi-services"
+        // Each pipeline app name (default to Jenkins job name)
+        PIPELINE_APP_NAME = "${JOB_NAME}"   // e.g. "wso2-rev-1-test"
+
+        IMAGE_NAME        = "mi-services" // base repo folder
         IMAGE_TAG         = "${BUILD_NUMBER}"
         DOCKERFILE_PATH   = "mi-config/Dockerfile"
         BUILD_CONTEXT     = "mi-config"
@@ -175,7 +178,7 @@ pipeline {
                         podman build \
                           --build-arg BASE_IMAGE=$BASE_IMAGE \
                           -f $DOCKERFILE_PATH \
-                          -t $OCP_REGISTRY_HOST/$OCP_NAMESPACE/$IMAGE_NAME:$IMAGE_TAG \
+                          -t $OCP_REGISTRY_HOST/$OCP_NAMESPACE/$IMAGE_NAME/$PIPELINE_APP_NAME:$IMAGE_TAG \
                           $BUILD_CONTEXT                   
                     """
                 }
@@ -187,8 +190,8 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'ocp-registry-sa-token', variable: 'OCP_TOKEN')]) {
                     sh """
-                        echo $OCP_TOKEN | podman login $OCP_REGISTRY_HOST --username serviceaccount --password-stdin --tls-verify=false
-                        podman push --tls-verify=false $OCP_REGISTRY_HOST/$OCP_NAMESPACE/$IMAGE_NAME:$IMAGE_TAG                        
+                        echo \$OCP_TOKEN | podman login $OCP_REGISTRY_HOST --username serviceaccount --password-stdin --tls-verify=false
+                        podman push --tls-verify=false $OCP_REGISTRY_HOST/$OCP_NAMESPACE/$IMAGE_NAME/$PIPELINE_APP_NAME:$IMAGE_TAG                       
                     """
                 }
             }
@@ -198,11 +201,15 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'ocp-registry-sa-token', variable: 'OCP_TOKEN')]) {
                     sh """
-                        echo $OCP_TOKEN | oc login --token=$OCP_TOKEN --server=https://api.stgocpv1.jazz.com.pk:6443 --insecure-skip-tls-verify=true
+                        echo \$OCP_TOKEN | oc login --token=\$OCP_TOKEN --server=https://api.stgocpv1.jazz.com.pk:6443 --insecure-skip-tls-verify=true
+                        oc project $OCP_NAMESPACE
+
                         # Replace placeholders in deployment.yaml with actual image values
-                        sed 's|<WS02_APP_NAME>|$IMAGE_NAME|g; s|<WS02_APP_TAG>|$IMAGE_TAG|g' mi-config/deployment.yaml > mi-config/deployment-ci.yaml
+                        sed 's|<WS02_APP_NAME>|$PIPELINE_APP_NAME|g; s|<WS02_APP_TAG>|$IMAGE_TAG|g' mi-config/deployment.yaml > mi-config/deployment-ci.yaml
+
                         # Add build number for traceability
-                        oc -n $OCP_NAMESPACE annotate --overwrite deployment wso2-rev-mi-test kubernetes.io/change-cause="Deployed build $BUILD_NUMBER"
+                        oc -n $OCP_NAMESPACE annotate --overwrite deployment $PIPELINE_APP_NAME kubernetes.io/change-cause="Deployed build $BUILD_NUMBER" || true
+
                         # Apply updated manifest
                         oc -n $OCP_NAMESPACE apply -f mi-config/deployment-ci.yaml
                     """
@@ -214,7 +221,7 @@ pipeline {
         stage('Cleanup') {
             steps {
                 sh """
-                    podman rmi $OCP_REGISTRY_HOST/$OCP_NAMESPACE/$IMAGE_NAME:$IMAGE_TAG || true
+                    podman rmi $OCP_REGISTRY_HOST/$OCP_NAMESPACE/$IMAGE_NAME/$PIPELINE_APP_NAME:$IMAGE_TAG || true
                 """
             }
         }
