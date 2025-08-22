@@ -84,3 +84,23 @@ pipeline {
                     sh """
                         echo \$OCP_TOKEN | oc login --token=\$OCP_TOKEN --server=https://api.stgocpv1.jazz.com.pk:6443 --insecure-skip-tls-verify=true
                         oc project $OCP_NAMESPACE
+
+                        sed "s|<WS02_APP_NAME>|${PIPELINE_APP_NAME}|g; s|<WS02_APP_TAG>|$IMAGE_TAG|g" \
+                            mi-config/deployment.yaml > mi-config/deployment-ci.yaml
+
+                        oc -n $OCP_NAMESPACE apply -f mi-config/deployment-ci.yaml
+
+                        oc -n $OCP_NAMESPACE annotate --overwrite deployment ${PIPELINE_APP_NAME} \
+                          kubernetes.io/change-cause="Deployed build $BUILD_NUMBER" || true
+                    """
+                }
+            }
+        }
+
+        stage('Cleanup') {
+            steps {
+                sh "podman rmi $FULL_IMAGE_NAME || true"
+            }
+        }
+    }
+}
