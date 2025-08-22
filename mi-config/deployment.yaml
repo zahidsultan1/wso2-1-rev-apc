@@ -8,10 +8,10 @@ metadata:
   labels:
     app: <WS02_APP_NAME>
 spec:
+  replicas: 1
   selector:
     matchLabels:
       app: <WS02_APP_NAME>
-  replicas: 1
   template:
     metadata:
       labels:
@@ -23,9 +23,16 @@ spec:
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8290
+              protocol: TCP
             - containerPort: 8253
+              protocol: TCP
             - containerPort: 9201
+              protocol: TCP
             - containerPort: 9164
+              protocol: TCP
+      # Ensure pull from internal registry works
+      imagePullSecrets:
+        - name: registry-sa-dockercfg-s5n9b   # <- adjust to your namespace's default secret
 ---
 apiVersion: v1
 kind: Service
@@ -36,20 +43,20 @@ spec:
   selector:
     app: <WS02_APP_NAME>
   ports:
-    - protocol: "TCP"
-      name: "http"
+    - name: http
+      protocol: TCP
       port: 8290
       targetPort: 8290
-    - protocol: "TCP"
-      name: "https"
+    - name: https
+      protocol: TCP
       port: 8253
       targetPort: 8253
-    - protocol: "TCP"
-      name: "mi-internal-http"
+    - name: mi-internal-http
+      protocol: TCP
       port: 9201
       targetPort: 9201
-    - protocol: "TCP"
-      name: "mi-internal-https"
+    - name: mi-internal-https
+      protocol: TCP
       port: 9164
       targetPort: 9164
   type: ClusterIP
