@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
         - name: wso2-rev-test-mi
-          image: internal-registry.tkg.mobilink.net.pk/wso2-prod/wso2/mi-services/<WS02_APP_NAME>:<WS02_APP_TAG>
+          image: default-route-openshift-image-registry.apps.stgocpv1.jazz.com.pk/wso2/mi-services/<WS02_APP_NAME>:<WS02_APP_TAG>
           imagePullPolicy: IfNotPresent
           env:
             - name: POD_NAME
