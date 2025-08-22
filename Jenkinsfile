@@ -9,8 +9,8 @@ pipeline {
         DEFAULT_IMAGE     = "wso2mi"
         DEFAULT_IMAGE_TAG = "4.4.0"
 
-        // OpenShift registry details
-        OCP_REGISTRY_HOST = "default-route-openshift-image-registry.apps.stgocpv1.jazz.com.pk"
+        // OpenShift internal registry details
+        OCP_REGISTRY_HOST = "image-registry.openshift-image-registry.svc:5000"
         OCP_NAMESPACE     = "wso2"
 
         PIPELINE_APP_NAME = "${JOB_NAME}"      // unique app name from job
@@ -84,25 +84,3 @@ pipeline {
                     sh """
                         echo \$OCP_TOKEN | oc login --token=\$OCP_TOKEN --server=https://api.stgocpv1.jazz.com.pk:6443 --insecure-skip-tls-verify=true
                         oc project $OCP_NAMESPACE
-
-                        sed "s|<WS02_APP_NAME>|${PIPELINE_APP_NAME}|g; s|<WS02_APP_TAG>|$IMAGE_TAG|g" \
-                            mi-config/deployment.yaml > mi-config/deployment-ci.yaml
-
-                        # Apply manifest first (create or update)
-                        oc -n $OCP_NAMESPACE apply -f mi-config/deployment-ci.yaml
-
-                        # Annotate deployment for traceability (safe after apply)
-                        oc -n $OCP_NAMESPACE annotate --overwrite deployment ${PIPELINE_APP_NAME} \
-                          kubernetes.io/change-cause="Deployed build $BUILD_NUMBER" || true
-                    """
-                }
-            }
-        }
-
-        stage('Cleanup') {
-            steps {
-                sh "podman rmi $FULL_IMAGE_NAME || true"
-            }
-        }
-    }
-}
