@@ -32,7 +32,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.name
             - name: JVM_MEM_OPTS
-              value: "-Xms4g -Xmx4g"
+              value: "-Xms2g -Xmx3g"
           resources:
            requests:
              memory: "2Gi"
