@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: <WS02_APP_NAME>
-          image: default-route-openshift-image-registry.apps.stgocpv1.jazz.com.pk/wso2/<WS02_APP_NAME>:<WS02_APP_TAG>
+          image: image-registry.openshift-image-registry.svc:5000/wso2/<WS02_APP_NAME>:<WS02_APP_TAG>
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8290
