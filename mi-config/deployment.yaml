@@ -1,8 +1,12 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: <WS02_APP_NAME>
   namespace: wso2
+  name: <WS02_APP_NAME>
+  annotations:
+    kubernetes.io/change-cause: "init deploy"
+  labels:
+    app: <WS02_APP_NAME>
 spec:
   replicas: 1
   selector:
@@ -16,39 +20,43 @@ spec:
       containers:
         - name: <WS02_APP_NAME>
           image: default-route-openshift-image-registry.apps.stgocpv1.jazz.com.pk/wso2/<WS02_APP_NAME>:<WS02_APP_TAG>
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8290
+              protocol: TCP
             - containerPort: 8253
-          env:
-            - name: ENV
-              value: "staging"
+              protocol: TCP
+            - containerPort: 9201
+              protocol: TCP
+            - containerPort: 9164
+              protocol: TCP
+      # Ensure pull from internal registry works
+      imagePullSecrets:
+        - name: registry-sa-dockercfg-s5n9b   # <- adjust to your namespace's default secret
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: <WS02_APP_NAME>
   namespace: wso2
+  name: <WS02_APP_NAME>-svc
 spec:
   selector:
     app: <WS02_APP_NAME>
   ports:
     - name: http
+      protocol: TCP
       port: 8290
       targetPort: 8290
     - name: https
+      protocol: TCP
       port: 8253
       targetPort: 8253
----
-apiVersion: route.openshift.io/v1
-kind: Route
-metadata:
-  name: <WS02_APP_NAME>
-  namespace: wso2
-spec:
-  to:
-    kind: Service
-    name: <WS02_APP_NAME>
-  port:
-    targetPort: http
-  tls:
-    termination: edge
+    - name: mi-internal-http
+      protocol: TCP
+      port: 9201
+      targetPort: 9201
+    - name: mi-internal-https
+      protocol: TCP
+      port: 9164
+      targetPort: 9164
+  type: ClusterIP
