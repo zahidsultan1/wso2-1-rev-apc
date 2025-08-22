@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: wso2
-  name: <WS02_APP_NAME>   # replaced by Jenkins
+  name: <WS02_APP_NAME>
   annotations:
     kubernetes.io/change-cause: "init deploy"
   labels:
@@ -12,11 +12,6 @@ spec:
     matchLabels:
       app: <WS02_APP_NAME>
   replicas: 1
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 50%
-      maxUnavailable: 0% 
   template:
     metadata:
       labels:
@@ -26,27 +21,13 @@ spec:
         - name: <WS02_APP_NAME>
           image: default-route-openshift-image-registry.apps.stgocpv1.jazz.com.pk/wso2/<WS02_APP_NAME>:<WS02_APP_TAG>
           imagePullPolicy: IfNotPresent
-          env:
-            - name: POD_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.name
-            - name: JVM_MEM_OPTS
-              value: "-Xms2g -Xmx3g"
-          resources:
-           requests:
-             memory: "2Gi"
-             cpu: "2"
-           limits:
-             memory: "4Gi"
-             cpu: "2"
           ports:
             - containerPort: 8290
             - containerPort: 8253
             - containerPort: 9201
             - containerPort: 9164
 ---
-apiVersion: v1 
+apiVersion: v1
 kind: Service
 metadata:
   namespace: wso2
@@ -57,17 +38,18 @@ spec:
   ports:
     - protocol: "TCP"
       name: "http"
-      port: 8290 
-      targetPort: 8290 
+      port: 8290
+      targetPort: 8290
     - protocol: "TCP"
       name: "https"
-      port: 8253 
-      targetPort: 8253 
+      port: 8253
+      targetPort: 8253
     - protocol: "TCP"
       name: "mi-internal-http"
-      port: 9201 
+      port: 9201
       targetPort: 9201
-    - protocol: "mi-internal-https"
-      port: 9164 
-      targetPort: 9164 
+    - protocol: "TCP"
+      name: "mi-internal-https"
+      port: 9164
+      targetPort: 9164
   type: ClusterIP
