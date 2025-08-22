@@ -173,7 +173,7 @@ pipeline {
                 script {
                     sh """
                         podman build \
-                          --build-arg BASE_IMAGE=$BASE_IMAGE \   # Pass the base image dynamically
+                          --build-arg BASE_IMAGE=$BASE_IMAGE \
                           -f $DOCKERFILE_PATH \
                           -t $OCP_REGISTRY_HOST/$OCP_NAMESPACE/$IMAGE_NAME:$IMAGE_TAG \
                           $BUILD_CONTEXT                   
